@@ -1,0 +1,13 @@
+{
+    "name": "treeDemo",
+    "version": "0.0.1",
+    "engines": {
+        "node": "x",
+        "npm":  "x"
+    },
+    "dependencies": {
+        "async": "x",
+        "express": "2.x",
+        "mongoose": "2.x"
+    }
+}

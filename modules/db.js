@@ -1,5 +1,5 @@
 var mongoose = require('mongoose'),
-    schemas = require('../modules/mongooseSchemaRequires.js');
+    schemas = require('../modules/serverModelRequires.js');
 
 exports.getGuid = function() {
     return String(mongoose.mongo.BSONPure.ObjectID.createPk());

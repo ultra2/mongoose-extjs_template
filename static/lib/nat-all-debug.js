@@ -1709,8 +1709,9 @@ Ext.define('NAT.grid.column.Check', {
     // is not in the header.
     renderer : function(value){
         var cssPrefix = Ext.baseCSSPrefix,
-            cls = [cssPrefix + 'grid-checkheader'];
-
+            //cls = [cssPrefix + 'grid-checkheader'];
+            cls = [cssPrefix + 'column-header-checkbox'];
+            
         if (value) {
             cls.push(cssPrefix + 'grid-checkheader-checked');
         }

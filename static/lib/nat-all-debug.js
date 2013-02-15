@@ -1671,7 +1671,7 @@ Ext.define('NAT.grid.column.Check', {
             mousedown = type == 'mousedown';
 
         if (mousedown || (key == e.ENTER || key == e.SPACE)) {
-            var record = view.getRecordByRowIndex(recordIndex),
+            var record = view.getRecord(view.getNodes(recordIndex,recordIndex)[0]),
                 dataIndex = me.dataIndex,
                 checked = !record.get(dataIndex);
 

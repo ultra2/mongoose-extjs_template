@@ -7,7 +7,7 @@ var app = global.app;
 function getModel(req, res, callback) {
     async.waterfall([
         function(cb) {
-            req.modelName = req.query.collection;
+            req.modelName = req.query.collection || req.body._type;
             if (typeof req.modelName !== 'string') {
                 cb({ message: 'invalid input' }, null);
                 return;

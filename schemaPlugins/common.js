@@ -7,11 +7,21 @@ module.exports = exports = function commonPlugin (schema, options) {
         this.created = this.created || new Date();
         this.modified = new Date();
         this.version = this.version ? this.version + 1 : 0;
+        this.deleted = this.deleted || false;
         next();
     });
 
     schema.statics.read = function read(req, res, callback) {
-        this.find().exec(null, callback);
+        var lastModified = new Date(req.query.lastModified);
+        var me = this;
+        me.find()
+            .$gt('modified', lastModified)
+            .exec(null, callback);
+    };
+
+    schema.statics.readOne = function readOne(req, res, callback) {
+        var me = this;
+        me.findOne({ _id: req.query.id }).exec(null, callback);
     };
 
     schema.statics.create = function create(req, res, callback) {
@@ -25,6 +35,7 @@ module.exports = exports = function commonPlugin (schema, options) {
     };
 
     schema.methods.destroy = function destroy(req, res, callback) {
-        this.remove(callback);
+        this.deleted = true;
+        this.save(callback);
     };
 };

@@ -151,6 +151,7 @@ Ext.define('NAT.autopanel.Tree', {
         this.down('#btnDelete').on('click', this.btnDelete_click, this);
         this.down('#btnSave').on('click', this.btnSave_click, this);
         this.down('#btnCancel').on('click', this.btnCancel_click, this);
+        this.down('#btnExpandAll').on('click', this.btnExpandAll, this);
     },
 
     treeMain_select: function(){
@@ -189,6 +190,10 @@ Ext.define('NAT.autopanel.Tree', {
     btnCancel_click: function(){
         this.reject();
         this.refreshUI(null);
+    },
+
+    btnExpandAll: function(){
+        this.down('#treeMain').expandAll(null, this);
     },
 
     ensureRoot: function(op, callback, scope) {

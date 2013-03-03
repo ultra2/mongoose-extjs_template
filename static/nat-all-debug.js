@@ -168,8 +168,8 @@ Ext.define('NAT.autopanel.Tree', {
             root.setId('root');
             root.set('name', 'root');
             root.set('loaded', true);
-            this.store.setRootNode(root);
             root.endEdit();
+            this.store.setRootNode(root);
         }
 
         if (!parent){

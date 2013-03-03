@@ -1,2 +1,0 @@
-natcreator_template
-===================

@@ -165,8 +165,6 @@ Ext.define('NAT.autopanel.Tree', {
 
         if (!this.store.getRootNode()){
             var root = app.natCreateModel(this.model);
-            root.setId('root');
-            root.set('name', 'root');
             root.set('loaded', true);
             root.endEdit();
             this.store.setRootNode(root);

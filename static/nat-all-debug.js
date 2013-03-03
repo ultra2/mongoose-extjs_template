@@ -177,6 +177,7 @@ Ext.define('NAT.autopanel.Tree', {
         }
 
         var newModel = app.natCreateModel(this.model);
+        newModel.set('loaded', true);
         newModel.endEdit();
 
         parent.appendChild(newModel);

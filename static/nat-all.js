@@ -198,10 +198,6 @@ Ext.define('NAT.autopanel.Tree', {
         this.store.reject();
     },
 
-    save: function (op, callback, scope) {
-        this.store.Save(op, callback, scope);
-    },
-
     saveRefresh: function (op, callback, scope) {
         var me = this;
         async.waterfall([
@@ -214,15 +210,19 @@ Ext.define('NAT.autopanel.Tree', {
             }
         ],
         function(err, data) {
-
+            Ext.callback(callback, scope, [err, null], 0);
         });
+    },
+
+    save: function (op, callback, scope) {
+        this.store.Save(op, callback, scope);
     },
 
     refresh: function(op, callback, scope) {
         this.store.Load(op, callback, scope);
     },
 
-    refreshUI: function () {
+    refreshUI: function (op) {
         this.refreshToolbar();
     },
 

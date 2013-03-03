@@ -149,8 +149,6 @@ Ext.define('NAT.autopanel.Tree', {
         this.down('#treeMain').on('select', this.treeMain_select, this);
         this.down('#btnNew').on('click', this.btnNew_click, this);
         this.down('#btnDelete').on('click', this.btnDelete_click, this);
-        this.down('#btnSave').on('click', this.btnSave_click, this);
-        this.down('#btnCancel').on('click', this.btnCancel_click, this);
     },
 
     treeMain_select: function(){
@@ -161,32 +159,50 @@ Ext.define('NAT.autopanel.Tree', {
         if (!this.model) return;
 
         var tree = this.down('#treeMain');
-        var parent = tree.getSelected();
-
-        if (!this.store.getRootNode()){
-            var root = app.natCreateModel(this.model);
-            root.set('loaded', true);
-            root.endEdit();
-            this.store.setRootNode(root);
-        }
-
-        if (!parent){
-            parent = root;
-        }
-
-        var newModel = app.natCreateModel(this.model);
-        newModel.set('loaded', true);
-        newModel.endEdit();
-
-        parent.appendChild(newModel);
+        var me = this;
+        async.waterfall([
+            function(cb) {
+                me.ensureRoot(null, cb, me);
+            },
+            function(result, cb){
+                debugger;
+                var parent = tree.getSelected() || me.store.getRootNode();
+                var newModel = app.natCreateModel(me.model);
+                newModel.set('loaded', true);
+                newModel.endEdit();
+                parent.appendChild(newModel);
+                me.saveRefresh(null, cb, me);
+            }
+        ]);
     },
 
     btnDelete_click: function(){
-        var model = this.down('#treeMain').getSelected();
-        model.remove();
+        this.down('#treeMain').getSelected().remove();
+        this.saveRefresh(null, null, this);
     },
 
-    btnSave_click: function(){
+    ensureRoot: function(op, callback, scope) {
+        if (this.store.getRootNode()){
+            Ext.callback(callback, scope, [null, null], 0);
+            return;
+        }
+        var root = app.natCreateModel(this.model);
+        root.set('name', 'root');
+        root.set('loaded', true);
+        root.endEdit();
+        this.store.setRootNode(root);
+        this.saveRefresh(null, callback, scope);
+    },
+
+    reject: function(){
+        this.store.reject();
+    },
+
+    save: function (op, callback, scope) {
+        this.store.Save(op, callback, scope);
+    },
+
+    saveRefresh: function (op, callback, scope) {
         var me = this;
         async.waterfall([
             function(cb){
@@ -196,20 +212,10 @@ Ext.define('NAT.autopanel.Tree', {
                 me.refreshUI(null);
                 viewport.refresh(null, cb, me);
             }
-        ]);
-    },
+        ],
+        function(err, data) {
 
-    btnCancel_click: function(){
-        this.reject();
-        this.refreshUI(null);
-    },
-
-    save: function (op, callback, scope) {
-        this.store.Save(op, callback, scope);
-    },
-
-    reject: function(){
-        this.store.reject();
+        });
     },
 
     refresh: function(op, callback, scope) {

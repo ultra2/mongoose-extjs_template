@@ -167,7 +167,6 @@ Ext.define('NAT.autopanel.Tree', {
                 me.ensureRoot(null, cb, me);
             },
             function(result, cb){
-                debugger;
                 var parent = tree.getSelected() || me.store.getRootNode();
                 var newModel = app.natCreateModel(me.model);
                 newModel.set('loaded', true);

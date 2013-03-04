@@ -2914,10 +2914,10 @@ Ext.define('natjs.overrides.AbstractComponent', {
                 var domEl = this.getEl();
 
                 var handleEls = [];
-                handleEls.push('<div id="' + domEl.id + '-north-frame" class="nat-focus-frame nat-focus-frame-north"></div>');
-                handleEls.push('<div id="' + domEl.id + '-east-frame" class="nat-focus-frame nat-focus-frame-east"></div>');
-                handleEls.push('<div id="' + domEl.id + '-south-frame" class="nat-focus-frame nat-focus-frame-south"></div>');
-                handleEls.push('<div id="' + domEl.id + '-west-frame" class="nat-focus-frame nat-focus-frame-west"></div>');
+                handleEls.push('<div id="' + domEl.id + '-north-frame" class="viewedit-focus-frame viewedit-focus-frame-north"></div>');
+                handleEls.push('<div id="' + domEl.id + '-east-frame" class="viewedit-focus-frame viewedit-focus-frame-east"></div>');
+                handleEls.push('<div id="' + domEl.id + '-south-frame" class="viewedit-focus-frame viewedit-focus-frame-south"></div>');
+                handleEls.push('<div id="' + domEl.id + '-west-frame" class="viewedit-focus-frame viewedit-focus-frame-west"></div>');
 
                 // From Extjs Resizer.js
                 // Position the element, this enables us to absolute position
@@ -2935,17 +2935,17 @@ Ext.define('natjs.overrides.AbstractComponent', {
             }
 
             if (this.isSelectFramed) {
-                this['north-frame'].addCls('nat-select-frame');
-                this['east-frame'].addCls('nat-select-frame');
-                this['south-frame'].addCls('nat-select-frame');
-                this['west-frame'].addCls('nat-select-frame');
+                this['north-frame'].addCls('viewedit-select-frame');
+                this['east-frame'].addCls('viewedit-select-frame');
+                this['south-frame'].addCls('viewedit-select-frame');
+                this['west-frame'].addCls('viewedit-select-frame');
             }
 
             if ((this.isFocusFramed) && (!this.isSelectFramed)) {
-                this['north-frame'].removeCls('nat-select-frame');
-                this['east-frame'].removeCls('nat-select-frame');
-                this['south-frame'].removeCls('nat-select-frame');
-                this['west-frame'].removeCls('nat-select-frame');
+                this['north-frame'].removeCls('viewedit-select-frame');
+                this['east-frame'].removeCls('viewedit-select-frame');
+                this['south-frame'].removeCls('viewedit-select-frame');
+                this['west-frame'].removeCls('viewedit-select-frame');
             }
 
             if ((!this.isFocusFramed) && (!this.isSelectFramed) && (this.isNatFramed)) {

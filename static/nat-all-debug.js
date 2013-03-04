@@ -2850,6 +2850,28 @@ Ext.define('natjs.overrides.grid.CellEditor', {
     });
 });
 
+Ext.define('natjs.overrides.AbstractComponent', {
+    requires: ['Ext.AbstractComponent']
+}, function() {
+    Ext.override(Ext.AbstractComponent, {
+
+        initComponent: function () {
+            this.callParent(arguments);
+        },
+
+        IsVisible: function(deep) {
+            var ownerTabPanel = this.up('tabpanel');
+            if (!ownerTabPanel) return this.isVisible(deep);
+            var activeTab = ownerTabPanel.getActiveTab();
+            return  ((this === activeTab) || (this.isDescendantOf(activeTab)));
+        },
+
+        SetEnabled: function (enabled) {
+            this.setDisabled(!enabled);
+        }
+    });
+});
+
 Ext.define('natjs.overrides.Object', {
 }, function() {
 

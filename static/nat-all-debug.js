@@ -1,299 +1,6 @@
 /*
 Copyright(c) 2011 Company Name
 */
-Ext.define('NAT.automenuitem.Abstract', {
-    extend: 'Ext.menu.Item'
-
-});
-
-Ext.define('NAT.automenuitem.AutoPanel', {
-    extend: 'NAT.automenuitem.Abstract',
-    alias: 'widget.natautopanelmenuitem',
-
-    autopanel: '',
-
-    initComponent: function () {
-        this.callParent(arguments);
-        this.on('click', this.this_click, this);
-    },
-
-    this_click: function(){
-        viewport.showAutoPanel(this.autopanel);
-    }
-});
-
-Ext.define('NAT.autopanel.Abstract', {
-    extend: 'Ext.panel.Panel',
-
-    refresh: function(op, callback, scope) {
-        Ext.callback(callback, scope, [null, null], 1);
-    },
-
-    refreshUI: function(op) {
-    }
-});
-
-Ext.define('NAT.autopanel.Grid', {
-    extend: 'NAT.autopanel.Abstract',
-    alias: 'widget.natgridautopanel',
-
-    model: '',
-
-    store: null,
-
-    constructor : function(config) {
-        if (!this.designMode){
-            this.store = Ext.create('NAT.data.Store', {
-                collection: this.model
-            });
-        }
-        this.callParent([config]);  //it calls initComponent
-    },
-
-    initComponent: function(){
-        this.callParent(arguments);
-
-        if (this.designMode) return;
-
-        this.down('#gridMain').BindStore(this.store);
-
-        this.down('#gridMain').on('select', this.gridMain_select, this);
-        this.down('#btnNew').on('click', this.btnNew_click, this);
-        this.down('#btnDelete').on('click', this.btnDelete_click, this);
-        this.down('#btnSave').on('click', this.btnSave_click, this);
-        this.down('#btnCancel').on('click', this.btnCancel_click, this);
-    },
-
-    gridMain_select: function(){
-        this.refreshToolbar();
-    },
-
-    btnNew_click: function(){
-        if (!this.model) return;
-        var newModel = app.natCreateModel(this.model);
-        newModel.endEdit();
-        this.store.add(newModel);
-    },
-
-    btnDelete_click: function(){
-        var model = this.down('#gridMain').getSelected();
-        this.store.remove(model);
-    },
-
-    btnSave_click: function(){
-        var me = this;
-        async.waterfall([
-            function(cb){
-                me.save(null, cb, me);
-            },
-            function(result, cb){
-                me.refreshUI(null);
-                viewport.refresh(null, cb, me);
-            }
-        ]);
-    },
-
-    btnCancel_click: function(){
-        this.reject();
-        this.refreshUI(null);
-    },
-
-    save: function (op, callback, scope) {
-        this.store.Save(op, callback, scope);
-    },
-
-    reject: function(){
-        this.store.reject();
-    },
-
-    refresh: function(op, callback, scope) {
-        this.store.Load(op, callback, scope);
-    },
-
-    refreshUI: function(op) {
-        this.refreshToolbar();
-    },
-
-    refreshToolbar: function () {
-        var grid = this.down('#gridMain');
-        var model = grid.getSelected();
-
-        this.down('#btnDelete').setDisabled(!model);
-    }
-});
-
-Ext.define('NAT.autopanel.Tree', {
-    extend: 'NAT.autopanel.Abstract',
-    alias: 'widget.nattreeautopanel',
-
-    model: '',
-
-    store: null,
-
-    constructor : function(config) {
-        if (!this.designMode){
-            this.store = Ext.create('NAT.data.TreeStore', {
-                collection: this.model
-            });
-        }
-        this.callParent([config]);  //it calls initComponent
-    },
-
-    initComponent: function(){
-        this.callParent(arguments);
-
-        if (this.designMode) return;
-
-        this.down('#treeMain').BindStore(this.store);
-
-        this.down('#treeMain').on('select', this.treeMain_select, this);
-        this.down('#btnNew').on('click', this.btnNew_click, this);
-        this.down('#btnDelete').on('click', this.btnDelete_click, this);
-        this.down('#btnSave').on('click', this.btnSave_click, this);
-        this.down('#btnCancel').on('click', this.btnCancel_click, this);
-        this.down('#btnExpandAll').on('click', this.btnExpandAll, this);
-    },
-
-    treeMain_select: function(){
-        this.refreshToolbar();
-    },
-
-    btnNew_click: function(){
-        if (!this.model) return;
-
-        var tree = this.down('#treeMain');
-        var me = this;
-        async.waterfall([
-            function(cb) {
-                me.ensureRoot(null, cb, me);
-            },
-            function(result, cb){
-                var parent = tree.getSelected() || me.store.getRootNode();
-                var newModel = app.natCreateModel(me.model);
-                newModel.set('loaded', true);
-                newModel.endEdit();
-                parent.appendChild(newModel);
-                me.saveRefresh(null, cb, me);
-            }
-        ]);
-    },
-
-    btnDelete_click: function(){
-        this.down('#treeMain').getSelected().remove();
-        this.saveRefresh(null, null, this);
-    },
-
-    btnSave_click: function(){
-        this.saveRefresh(null, null, this);
-    },
-
-    btnCancel_click: function(){
-        this.reject();
-        this.refreshUI(null);
-    },
-
-    btnExpandAll: function(){
-        this.down('#treeMain').expandAll(null, this);
-    },
-
-    ensureRoot: function(op, callback, scope) {
-        if (this.store.getRootNode()){
-            Ext.callback(callback, scope, [null, null], 0);
-            return;
-        }
-        var root = app.natCreateModel(this.model);
-        root.set('name', 'root');
-        root.set('loaded', true);
-        root.endEdit();
-        this.store.setRootNode(root);
-        this.saveRefresh(null, callback, scope);
-    },
-
-    reject: function(){
-        this.store.reject();
-    },
-
-    saveRefresh: function (op, callback, scope) {
-        var me = this;
-        async.waterfall([
-            function(cb){
-                me.save(null, cb, me);
-            },
-            function(result, cb){
-                viewport.refresh(null, cb, me);
-            }
-        ],
-        function(err, data) {
-            Ext.callback(callback, scope, [err, null], 0);
-        });
-    },
-
-    save: function (op, callback, scope) {
-        this.store.Save(op, callback, scope);
-    },
-
-    refresh: function(op, callback, scope) {
-        this.store.Load(op, callback, scope);
-    },
-
-    refreshUI: function (op) {
-        this.refreshToolbar();
-    },
-
-    refreshToolbar: function () {
-        var tree = this.down('#treeMain');
-        var model = tree.getSelected();
-
-        this.down('#btnDelete').setDisabled(!model);
-    }
-});
-
-Ext.define('NAT.autoviewport.Abstract', {
-    extend: 'Ext.container.Viewport'
-
-});
-
-Ext.define('NAT.autoviewport.Tabbed', {
-    extend: 'NAT.autoviewport.Abstract',
-    alias: 'widget.nattabbedautoviewport',
-
-    initComponent: function () {
-        this.callParent(arguments);
-        this.down('#btnRefresh').on('click', this.btnRefresh_click, this);
-    },
-
-    showAutoPanel: function(autopanel){
-        autopanel = Ext.create('widget.' + autopanel);
-        var tpMain = this.down('#tpMain');
-        tpMain.add(autopanel);
-        tpMain.setActiveTab(autopanel);
-        autopanel.refresh(null, null, this);
-    },
-
-    btnRefresh_click: function(){
-        this.refresh(null, null, this);
-    },
-
-    refresh: function (op, callback, scope) {
-        var me = this;
-        async.parallel([
-            function(cb) {
-                var tpMain = me.down('#tpMain');
-                async.forEach(tpMain.items.getRange(), function(autopanel, done){
-                    autopanel.refresh(null, done, me);
-                },cb);
-            }
-        ],
-        function(err, data) {
-            me.refreshUI(op);
-            Ext.callback(callback, scope, [err, null], 1);
-        });
-    },
-
-    refreshUI: function (op) {
-    }
-});
-
 Ext.define('NAT.button.Button', {
     extend: 'Ext.button.Button',
     alias: 'widget.natbutton',
@@ -4517,6 +4224,334 @@ Ext.define('natjs.overrides.String', {
     };
 });
 
+Ext.define('NAT.panel.Abstract', {
+    extend: 'Ext.panel.Panel',
+
+    refresh: function(op, callback, scope) {
+        Ext.callback(callback, scope, [null, null], 1);
+    },
+
+    refreshUI: function(op) {
+    }
+});
+
+Ext.define('NAT.panel.persistent.Abstract', {
+    extend: 'NAT.panel.Abstract'
+});
+
+Ext.define('NAT.panel.persistent.Form', {
+    extend: 'NAT.panel.persistent.Abstract',
+    alias: 'widget.natppform'
+});
+
+Ext.define('NAT.panel.persistent.Grid', {
+    extend: 'NAT.panel.persistent.Abstract',
+    alias: 'widget.natppgrid',
+
+    model: '',
+
+    store: null,
+
+    constructor : function(config) {
+        if (!this.designMode){
+            this.store = Ext.create('NAT.data.Store', {
+                collection: this.model
+            });
+        }
+        this.callParent([config]);  //it calls initComponent
+    },
+
+    initComponent: function(){
+        this.callParent(arguments);
+
+        if (this.designMode) return;
+
+        this.down('#gridMain').BindStore(this.store);
+
+        this.down('#gridMain').on('select', this.gridMain_select, this);
+        this.down('#btnNew').on('click', this.btnNew_click, this);
+        this.down('#btnDelete').on('click', this.btnDelete_click, this);
+        this.down('#btnSave').on('click', this.btnSave_click, this);
+        this.down('#btnCancel').on('click', this.btnCancel_click, this);
+    },
+
+    gridMain_select: function(){
+        this.refreshToolbar();
+    },
+
+    btnNew_click: function(){
+        if (!this.model) return;
+        var newModel = app.natCreateModel(this.model);
+        newModel.endEdit();
+        this.store.add(newModel);
+    },
+
+    btnDelete_click: function(){
+        var model = this.down('#gridMain').getSelected();
+        this.store.remove(model);
+    },
+
+    btnSave_click: function(){
+        var me = this;
+        async.waterfall([
+            function(cb){
+                me.save(null, cb, me);
+            },
+            function(result, cb){
+                me.refreshUI(null);
+                viewport.refresh(null, cb, me);
+            }
+        ]);
+    },
+
+    btnCancel_click: function(){
+        this.reject();
+        this.refreshUI(null);
+    },
+
+    save: function (op, callback, scope) {
+        this.store.Save(op, callback, scope);
+    },
+
+    reject: function(){
+        this.store.reject();
+    },
+
+    refresh: function(op, callback, scope) {
+        this.store.Load(op, callback, scope);
+    },
+
+    refreshUI: function(op) {
+        this.refreshToolbar();
+    },
+
+    refreshToolbar: function () {
+        var grid = this.down('#gridMain');
+        var model = grid.getSelected();
+
+        this.down('#btnDelete').setDisabled(!model);
+    }
+});
+
+Ext.define('NAT.panel.persistent.Tree', {
+    extend: 'NAT.panel.persistent.Abstract',
+    alias: 'widget.natpptree',
+
+    model: '',
+
+    store: null,
+
+    constructor : function(config) {
+        if (!this.designMode){
+            this.store = Ext.create('NAT.data.TreeStore', {
+                collection: this.model
+            });
+        }
+        this.callParent([config]);  //it calls initComponent
+    },
+
+    initComponent: function(){
+        this.callParent(arguments);
+
+        if (this.designMode) return;
+
+        this.down('#treeMain').BindStore(this.store);
+
+        this.down('#treeMain').on('select', this.treeMain_select, this);
+        this.down('#btnNew').on('click', this.btnNew_click, this);
+        this.down('#btnDelete').on('click', this.btnDelete_click, this);
+        this.down('#btnSave').on('click', this.btnSave_click, this);
+        this.down('#btnCancel').on('click', this.btnCancel_click, this);
+        this.down('#btnExpandAll').on('click', this.btnExpandAll, this);
+    },
+
+    treeMain_select: function(){
+        this.refreshToolbar();
+    },
+
+    btnNew_click: function(){
+        if (!this.model) return;
+
+        var tree = this.down('#treeMain');
+        var me = this;
+        async.waterfall([
+            function(cb) {
+                me.ensureRoot(null, cb, me);
+            },
+            function(result, cb){
+                var parent = tree.getSelected() || me.store.getRootNode();
+                var newModel = app.natCreateModel(me.model);
+                newModel.set('loaded', true);
+                newModel.endEdit();
+                parent.appendChild(newModel);
+                me.saveRefresh(null, cb, me);
+            }
+        ]);
+    },
+
+    btnDelete_click: function(){
+        this.down('#treeMain').getSelected().remove();
+        this.saveRefresh(null, null, this);
+    },
+
+    btnSave_click: function(){
+        this.saveRefresh(null, null, this);
+    },
+
+    btnCancel_click: function(){
+        this.reject();
+        this.refreshUI(null);
+    },
+
+    btnExpandAll: function(){
+        this.down('#treeMain').expandAll(null, this);
+    },
+
+    ensureRoot: function(op, callback, scope) {
+        if (this.store.getRootNode()){
+            Ext.callback(callback, scope, [null, null], 0);
+            return;
+        }
+        var root = app.natCreateModel(this.model);
+        root.set('name', 'root');
+        root.set('loaded', true);
+        root.endEdit();
+        this.store.setRootNode(root);
+        this.saveRefresh(null, callback, scope);
+    },
+
+    reject: function(){
+        this.store.reject();
+    },
+
+    saveRefresh: function (op, callback, scope) {
+        var me = this;
+        async.waterfall([
+            function(cb){
+                me.save(null, cb, me);
+            },
+            function(result, cb){
+                viewport.refresh(null, cb, me);
+            }
+        ],
+        function(err, data) {
+            Ext.callback(callback, scope, [err, null], 0);
+        });
+    },
+
+    save: function (op, callback, scope) {
+        this.store.Save(op, callback, scope);
+    },
+
+    refresh: function(op, callback, scope) {
+        this.store.Load(op, callback, scope);
+    },
+
+    refreshUI: function (op) {
+        this.refreshToolbar();
+    },
+
+    refreshToolbar: function () {
+        var tree = this.down('#treeMain');
+        var model = tree.getSelected();
+
+        this.down('#btnDelete').setDisabled(!model);
+    }
+});
+
+Ext.define('NAT.panel.query.Abstract', {
+    extend: 'NAT.panel.Abstract'
+});
+
+Ext.define('NAT.panel.query.Grid', {
+    extend: 'NAT.panel.query.Abstract',
+    alias: 'widget.natpqgrid',
+
+    model: '',
+
+    store: null,
+
+    constructor : function(config) {
+        if (!this.designMode){
+            this.store = Ext.create('NAT.data.Store', {
+                collection: this.model
+            });
+        }
+        this.callParent([config]);  //it calls initComponent
+    },
+
+    initComponent: function(){
+        this.callParent(arguments);
+
+        if (this.designMode) return;
+
+        this.down('#gridMain').BindStore(this.store);
+
+        this.down('#gridMain').on('select', this.gridMain_select, this);
+        this.down('#btnNew').on('click', this.btnNew_click, this);
+        this.down('#btnDelete').on('click', this.btnDelete_click, this);
+        this.down('#btnSave').on('click', this.btnSave_click, this);
+        this.down('#btnCancel').on('click', this.btnCancel_click, this);
+    },
+
+    gridMain_select: function(){
+        this.refreshToolbar();
+    },
+
+    btnNew_click: function(){
+        if (!this.model) return;
+        var newModel = app.natCreateModel(this.model);
+        newModel.endEdit();
+        this.store.add(newModel);
+    },
+
+    btnDelete_click: function(){
+        var model = this.down('#gridMain').getSelected();
+        this.store.remove(model);
+    },
+
+    btnSave_click: function(){
+        var me = this;
+        async.waterfall([
+            function(cb){
+                me.save(null, cb, me);
+            },
+            function(result, cb){
+                me.refreshUI(null);
+                viewport.refresh(null, cb, me);
+            }
+        ]);
+    },
+
+    btnCancel_click: function(){
+        this.reject();
+        this.refreshUI(null);
+    },
+
+    save: function (op, callback, scope) {
+        this.store.Save(op, callback, scope);
+    },
+
+    reject: function(){
+        this.store.reject();
+    },
+
+    refresh: function(op, callback, scope) {
+        this.store.Load(op, callback, scope);
+    },
+
+    refreshUI: function(op) {
+        this.refreshToolbar();
+    },
+
+    refreshToolbar: function () {
+        var grid = this.down('#gridMain');
+        var model = grid.getSelected();
+
+        this.down('#btnDelete').setDisabled(!model);
+    }
+});
+
 Ext.define('NAT.tree.Panel', {
     extend: 'Ext.tree.Panel',
     alias: 'widget.nattree',
@@ -4832,6 +4867,67 @@ Ext.define('NAT.view.MessageDialog', {
     btn_click: function (button) {
         Ext.callback(this.callback, this.scope, [null, { result: button.result }], 0); //by delay 0ms close happen first before callback!
         this.close();
+    }
+});
+
+Ext.define('NAT.viewport.Abstract', {
+    extend: 'Ext.container.Viewport'
+});
+
+Ext.define('NAT.viewport.MenuItem', {
+    extend: 'Ext.menu.Item',
+    alias: 'widget.natviewportmenuitem',
+
+    autopanel: '',
+
+    initComponent: function () {
+        this.callParent(arguments);
+        this.on('click', this.this_click, this);
+    },
+
+    this_click: function(){
+        viewport.showAutoPanel(this.autopanel);
+    }
+});
+
+Ext.define('NAT.viewport.Tabbed', {
+    extend: 'NAT.viewport.Abstract',
+    alias: 'widget.nattabbedviewport',
+
+    initComponent: function () {
+        this.callParent(arguments);
+        this.down('#btnRefresh').on('click', this.btnRefresh_click, this);
+    },
+
+    showAutoPanel: function(autopanel){
+        autopanel = Ext.create('widget.' + autopanel);
+        var tpMain = this.down('#tpMain');
+        tpMain.add(autopanel);
+        tpMain.setActiveTab(autopanel);
+        autopanel.refresh(null, null, this);
+    },
+
+    btnRefresh_click: function(){
+        this.refresh(null, null, this);
+    },
+
+    refresh: function (op, callback, scope) {
+        var me = this;
+        async.parallel([
+            function(cb) {
+                var tpMain = me.down('#tpMain');
+                async.forEach(tpMain.items.getRange(), function(autopanel, done){
+                    autopanel.refresh(null, done, me);
+                },cb);
+            }
+        ],
+        function(err, data) {
+            me.refreshUI(op);
+            Ext.callback(callback, scope, [err, null], 1);
+        });
+    },
+
+    refreshUI: function (op) {
     }
 });
 

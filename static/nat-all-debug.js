@@ -4841,7 +4841,7 @@ Ext.define('NAT.viewport.MenuItem', {
     extend: 'Ext.menu.Item',
     alias: 'widget.natviewportmenuitem',
 
-    autopanel: '',
+    panel: '',
 
     initComponent: function () {
         this.callParent(arguments);
@@ -4849,7 +4849,7 @@ Ext.define('NAT.viewport.MenuItem', {
     },
 
     this_click: function(){
-        viewport.showAutoPanel(this.autopanel);
+        viewport.showAutoPanel(this.panel);
     }
 });
 

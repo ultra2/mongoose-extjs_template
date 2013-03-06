@@ -4488,52 +4488,15 @@ Ext.define('NAT.panel.query.Grid', {
         this.down('#gridMain').BindStore(this.store);
 
         this.down('#gridMain').on('select', this.gridMain_select, this);
-        this.down('#btnNew').on('click', this.btnNew_click, this);
-        this.down('#btnDelete').on('click', this.btnDelete_click, this);
-        this.down('#btnSave').on('click', this.btnSave_click, this);
-        this.down('#btnCancel').on('click', this.btnCancel_click, this);
+        this.down('#btnShow').on('click', this.btnShow_click, this);
     },
 
     gridMain_select: function(){
         this.refreshToolbar();
     },
 
-    btnNew_click: function(){
-        if (!this.model) return;
-        var newModel = app.natCreateModel(this.model);
-        newModel.endEdit();
-        this.store.add(newModel);
-    },
-
-    btnDelete_click: function(){
-        var model = this.down('#gridMain').getSelected();
-        this.store.remove(model);
-    },
-
-    btnSave_click: function(){
-        var me = this;
-        async.waterfall([
-            function(cb){
-                me.save(null, cb, me);
-            },
-            function(result, cb){
-                me.refreshUI(null);
-                viewport.refresh(null, cb, me);
-            }
-        ]);
-    },
-
-    btnCancel_click: function(){
-        this.reject();
-        this.refreshUI(null);
-    },
-
-    save: function (op, callback, scope) {
-        this.store.Save(op, callback, scope);
-    },
-
-    reject: function(){
-        this.store.reject();
+    btnShow_click: function(){
+        alert('show');
     },
 
     refresh: function(op, callback, scope) {
@@ -4548,7 +4511,7 @@ Ext.define('NAT.panel.query.Grid', {
         var grid = this.down('#gridMain');
         var model = grid.getSelected();
 
-        this.down('#btnDelete').setDisabled(!model);
+        this.down('#btnShow').setDisabled(!model);
     }
 });
 

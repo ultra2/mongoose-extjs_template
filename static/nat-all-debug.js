@@ -5218,6 +5218,20 @@ Ext.define('NAT.data.PersistentModel', {
     }
 });
 
+Ext.define('NAT.data.QueryModel', {
+    extend: 'NAT.data.Model',
+
+    fields: [
+    ],
+
+    fieldsInfo: [
+    ],
+
+    constructor: function(data, id, raw) {
+        this.callParent(arguments);
+    }
+});
+
 Ext.define('NAT.data.RequestModel', {
     extend: 'NAT.data.Model',
 

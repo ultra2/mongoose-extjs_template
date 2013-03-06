@@ -688,7 +688,7 @@ Ext.define('NAT.form.field.ComboBox', {
 
     this_beforequery: function() {
         this.expand();
-        return false;  //prevent clearFilter() on store, cause we have 'deleted = false' filter
+        return false;  //prevent clearFilter() on store, cause we have '_deleted = false' filter
                        //todo: override combobox's doQuery function to preserve our filter
     },
 
@@ -942,7 +942,7 @@ Ext.define('NAT.form.field.Lookup', {
 
     this_beforequery: function() {
        this.expand();
-       return false;  //prevent clearFilter() on store, cause we have 'deleted = false' filter
+       return false;  //prevent clearFilter() on store, cause we have '_deleted = false' filter
                       //todo: override combobox's doQuery function to preserve our filter
     },
 
@@ -5204,10 +5204,10 @@ Ext.define('NAT.data.PersistentModel', {
     extend: 'NAT.data.Model',
 
     fields: [
-        { name: 'created', type: 'date' },
-        { name: 'modified', type: 'date' },
-        { name: 'version', type: 'int' },
-        { name: 'deleted', type: 'boolean' }
+        { name: '_created', type: 'date' },
+        { name: '_modified', type: 'date' },
+        { name: '_version', type: 'int' },
+        { name: '_deleted', type: 'boolean' }
     ],
 
     fieldsInfo: [
@@ -5662,7 +5662,7 @@ Ext.define('NAT.data.ModelStore', {
         }
         else {
             params = {};
-            params.lastModified = this.currModel.get('modified');
+            params.lastModified = this.currModel.get('_modified');
             params.model = this.getModelName();
             params.id = this.currModel.getId();
         }
@@ -5837,7 +5837,7 @@ Ext.define('NAT.data.Store', {
 
         this.callParent([config]);
 
-//        this.filter('deleted', false);  //snapshot gets wrong!
+//        this.filter('_deleted', false);  //snapshot gets wrong!
 
         //IT DOESN'T WORK, because of prototye inheritance behaviour!!!
         //this.lastParams.entityName = this.model.modelName;
@@ -5974,9 +5974,9 @@ Ext.define('NAT.data.Store', {
 
         for (var i = 0; i < models.length; i++) {
             var model = models[i];
-            var modified = model.get('modified');
-            if (modified > this.lastParams.lastModified) {
-                this.lastParams.lastModified = modified;
+            var _modified = model.get('_modified');
+            if (_modified > this.lastParams.lastModified) {
+                this.lastParams.lastModified = _modified;
             }
         }
     },
@@ -5988,9 +5988,9 @@ Ext.define('NAT.data.Store', {
     },
 
     MergeModel: function (model) {
-        var deleted = model.get('deleted');
+        var _deleted = model.get('_deleted');
         var original = this.getById(model.getId());
-        if (deleted) { //removed node
+        if (_deleted) { //removed node
             if (original) {
                 this.deleteRecord(original);
             }
@@ -6056,7 +6056,7 @@ Ext.define('NAT.data.TreeStore', {
 
         this.callParent([config]);
 
-//        this.filter('deleted', false);  //snapshot get wrong!
+//        this.filter('_deleted', false);  //snapshot get wrong!
 
         //IT DOESN'T WORK, because of prototye inheritance behaviour!!!
         //this.lastParams.entityName = this.model.modelName;
@@ -6188,9 +6188,9 @@ Ext.define('NAT.data.TreeStore', {
 
         for (var i = 0; i < models.length; i++) {
             var model = models[i];
-            var modified = model.get('modified');
-            if (modified > this.lastParams.lastModified) {
-                this.lastParams.lastModified = modified;
+            var _modified = model.get('_modified');
+            if (_modified > this.lastParams.lastModified) {
+                this.lastParams.lastModified = _modified;
             }
         }
     },
@@ -6225,7 +6225,7 @@ Ext.define('NAT.data.TreeStore', {
             var child = children[i];
             child.beginEdit();
             child.set('loaded', true);  //for Extjs compatibility
-            if (!child.get('deleted')) {
+            if (!child.get('_deleted')) {
                 parentNode.beginEdit();
                 parentNode.appendChild(child);
                 parentNode.endEdit(true);
@@ -6284,7 +6284,7 @@ Ext.define('NAT.data.TreeStore', {
     MergeModel: function (model) {
         var parentId = model.get('parentId'),
             index = model.get('index'),
-            deleted = model.get('deleted');
+            _deleted = model.get('_deleted');
 
         if (!parentId) { //root node
             var root = this.getRootNode();
@@ -6309,7 +6309,7 @@ Ext.define('NAT.data.TreeStore', {
         var nodeBefore = parent.getChildAt(index);
 
         var original = this.tree.getNodeById(model.getId());
-        if (deleted) { //removed node
+        if (_deleted) { //removed node
             if (original) {
                 original.isReplace = true; //prevent being added to the removed cache
                 original.parentNode.removeChild(original);

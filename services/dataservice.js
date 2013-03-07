@@ -80,7 +80,7 @@ app.post('/data/update', getModel, function(req, res) {
             req.Model.findOne({_id: req.body._id}).exec(null, cb);
         },
         function(model, cb) {
-            if (Number(model.version) != req.body.version) {
+            if (Number(model._version) != req.body._version) {
                 cb({ message: "Changes you have made have not been saved. \nThis is because the record has been modified by another user." }, null);
                 return;
             }

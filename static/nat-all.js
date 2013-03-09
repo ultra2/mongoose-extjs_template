@@ -5823,6 +5823,8 @@ Ext.define('NAT.data.ModelStore', {
             me.fireEvent('read', me, records, successful);
         }
 
+        me.lastOptions.params.lastModified = model.get('_modified');
+
         //this is a callback that would have been passed to the 'read' function and is optional
         Ext.callback(operation.callback, operation.scope || me, [records, operation, successful]);
     },

@@ -1922,15 +1922,6 @@ Ext.define('natjs.overrides.data.AbstractStore', {
             return me;
         },
 
-        Reset: function(params, silent) {
-            this.removeAll(silent);
-            var defaultParams = {
-                lastModified: new Date(0),
-                collection: this.collection
-            };
-            this.lastParams = Ext.merge(defaultParams, params);
-        },
-
         Load: function (params, callback, scope) {
             if (this.Loading) {
                 Ext.callback(callback, scope, [null, null], 0);
@@ -1940,7 +1931,12 @@ Ext.define('natjs.overrides.data.AbstractStore', {
             this.Loading = true;
 
             if (params) {
-                this.Reset(params);
+                this.removeAll();
+                var defaultParams = {
+                    lastModified: new Date(0),
+                    collection: this.collection
+                };
+                this.lastParams = Ext.merge(defaultParams, params);
             }
 
             var options = {
@@ -2070,14 +2066,6 @@ Ext.define('natjs.overrides.data.AbstractStore', {
 
         hasModel: function() {
             return ((this.currModel) && (typeof this.currModel == 'object'));
-        },
-
-        getModelName: function() {
-            var result = '';
-            if (Ext.isString(this.model)) result = this.model;
-            if (Ext.isFunction(this.model)) result = this.model.$className;
-            if (Ext.isObject(this.model)) result = this.model.$className;
-            return app.GetModelNameWithoutNamespace(result);
         },
 
         updateCurrModel: function() {
@@ -4303,7 +4291,7 @@ Ext.define('NAT.panel.persistent.Form', {
         this.down('#btnClose').setVisible(this.op.command == 'show');
 debugger;
         if (this.op.command == 'show' || this.op.command == 'delete' || this.op.command == 'modify'){
-            this.refresh(null, null, this);
+            this.store.load({ }, callback, scope);
         }
     },
 
@@ -4341,7 +4329,7 @@ debugger;
     },
 
     refresh: function(op, callback, scope) {
-        this.store.Load({ id: this.modelId }, callback, scope);
+        this.store.reload(null, callback, scope);
     },
 
     refreshUI: function(op) {
@@ -5744,7 +5732,7 @@ Ext.define('NAT.data.ModelStore', {
         this.callParent([config]);
 
         if (this.autoLoad) {
-            Ext.defer(this.Load, 10, this);
+            Ext.defer(this.load, 10, this);
         }
         return this;
     },
@@ -5771,35 +5759,45 @@ Ext.define('NAT.data.ModelStore', {
         this.OnCurrentModelChanged();
     },
 
-    Load: function (params, callback, scope) {
-        this.callback = callback;
-        this.scope = scope;
-
-        if (this.Loading) {
-            Ext.callback(this.callback, this.scope, [null, null], 0);
+    load: function(options, callback, scope) {
+        debugger;
+        if (this.Loading){
+            Ext.callback(callback, scope, [null, null], 0);
             return;
         }
 
-        this.loading = true;
-
-        if (params) {
-            params.lastModified = new Date(0);
-            params.model = this.getModelName();
-        }
-        else {
-            params = {};
-            params.lastModified = this.currModel.get('_modified');
-            params.model = this.getModelName();
-            params.id = this.currModel.getId();
+        if (!options.collection || !options.modelId){
+            Ext.callback(callback, scope, [{ message: 'options not valid' }, null], 0);
+            return;
         }
 
-        var operation = Ext.create('Ext.data.Operation', {
-            action: 'read'
-        });
-        this.proxy.read(operation, this.LoadCompleted, this);
+        var me = this,
+            operation;
+
+        options = Ext.apply({
+            action: 'read',
+            lastModified: new Date(0)
+        }, options);
+
+        options = Ext.applyIf({
+            callback: callback,
+            scope: scope
+        }, options);
+
+        me.lastOptions = options;
+
+        operation = new Ext.data.Operation(options);
+
+        if (me.fireEvent('beforeload', me, operation) !== false) {
+            me.loading = true;
+            me.proxy.read(operation, me.onProxyLoad, me);
+        }
+
+        return me;
     },
 
-    LoadCompleted: function (operation) {
+    onProxyLoad: function(operation) {
+        debugger;
         this.loading = false;
         if (operation.success) {
             var model = operation.resultSet.records[0];
@@ -5818,6 +5816,10 @@ Ext.define('NAT.data.ModelStore', {
 
         this.fireEvent('LoadCompleted', operation);
         Ext.callback(this.callback, this.scope, [null, null], 0);
+    },
+
+    reload: function(options) {
+        return this.load(Ext.apply(this.lastOptions, options));
     },
 
     Save: function (op, callback, scope) {

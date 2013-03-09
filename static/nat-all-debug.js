@@ -4227,6 +4227,26 @@ Ext.define('natjs.overrides.String', {
 Ext.define('NAT.panel.Abstract', {
     extend: 'Ext.panel.Panel',
 
+    op: null,
+    callback: null,
+    scope: null,
+    result: null,
+
+    initComponent: function(){
+        this.callParent(arguments);
+        this.down('#btnClose').on('click', this.btnClose_click, this);
+    },
+
+    this_close: function() {
+        Ext.callback(this.callback, this.scope, [null, this.result], 0);
+    },
+
+    showPanel: function(op, callback, scope) {
+        this.op = op || {};
+        this.callback = callback;
+        this.scope = scope;
+    },
+
     refresh: function(op, callback, scope) {
         Ext.callback(callback, scope, [null, null], 1);
     },
@@ -4271,9 +4291,18 @@ Ext.define('NAT.panel.persistent.Form', {
     },
 
     showPanel: function(op, callback, scope) {
-//        this.modelId = op.modelId;
-//        this.refresh(null, callback, scope);
-        Ext.callback(callback, scope, [null,null], 0);
+        this.callParent(arguments);
+
+        Ext.applyIf(this.op, { command: 'new' });
+
+        this.down('#btnDelete').setVisible(this.op.command = 'delete');
+        this.down('#btnSave').setVisible(this.op.command in ['delete', 'modify']);
+        this.down('#btnCancel').setVisible(true);
+        this.down('#btnClose').setVisible(this.op.command = 'show');
+
+//        if (this.op.command in ['delete', 'modify']){
+//            this.refresh(null, null, this);
+//        }
     },
 
     btnDelete_click: function(){
@@ -4351,7 +4380,8 @@ Ext.define('NAT.panel.persistent.Grid', {
     },
 
     showPanel: function(op, callback, scope) {
-        this.refresh(null, callback, scope);
+        this.callParent(arguments);
+        this.refresh(null, null, this);
     },
 
     gridMain_select: function(){
@@ -4443,7 +4473,8 @@ Ext.define('NAT.panel.persistent.Tree', {
     },
 
     showPanel: function(op, callback, scope) {
-        this.refresh(null, callback, scope);
+        this.callParent(arguments);
+        this.refresh(null, null, this);
     },
 
     treeMain_select: function(){
@@ -4549,6 +4580,7 @@ Ext.define('NAT.panel.query.Grid', {
     alias: 'widget.natpqgrid',
 
     model: '',
+    formpanel: null,
 
     store: null,
 
@@ -4577,7 +4609,8 @@ Ext.define('NAT.panel.query.Grid', {
     },
 
     btnShow_click: function(){
-        alert('show');
+        debugger;
+        viewport.showPanel({ panel: this.formpanel }, null, this);
     },
 
     refresh: function(op, callback, scope) {

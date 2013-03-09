@@ -5772,8 +5772,7 @@ Ext.define('NAT.data.ModelStore', {
         options = Ext.applyIf({
             action: 'read',
             callback: callback,
-            scope: scope,
-            params: {}
+            scope: scope
         }, options);
 
         options.params.lastModified = options.params.lastModified || new Date(0);

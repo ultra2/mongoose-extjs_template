@@ -5771,7 +5771,7 @@ Ext.define('NAT.data.ModelStore', {
         var me = this;
 
         options.params.lastModified = new Date(0);
-        
+
         options = Ext.applyIf({
             action: 'read',
             callback: callback,
@@ -5791,9 +5791,12 @@ Ext.define('NAT.data.ModelStore', {
     },
 
     onProxyLoad: function(operation) {
-        debugger;
-        this.loading = false;
-        if (operation.success) {
+        var me = this,
+            resultSet = operation.getResultSet(),
+            records = operation.getRecords(),
+            successful = operation.wasSuccessful();
+
+        if (successful) {
             var model = operation.resultSet.records[0];
             if (model) {
                 if (this.hasModel() && (this.currModel.getId() == model.getId())) {
@@ -5806,10 +5809,22 @@ Ext.define('NAT.data.ModelStore', {
                     this.currModel.commit();
                 }
             }
+            me.fireEvent('datachanged', me);
+            me.fireEvent('refresh', me);
         }
 
-        this.fireEvent('LoadCompleted', operation);
-        Ext.callback(this.callback, this.scope, [null, null], 0);
+        me.loading = false;
+
+        if (me.hasListeners.load) {
+            me.fireEvent('load', me, records, successful);
+        }
+
+        if (me.hasListeners.read) {
+            me.fireEvent('read', me, records, successful);
+        }
+
+        //this is a callback that would have been passed to the 'read' function and is optional
+        Ext.callback(operation.callback, operation.scope || me, [records, operation, successful]);
     },
 
     reload: function(options) {

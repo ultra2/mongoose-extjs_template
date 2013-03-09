@@ -4604,6 +4604,11 @@ Ext.define('NAT.panel.query.Grid', {
         this.down('#btnShow').on('click', this.btnShow_click, this);
     },
 
+    showPanel: function(op, callback, scope) {
+        this.callParent(arguments);
+        this.refresh(null, null, this);
+    },
+    
     gridMain_select: function(){
         this.refreshToolbar();
     },

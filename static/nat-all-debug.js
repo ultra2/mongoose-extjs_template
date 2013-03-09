@@ -4614,8 +4614,7 @@ Ext.define('NAT.panel.query.Grid', {
     },
 
     btnShow_click: function(){
-        debugger;
-        viewport.showPanel({ panel: this.formpanel }, null, this);
+        viewport.showPanel({ panel: this.formpanel, command: 'show' }, null, this);
     },
 
     refresh: function(op, callback, scope) {

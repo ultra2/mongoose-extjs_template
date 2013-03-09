@@ -4287,7 +4287,7 @@ Ext.define('NAT.panel.persistent.Form', {
         this.down('#btnSave').setVisible(this.op.command == 'delete' || this.op.command == 'modify');
         this.down('#btnCancel').setVisible(true);
         this.down('#btnClose').setVisible(this.op.command == 'show');
-debugger;
+
         if (this.op.command == 'show' || this.op.command == 'delete' || this.op.command == 'modify'){
             this.store.load({ params: {collection: this.model, id: this.modelId }}, callback, scope);
         }
@@ -5757,7 +5757,6 @@ Ext.define('NAT.data.ModelStore', {
     },
 
     load: function(options, callback, scope) {
-        debugger;
         if (this.Loading){
             Ext.callback(callback, scope, [null, null], 0);
             return;
@@ -5830,6 +5829,7 @@ Ext.define('NAT.data.ModelStore', {
     },
 
     reload: function(options) {
+        debugger;
         return this.load(Ext.apply(this.lastOptions, options));
     },
 

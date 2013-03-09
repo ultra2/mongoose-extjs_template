@@ -5768,19 +5768,19 @@ Ext.define('NAT.data.ModelStore', {
             return;
         }
 
-        var me = this,
-            operation;
+        var me = this;
 
+        options.params.lastModified = new Date(0);
+        
         options = Ext.applyIf({
             action: 'read',
-            lastModified: new Date(0),
             callback: callback,
             scope: scope
         }, options);
 
         me.lastOptions = options;
 
-        operation = new Ext.data.Operation(options);
+        var operation = new Ext.data.Operation(options);
 
         if (me.fireEvent('beforeload', me, operation) !== false) {
             me.loading = true;

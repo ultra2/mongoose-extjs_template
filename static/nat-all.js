@@ -4258,9 +4258,7 @@ Ext.define('NAT.panel.persistent.Form', {
 
     constructor : function(config) {
         if (!this.designMode){
-            this.store = Ext.create('NAT.data.ModelStore', {
-                collection: this.model
-            });
+            this.store = Ext.create('NAT.data.ModelStore');
         }
         this.callParent([config]);  //it calls initComponent
     },
@@ -4291,7 +4289,7 @@ Ext.define('NAT.panel.persistent.Form', {
         this.down('#btnClose').setVisible(this.op.command == 'show');
 debugger;
         if (this.op.command == 'show' || this.op.command == 'delete' || this.op.command == 'modify'){
-            this.store.load({ }, callback, scope);
+            this.store.load({ collection: this.model, modelId: this.modelId }, callback, scope);
         }
     },
 
@@ -5708,8 +5706,7 @@ Ext.define('NAT.data.ModelStore', {
         'Ext.data.writer.Writer'
     ],
 
-    callback: null,
-    scope: null,
+    lastOptions: null,
     currModel: null,
     proxy: null,
     autoLoad: false,

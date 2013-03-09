@@ -4234,7 +4234,7 @@ Ext.define('NAT.panel.Abstract', {
 
     initComponent: function(){
         this.callParent(arguments);
-        this.down('#btnClose').on('click', this.btnClose_click, this);
+        this.on('close', this.this_close, this);
     },
 
     this_close: function() {
@@ -4608,7 +4608,7 @@ Ext.define('NAT.panel.query.Grid', {
         this.callParent(arguments);
         this.refresh(null, null, this);
     },
-    
+
     gridMain_select: function(){
         this.refreshToolbar();
     },

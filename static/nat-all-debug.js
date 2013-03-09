@@ -5776,9 +5776,7 @@ Ext.define('NAT.data.ModelStore', {
             params: {}
         }, options);
 
-        options.params = Ext.applyIf({
-            lastModified: new Date(0)
-        }, options.params);
+        options.params.lastModified = options.params.lastModified || new Date(0);
 
         me.lastOptions = options;
 

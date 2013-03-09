@@ -4297,14 +4297,14 @@ Ext.define('NAT.panel.persistent.Form', {
 
         this.modelId = this.op.modelId;
 
-        this.down('#btnDelete').setVisible(this.op.command = 'delete');
-        this.down('#btnSave').setVisible(this.op.command in ['delete', 'modify']);
+        this.down('#btnDelete').setVisible(this.op.command == 'delete');
+        this.down('#btnSave').setVisible(this.op.command == 'delete' || this.op.command == 'modify');
         this.down('#btnCancel').setVisible(true);
-        this.down('#btnClose').setVisible(this.op.command = 'show');
+        this.down('#btnClose').setVisible(this.op.command == 'show');
 debugger;
-//        if (this.op.command in ['delete', 'modify']){
-//            this.refresh(null, null, this);
-//        }
+        if (this.op.command == 'show' || this.op.command == 'delete' || this.op.command == 'modify'){
+            this.refresh(null, null, this);
+        }
     },
 
     btnDelete_click: function(){

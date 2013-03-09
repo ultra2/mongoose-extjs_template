@@ -42,7 +42,7 @@ app.get('/data/readOne', getModel, function(req, res) {
         if (err)
             res.send(JSON.stringify({ data: null, total: 0, success: false, message: err.message }, null, 4));
         else
-            res.send(JSON.stringify({ data: [data], total: [data].length, success: true, message: 'ok' }, null, 4));
+            res.send(JSON.stringify({ data: data, total: (data) ? 1:0, success: true, message: 'ok' }, null, 4));
     });
 });
 

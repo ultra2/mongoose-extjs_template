@@ -5771,10 +5771,11 @@ Ext.define('NAT.data.ModelStore', {
         var me = this,
             operation;
 
-        options = Ext.apply({
+        options.params = options.params || {};
+        options.params = Ext.apply({
             action: 'read',
             lastModified: new Date(0)
-        }, options);
+        }, options.params);
 
         options = Ext.applyIf({
             callback: callback,

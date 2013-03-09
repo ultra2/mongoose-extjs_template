@@ -5769,13 +5769,16 @@ Ext.define('NAT.data.ModelStore', {
 
         var me = this;
 
-        options.params.lastModified = new Date(0);
-
         options = Ext.applyIf({
             action: 'read',
             callback: callback,
-            scope: scope
+            scope: scope,
+            params: {}
         }, options);
+
+        options.params = Ext.applyIf({
+            lastModified: new Date(0)
+        }, options.params);
 
         me.lastOptions = options;
 
@@ -5829,7 +5832,6 @@ Ext.define('NAT.data.ModelStore', {
     },
 
     reload: function(options) {
-        debugger;
         return this.load(Ext.apply(this.lastOptions, options));
     },
 

@@ -5763,7 +5763,7 @@ Ext.define('NAT.data.ModelStore', {
             return;
         }
 
-        if (!options.collection || !options.modelId){
+        if (!options || !options.params || !options.params.collection || !options.params.id){
             Ext.callback(callback, scope, [{ message: 'options not valid' }, null], 0);
             return;
         }

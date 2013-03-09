@@ -4295,11 +4295,13 @@ Ext.define('NAT.panel.persistent.Form', {
 
         Ext.applyIf(this.op, { command: 'new' });
 
+        this.modelId = this.op.modelId;
+
         this.down('#btnDelete').setVisible(this.op.command = 'delete');
         this.down('#btnSave').setVisible(this.op.command in ['delete', 'modify']);
         this.down('#btnCancel').setVisible(true);
         this.down('#btnClose').setVisible(this.op.command = 'show');
-
+debugger;
 //        if (this.op.command in ['delete', 'modify']){
 //            this.refresh(null, null, this);
 //        }
@@ -4614,7 +4616,8 @@ Ext.define('NAT.panel.query.Grid', {
     },
 
     btnShow_click: function(){
-        viewport.showPanel({ panel: this.formpanel, command: 'show' }, null, this);
+        var model = grid.getSelected();
+        viewport.showPanel({ panel: this.formpanel, command: 'show', modelId: model.getId() }, null, this);
     },
 
     refresh: function(op, callback, scope) {

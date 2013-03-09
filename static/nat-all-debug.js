@@ -4236,19 +4236,94 @@ Ext.define('NAT.panel.Abstract', {
 });
 
 Ext.define('NAT.panel.persistent.Abstract', {
-    extend: 'NAT.panel.Abstract'
+    extend: 'NAT.panel.Abstract',
+
+    model: ''
 });
 
 Ext.define('NAT.panel.persistent.Form', {
     extend: 'NAT.panel.persistent.Abstract',
-    alias: 'widget.natppform'
+    alias: 'widget.natppform',
+
+    store: null,
+    modelId: null,
+
+    constructor : function(config) {
+        if (!this.designMode){
+            this.store = Ext.create('NAT.data.ModelStore', {
+                collection: this.model
+            });
+        }
+        this.callParent([config]);  //it calls initComponent
+    },
+
+    initComponent: function(){
+        this.callParent(arguments);
+
+        if (this.designMode) return;
+
+        this.down('#frmMain').BindStore(this.store);
+
+        this.down('#btnDelete').on('click', this.btnDelete_click, this);
+        this.down('#btnSave').on('click', this.btnSave_click, this);
+        this.down('#btnCancel').on('click', this.btnCancel_click, this);
+        this.down('#btnClose').on('click', this.btnClose_click, this);
+    },
+
+    showPanel: function(op, callback, scope) {
+//        this.modelId = op.modelId;
+//        this.refresh(null, callback, scope);
+        Ext.callback(callback, scope, [null,null], 0);
+    },
+
+    btnDelete_click: function(){
+    },
+
+    btnSave_click: function(){
+        var me = this;
+        async.waterfall([
+            function(cb){
+                me.save(null, cb, me);
+            },
+            function(result, cb){
+                me.refreshUI(null);
+                viewport.refresh(null, cb, me);
+            }
+        ]);
+    },
+
+    btnCancel_click: function(){
+        this.reject();
+        this.refreshUI(null);
+    },
+
+    btnClose_click: function(){
+        this.close();
+    },
+
+    save: function (op, callback, scope) {
+        this.store.Save(op, callback, scope);
+    },
+
+    reject: function(){
+        this.store.reject();
+    },
+
+    refresh: function(op, callback, scope) {
+        this.store.Load({ id: this.modelId }, callback, scope);
+    },
+
+    refreshUI: function(op) {
+        this.refreshToolbar();
+    },
+
+    refreshToolbar: function () {
+    }
 });
 
 Ext.define('NAT.panel.persistent.Grid', {
     extend: 'NAT.panel.persistent.Abstract',
     alias: 'widget.natppgrid',
-
-    model: '',
 
     store: null,
 
@@ -4273,6 +4348,10 @@ Ext.define('NAT.panel.persistent.Grid', {
         this.down('#btnDelete').on('click', this.btnDelete_click, this);
         this.down('#btnSave').on('click', this.btnSave_click, this);
         this.down('#btnCancel').on('click', this.btnCancel_click, this);
+    },
+
+    showPanel: function(op, callback, scope) {
+        this.refresh(null, callback, scope);
     },
 
     gridMain_select: function(){
@@ -4337,8 +4416,6 @@ Ext.define('NAT.panel.persistent.Tree', {
     extend: 'NAT.panel.persistent.Abstract',
     alias: 'widget.natpptree',
 
-    model: '',
-
     store: null,
 
     constructor : function(config) {
@@ -4363,6 +4440,10 @@ Ext.define('NAT.panel.persistent.Tree', {
         this.down('#btnSave').on('click', this.btnSave_click, this);
         this.down('#btnCancel').on('click', this.btnCancel_click, this);
         this.down('#btnExpandAll').on('click', this.btnExpandAll, this);
+    },
+
+    showPanel: function(op, callback, scope) {
+        this.refresh(null, callback, scope);
     },
 
     treeMain_select: function(){
@@ -4849,7 +4930,7 @@ Ext.define('NAT.viewport.MenuItem', {
     },
 
     this_click: function(){
-        viewport.showAutoPanel(this.panel);
+        viewport.showPanel({ panel: this.panel }, null, this);
     }
 });
 
@@ -4862,19 +4943,19 @@ Ext.define('NAT.viewport.Tabbed', {
         this.down('#btnRefresh').on('click', this.btnRefresh_click, this);
     },
 
-    showAutoPanel: function(autopanel){
-        autopanel = Ext.create('widget.' + autopanel);
+    showPanel: function(op, callback, scope) {
+        var panel = Ext.create('widget.' + op.panel);
         var tpMain = this.down('#tpMain');
-        tpMain.add(autopanel);
-        tpMain.setActiveTab(autopanel);
-        autopanel.refresh(null, null, this);
+        tpMain.add(panel);
+        tpMain.setActiveTab(panel);
+        panel.showPanel(op, callback, scope);
     },
 
     btnRefresh_click: function(){
         this.refresh(null, null, this);
     },
 
-    refresh: function (op, callback, scope) {
+    refresh: function(op, callback, scope) {
         var me = this;
         async.parallel([
             function(cb) {

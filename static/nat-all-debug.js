@@ -5807,9 +5807,10 @@ Ext.define('NAT.data.ModelStore', {
                     this.currModel.set('loaded', true);
                     this.currModel.commit();
                 }
+                me.lastOptions.params.lastModified = model.get('_modified');
+                me.fireEvent('datachanged', me);
+                me.fireEvent('refresh', me);
             }
-            me.fireEvent('datachanged', me);
-            me.fireEvent('refresh', me);
         }
 
         me.loading = false;
@@ -5821,8 +5822,6 @@ Ext.define('NAT.data.ModelStore', {
         if (me.hasListeners.read) {
             me.fireEvent('read', me, records, successful);
         }
-
-        me.lastOptions.params.lastModified = model.get('_modified');
 
         //this is a callback that would have been passed to the 'read' function and is optional
         Ext.callback(operation.callback, operation.scope || me, [records, operation, successful]);

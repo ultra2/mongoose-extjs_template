@@ -4616,6 +4616,7 @@ Ext.define('NAT.panel.query.Grid', {
     },
 
     btnShow_click: function(){
+        var grid = this.down('#gridMain');
         var model = grid.getSelected();
         viewport.showPanel({ panel: this.formpanel, command: 'show', modelId: model.getId() }, null, this);
     },

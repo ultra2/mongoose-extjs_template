@@ -4289,7 +4289,7 @@ Ext.define('NAT.panel.persistent.Form', {
         this.down('#btnClose').setVisible(this.op.command == 'show');
 debugger;
         if (this.op.command == 'show' || this.op.command == 'delete' || this.op.command == 'modify'){
-            this.store.load({ collection: this.model, modelId: this.modelId }, callback, scope);
+            this.store.load({ params: {collection: this.model, id: this.modelId }}, callback, scope);
         }
     },
 
@@ -5771,13 +5771,9 @@ Ext.define('NAT.data.ModelStore', {
         var me = this,
             operation;
 
-        options.params = options.params || {};
-        options.params = Ext.apply({
-            action: 'read',
-            lastModified: new Date(0)
-        }, options.params);
-
         options = Ext.applyIf({
+            action: 'read',
+            lastModified: new Date(0),
             callback: callback,
             scope: scope
         }, options);

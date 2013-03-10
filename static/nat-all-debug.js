@@ -619,12 +619,24 @@ Ext.define('NAT.form.field.Checkbox', {
     extend: 'Ext.form.field.Checkbox',
     alias: 'widget.natcheckboxfield',
 
-    propertyPath: ''
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
+    propertyPath: '',
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
 });
 
 Ext.define('NAT.form.field.ComboBox', {
     extend: 'Ext.form.field.ComboBox',
     alias: 'widget.natcombobox',
+
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
 
     propertyPath: '',
 
@@ -694,6 +706,10 @@ Ext.define('NAT.form.field.ComboBox', {
 
     BindStore: function(store) {
         this.bindStore(store);
+    },
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
     }
 });
 
@@ -701,21 +717,45 @@ Ext.define('NAT.form.field.Date', {
     extend: 'Ext.form.field.Date',
     alias: 'widget.natdatefield',
 
-    propertyPath: ''
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
+    propertyPath: '',
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
 });
 
 Ext.define('NAT.form.field.Display', {
     extend: 'Ext.form.field.Display',
     alias: 'widget.natdisplayfield',
 
-    propertyPath: ''
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
+    propertyPath: '',
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
 });
 
 Ext.define('NAT.form.field.File', {
     extend: 'Ext.form.field.File',
     alias: 'widget.natfilefield',
 
-    propertyPath: ''
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
+    propertyPath: '',
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
 });
 
 Ext.define('NAT.form.field.Function', {
@@ -724,6 +764,10 @@ Ext.define('NAT.form.field.Function', {
     requires: [
         'NAT.edit.Source'
     ],
+
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
 
     propertyPath: '',
 
@@ -894,6 +938,10 @@ Ext.define('NAT.form.field.Function', {
 
     isValid : function() {
         return true;
+    },
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
     }
 });
 
@@ -901,19 +949,39 @@ Ext.define('NAT.form.field.Hidden', {
     extend: 'Ext.form.field.Hidden',
     alias: 'widget.nathiddenfield',
 
-    propertyPath: ''
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
+    propertyPath: '',
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
 });
 
 Ext.define('NAT.form.field.HtmlEditor', {
     extend: 'Ext.form.field.HtmlEditor',
     alias: 'widget.htmleditor',
 
-    propertyPath: ''
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
+    propertyPath: '',
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
 });
 
 Ext.define('NAT.form.field.Lookup', {
     extend: 'Ext.form.field.ComboBox',
     alias: 'widget.natlookupfield',
+
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
 
     propertyPath: '',
 
@@ -969,6 +1037,10 @@ Ext.define('NAT.form.field.Lookup', {
 //                this.deferredBind = true;
 //                this.deferredBindStore = store;
 //            }
+    },
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
     }
 });
 
@@ -978,6 +1050,10 @@ Ext.define('NAT.form.field.Object', {
     requires: [
         'NAT.edit.Source'
     ],
+
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
 
     propertyPath: '',
 
@@ -1124,6 +1200,10 @@ Ext.define('NAT.form.field.Object', {
 
     isValid : function() {
         return true;
+    },
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
     }
 });
 
@@ -1131,13 +1211,25 @@ Ext.define('NAT.form.field.Radio', {
     extend: 'Ext.form.field.Radio',
     alias: 'widget.natradiofield',
 
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
     propertyPath: '',
-    propertyValue: ''
+    propertyValue: '',
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
 });
 
     Ext.define('NAT.form.field.StringArray', {
     extend: 'Ext.form.field.TextArea',
     alias: 'widget.natstringarrayfield',
+
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
 
     propertyPath: '',
 
@@ -1158,6 +1250,10 @@ Ext.define('NAT.form.field.Radio', {
             if (value.length > i) result += ',';
         }
         this.callParent([result]);
+    },
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
     }
 });
 
@@ -1167,6 +1263,10 @@ Ext.define('NAT.form.field.StringArrayPicker', {
     requires: [
         'Ext.form.field.TextArea'
     ],
+
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
 
     propertyPath: '',
 
@@ -1270,6 +1370,10 @@ Ext.define('NAT.form.field.StringArrayPicker', {
             me.inputEl.dom.value = 'String Array...';
         }
         return value;
+    },
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
     }
 });
 
@@ -1277,13 +1381,24 @@ Ext.define('NAT.form.field.Text', {
     extend: 'Ext.form.field.Text',
     alias: 'widget.nattextfield',
 
+    validateOnChange: false,
+    validateOnBlur: false,
     msgTarget: 'side',
-    propertyPath: ''
+
+    propertyPath: '',
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
 });
 
 Ext.define('NAT.form.field.TextArea', {
     extend: 'Ext.form.field.TextArea',
     alias: 'widget.nattextarea',
+
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
 
     propertyPath: '',
 
@@ -1299,6 +1414,10 @@ Ext.define('NAT.form.field.TextArea', {
     Writeln: function(line) {
         var  value = this.getValue();
         this.setValue(value + line + ' \n');
+    },
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
     }
 });
 
@@ -1306,14 +1425,30 @@ Ext.define('NAT.form.field.Time', {
     extend: 'Ext.form.field.Time',
     alias: 'widget.nattimefield',
 
-    propertyPath: ''
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
+    propertyPath: '',
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
 });
 
 Ext.define('NAT.form.field.Trigger', {
     extend: 'Ext.form.field.Trigger',
     alias: 'widget.nattriggerfield',
 
-    propertyPath: ''
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
+    propertyPath: '',
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
 });
 
 Ext.define('NAT.form.Panel', {
@@ -1874,222 +2009,6 @@ Ext.define('natjs.overrides.container.Container', {
     });
 });
 
-Ext.define('natjs.overrides.data.AbstractStore', {
-    requires: ['Ext.data.AbstractStore']
-}, function() {
-    Ext.override(Ext.data.AbstractStore, {
-
-        currModel: null,
-        Loading: false,
-        Saving: false,
-
-        sync: function(options) {
-            var me = this,
-                operations = {},
-                toCreate = me.getNewRecords(),
-                toUpdate = me.getUpdatedRecords(),
-                toDestroy = me.getRemovedRecords(),
-                needsSync = false;
-
-            if (toCreate.length > 0) {
-                operations.create = toCreate;
-                needsSync = true;
-            }
-
-            if (toUpdate.length > 0) {
-                operations.update = toUpdate;
-                needsSync = true;
-            }
-
-            if (toDestroy.length > 0) {
-                operations.destroy = toDestroy;
-                needsSync = true;
-            }
-
-            me.needsSync = false; //IZS
-
-            if (needsSync && me.fireEvent('beforesync', operations) !== false) {
-                options = options || {};
-
-                me.needsSync = true; //IZS
-
-                me.proxy.batch(Ext.apply(options, {
-                    operations: operations,
-                    listeners: me.getBatchListeners()
-                }));
-            }
-
-            return me;
-        },
-
-        Load: function (params, callback, scope) {
-            if (this.Loading) {
-                Ext.callback(callback, scope, [null, null], 0);
-                return;
-            }
-
-            this.Loading = true;
-
-            if (params) {
-                this.removeAll();
-                var defaultParams = {
-                    lastModified: new Date(0),
-                    collection: this.collection
-                };
-                this.lastParams = Ext.merge(defaultParams, params);
-            }
-
-            var options = {
-                addRecords: true,
-                params: this.lastParams,
-                scope: this,
-                callback: function (models, operation, success) {
-                    this.Loading = false;
-                    this.ProcessResponse(models, operation, success);
-                    this.fireEvent('LoadCompleted', models, operation, success);
-                    Ext.callback(callback, scope, [null, null], 0);
-                }
-            };
-
-            this.load(options);
-        },
-
-        Save: function (op, callback, scope) {
-            if (this.Saving) {
-                Ext.callback(callback, scope, [null, null], 0);
-                return;
-            }
-
-            this.Saving = true;
-
-            var me = this;
-            async.waterfall([
-                function(cb){
-                    me.ValidateChangedModels(null, cb, me);
-                },
-                function(result, cb){
-                    var options = {};
-                    options.scope = me;
-                    options.success = function(batch, options) {
-                        cb(null, options);
-                    };
-                    options.failure = function(batch, options) {
-                        cb('failure', options);
-                    };
-                    me.sync(options);
-                    options.needsSync = me.needsSync;
-                    if (!options.needsSync){
-                        cb(null, options);
-                        return;
-                    }
-                    if ((options.needsSync) && (!options.preventLoadingMask)) {
-                        app.ShowLoadingMask();
-                    }
-                }
-            ], function(err, options) {
-                me.Saving = false;
-
-                if (err) {
-                    alert("validation error, field: " + err.getAt(0).field);
-                }
-                options = options || {};
-                if ((options.needsSync) && (!options.preventLoadingMask)) {
-                    app.HideLoadingMask();
-                }
-
-                me.fireEvent('SaveCompleted', options);
-                Ext.callback(callback, scope, [null, options], 0);
-            });
-        },
-
-        filterNew: function(item) {
-            return (item.IsNew()) && (item.isNATValid);
-        },
-        filterNewAll: function(item) {
-            return item.IsNew();
-        },
-        filterUpdated: function(item) {
-            return (!item.IsNew()) && (item.isNATDirty ) && (item.isNATValid);
-        },
-        filterUpdatedAll: function(item) {
-            return (!item.IsNew()) && (item.isNATDirty );
-        },
-
-        GetChangedModels: function () {
-            return Ext.Array.union(this.getNewRecords(), this.getUpdatedRecords(), this.getRemovedRecords());
-        },
-        GetChangedModelsAll: function () {
-            return Ext.Array.union(this.getNewRecordsAll(), this.getUpdatedRecordsAll(), this.getRemovedRecords());
-        },
-
-        IsChanged: function () {
-            return (this.GetChangedModelsAll().length != 0);
-        },
-
-        ValidateChangedModels: function(op, callback, scope) {
-            async.forEach(this.GetChangedModelsAll(), function(model, done) {
-                model.ValidateModel(null, done, model);
-            },
-            function(err){
-                Ext.callback(callback, scope, [err, null], 0);
-            });
-        },
-
-        Select: function (model, suppressEvent) {
-            if (this.currModel == model) return;
-
-            if (!suppressEvent) {
-                this.OnSelect(this.currModel, model);
-            }
-
-            this.currModel = model;
-
-            if (!suppressEvent) {
-                this.OnCurrentModelChanged();
-            }
-        },
-
-        Deselect: function (suppressEvent) {
-            if (this.Loading) return;
-            if (this.currModel == null) return;
-
-            if (!suppressEvent) {
-                this.OnDeselect(this.currModel);
-            }
-
-            this.currModel = null;
-
-            if (!suppressEvent) {
-                this.OnCurrentModelChanged();
-            }
-        },
-
-        hasModel: function() {
-            return ((this.currModel) && (typeof this.currModel == 'object'));
-        },
-
-        updateCurrModel: function() {
-        },
-
-        OnSelect: function(oldModel, newModel) {
-            this.fireEvent('select', oldModel, newModel);
-        },
-
-        OnDeselect: function(oldModel) {
-            this.fireEvent('deselect', oldModel);
-        },
-
-        //model calls it from callStore
-        OnModelDirtyChanged: function (model){
-            this.fireEvent('modeldirtychanged', model);
-        },
-
-        OnCurrentModelChanged: function () {
-            this.fireEvent('currentmodelchanged', this.currModel);
-        }
-    });
-});
-
 Ext.define('natjs.overrides.data.BelongsToAssociation', {
     requires: ['Ext.data.BelongsToAssociation']
 }, function() {
@@ -2345,94 +2264,6 @@ Ext.define('natjs.overrides.data.HasManyAssociation', {
     });
 });
 
-Ext.define('natjs.overrides.data.TreeStore', {
-    requires: ['Ext.data.TreeStore']
-}, function() {
-    Ext.override(Ext.data.TreeStore, {
-
-        load: function (options) {
-            options = options || {};
-            options.params = options.params || {};
-
-            var me = this;
-            return Ext.data.TreeStore.superclass.load.call(this, options);
-        },
-
-        setRootNode: function(root, /* private */ preventLoad) {
-            var me = this,
-                model = me.model,
-                idProperty = model.prototype.idProperty
-
-            root = root || {};
-            if (!root.isModel) {
-                // create a default rootNode and create internal data struct.
-                Ext.applyIf(root, {
-                    id: me.defaultRootId,
-                    text: 'Root',
-                    allowDrag: false
-                });
-                if (root[idProperty] === undefined) {
-                    root[idProperty] = me.defaultRootId;
-                }
-                Ext.data.NodeInterface.decorate(model);
-                root = Ext.ModelManager.create(root, model);
-            } else if (root.isModel && !root.isNode) {
-                Ext.data.NodeInterface.decorate(model);
-            }
-
-            //IZS: to force decoration in setRootNode, appendChild ect:
-            Ext.data.NodeInterface.decorate(root);
-            //IZS end
-
-
-            // Because we have decorated the model with new fields,
-            // we need to build new extactor functions on the reader.
-            me.getProxy().getReader().buildExtractors(true);
-
-            // When we add the root to the tree, it will automaticaly get the NodeInterface
-            me.tree.setRootNode(root);
-
-            // If the user has set expanded: true on the root, we want to call the expand function
-            if (preventLoad !== true && !root.isLoaded() && (me.autoLoad === true || root.isExpanded())) {
-                me.load({
-                    node: root
-                });
-            }
-
-            //IZS begin
-            root.join(this);
-            //IZS end
-
-            return root;
-        }
-    });
-});
-
-Ext.define('natjs.overrides.data.Store', {
-    requires: ['Ext.data.Store']
-}, function() {
-    Ext.override(Ext.data.Store, {
-
-        GetModelByPropertyValue: function(propName, propValue, onlyFirst) {
-            var result = [];
-            for (var i = 0; i < this.getCount(); i++) {
-                var m = this.getAt(i);
-                if (m.get(propName) == propValue) {
-                    if (onlyFirst) return m;
-                    result.push(m);
-                }
-            }
-            return result;
-        },
-
-        GetModelIdByPropertyValue: function(propName, propValue) {
-            var m = this.GetModelByPropertyValue(propName, propValue, true);
-            if (m) return m.getId();
-            return null;
-        }
-    });
-});
-
 Ext.define('natjs.overrides.data.validations', {
     requires: ['Ext.data.validations']
 }, function() {
@@ -2446,29 +2277,6 @@ Ext.define('natjs.overrides.data.validations', {
         }
         return null;
     }
-});
-
-Ext.define('natjs.overrides.form.field.Field', {
-    requires: ['Ext.form.field.Base']
-}, function() {
-    Ext.override(Ext.form.field.Base, {
-
-        validateOnChange: false,
-        validateOnBlur: false,
-        msgTarget: 'side',
-
-        propertyPath: '',
-
-        hasErrors: function() {
-            return ((this.activeErrors) && (this.activeErrors.length > 0));
-        }
-
-//    getErrors: function(value) {
-//        var errors = [];
-//        this.fireEvent('getErrors', this, value, errors);
-//        return errors;
-//    }
-    });
 });
 
 Ext.define('natjs.overrides.grid.CellEditor', {
@@ -4258,7 +4066,9 @@ Ext.define('NAT.panel.persistent.Form', {
 
     constructor : function(config) {
         if (!this.designMode){
-            this.store = Ext.create('NAT.data.ModelStore');
+            this.store = Ext.create('NAT.data.ModelStore', {
+                collection: this.model
+            });
         }
         this.callParent([config]);  //it calls initComponent
     },
@@ -4289,7 +4099,7 @@ Ext.define('NAT.panel.persistent.Form', {
         this.down('#btnClose').setVisible(this.op.command == 'show');
 
         if (this.op.command == 'show' || this.op.command == 'delete' || this.op.command == 'modify'){
-            this.store.load({ params: {collection: this.model, id: this.modelId }}, callback, scope);
+            this.store.load({ params: { id: this.modelId }}, callback, scope);
         }
     },
 
@@ -4319,7 +4129,7 @@ Ext.define('NAT.panel.persistent.Form', {
     },
 
     save: function (op, callback, scope) {
-        this.store.Save(op, callback, scope);
+        this.store.save(op, callback, scope);
     },
 
     reject: function(){
@@ -4369,7 +4179,7 @@ Ext.define('NAT.panel.persistent.Grid', {
 
     showPanel: function(op, callback, scope) {
         this.callParent(arguments);
-        this.refresh(null, null, this);
+        this.load(null, null, this);
     },
 
     gridMain_select: function(){
@@ -4407,7 +4217,7 @@ Ext.define('NAT.panel.persistent.Grid', {
     },
 
     save: function (op, callback, scope) {
-        this.store.Save(op, callback, scope);
+        this.store.save(op, callback, scope);
     },
 
     reject: function(){
@@ -4415,7 +4225,7 @@ Ext.define('NAT.panel.persistent.Grid', {
     },
 
     refresh: function(op, callback, scope) {
-        this.store.Load(op, callback, scope);
+        this.store.reload(op, callback, scope);
     },
 
     refreshUI: function(op) {
@@ -4540,7 +4350,7 @@ Ext.define('NAT.panel.persistent.Tree', {
     },
 
     save: function (op, callback, scope) {
-        this.store.Save(op, callback, scope);
+        this.store.save(op, callback, scope);
     },
 
     refresh: function(op, callback, scope) {
@@ -4594,7 +4404,7 @@ Ext.define('NAT.panel.query.Grid', {
 
     showPanel: function(op, callback, scope) {
         this.callParent(arguments);
-        this.refresh(null, null, this);
+        this.load(null, null, this);
     },
 
     gridMain_select: function(){
@@ -4608,7 +4418,7 @@ Ext.define('NAT.panel.query.Grid', {
     },
 
     refresh: function(op, callback, scope) {
-        this.store.Load(op, callback, scope);
+        this.store.reload(op, callback, scope);
     },
 
     refreshUI: function(op) {
@@ -5169,7 +4979,7 @@ Ext.define('NAT.data.Model', {
         }
     },
 
-    IsNew: function () {
+    isNew: function () {
         return this.getId() == '';
     },
 
@@ -5706,6 +5516,7 @@ Ext.define('NAT.data.ModelStore', {
         'Ext.data.writer.Writer'
     ],
 
+    collection: null,
     lastOptions: null,
     currModel: null,
     proxy: null,
@@ -5757,17 +5568,12 @@ Ext.define('NAT.data.ModelStore', {
     },
 
     load: function(options, callback, scope) {
-        if (this.Loading){
+        var me = this;
+
+        if (me.loading){
             Ext.callback(callback, scope, [null, null], 0);
             return;
         }
-
-        if (!options || !options.params || !options.params.collection || !options.params.id){
-            Ext.callback(callback, scope, [{ message: 'options not valid' }, null], 0);
-            return;
-        }
-
-        var me = this;
 
         options = Ext.applyIf({
             action: 'read',
@@ -5775,7 +5581,14 @@ Ext.define('NAT.data.ModelStore', {
             scope: scope
         }, options);
 
+        options.params = options.params || {};
         options.params.lastModified = options.params.lastModified || new Date(0);
+        options.params.collection = options.params.collection || this.collection;
+
+        if (!options || !options.params || !options.params.collection || !options.params.id){
+            Ext.callback(callback, scope, [{ message: 'options not valid' }, null], 0);
+            return;
+        }
 
         me.lastOptions = options;
 
@@ -5787,6 +5600,10 @@ Ext.define('NAT.data.ModelStore', {
         }
 
         return me;
+    },
+
+    reload: function(options, callback, scope) {
+        return this.load(Ext.apply(this.lastOptions, options), callback, scope);
     },
 
     onProxyLoad: function(operation) {
@@ -5827,64 +5644,67 @@ Ext.define('NAT.data.ModelStore', {
         Ext.callback(operation.callback, operation.scope || me, [records, operation, successful]);
     },
 
-    reload: function(options) {
-        return this.load(Ext.apply(this.lastOptions, options));
-    },
-
-    Save: function (op, callback, scope) {
-        this.callback = callback;
-        this.scope = scope;
-
-        if (this.Saving) {
-            Ext.callback(this.callback, this.scope, [null, null], 0);
+    save: function (op, callback, scope) {
+        if (this.saving) {
+            Ext.callback(callback, scope, [null, null], 0);
             return;
         }
 
         this.saving = true;
 
-        if ((!this.currModel) || (!this.currModel.isNATDirty)) {
-            this.SaveCompleted({});
-            return;
-        }
+        var me = this;
+        async.waterfall([
+            function(cb){
+                this.currModel.ValidateModel(null, cb, me);
+            },
+            function(result, cb){
+                if (!op.preventLoadingMask) {
+                    app.ShowLoadingMask();
+                }
 
-        var operation = Ext.create('Ext.data.Operation', {
-            records: [this.currModel],
-            action: this.currModel.phantom ? 'create' : 'update',
-            needsSync: true
+                var operation = Ext.create('Ext.data.Operation', {
+                    records: [this.currModel],
+                    action: this.currModel.isNew() ? 'create' : 'update'
+                });
+
+                this.proxy[operation.action](operation, function(operation){
+                    var me = this,
+                        success = operation.wasSuccessful(),
+                        records = operation.getRecords();
+
+                    switch (operation.action) {
+                        case 'create':
+                            me.onCreateRecords(records, operation, success);
+                            break;
+                        case 'update':
+                            me.onUpdateRecords(records, operation, success);
+                            break;
+                        case 'destroy':
+                            me.onDestroyRecords(records, operation, success);
+                            break;
+                    }
+
+                    if (success) {
+                        me.fireEvent('write', me, operation);
+                        me.fireEvent('datachanged', me);
+                    }
+                }, this);
+            }
+        ],
+        function(err, options) {
+            me.saving = false;
+
+            if (err) {
+                alert("validation error, field: " + err.getAt(0).field);
+            }
+
+            options = options || {};
+            if (!op.preventLoadingMask) {
+                app.HideLoadingMask();
+            }
+
+            Ext.callback(callback, scope, [null, options], 0);
         });
-
-        this.proxy[operation.action](operation, this.onProxyWrite, this);
-    },
-
-    SaveCompleted: function (operation) {
-        this.saving = false;
-        this.fireEvent('SaveCompleted', operation);
-        Ext.callback(this.callback, this.scope, [null, operation], 0);
-    },
-
-    onProxyWrite: function(operation) {
-        var me = this,
-            success = operation.wasSuccessful(),
-            records = operation.getRecords();
-
-        switch (operation.action) {
-            case 'create':
-                me.onCreateRecords(records, operation, success);
-                break;
-            case 'update':
-                me.onUpdateRecords(records, operation, success);
-                break;
-            case 'destroy':
-                me.onDestroyRecords(records, operation, success);
-                break;
-        }
-
-        if (success) {
-            me.fireEvent('write', me, operation);
-            me.fireEvent('datachanged', me);
-        }
-
-        this.SaveCompleted(operation);
     },
 
     onCreateRecords: function(records, operation, success) {
@@ -5956,7 +5776,9 @@ Ext.define('NAT.data.Store', {
 
     requires: ['NAT.data.proxy.Ajax'],
 
-    lastParams: {},
+    collection: null,
+    currModel: null,
+    saving: false,
 
     constructor: function (config) {
         config = config || {};
@@ -5974,22 +5796,7 @@ Ext.define('NAT.data.Store', {
 
         this.callParent([config]);
 
-//        this.filter('_deleted', false);  //snapshot gets wrong!
-
-        //IT DOESN'T WORK, because of prototye inheritance behaviour!!!
-        //this.lastParams.entityName = this.model.modelName;
-        //this.lastParams.lastModified = new Date(0);
-        config.params = config.params || {};
-
-        var defaultParams = {
-            lastModified: new Date(0),
-            collection: this.collection
-        };
-        this.lastParams = Ext.merge(defaultParams, config.params);
-
         this.on('datachanged', this.onDataChanged, this);
-
-        return this;
     },
 
     getNewRecords: function() {
@@ -6009,25 +5816,183 @@ Ext.define('NAT.data.Store', {
         this.updateCurrModel();
     },
 
-    //overridden!!! (Server sends the modified models back here)
-    onProxyLoad: function (operation) {
+    load: function (options, callback, scope) {
+        var me = this;
+
+        if (me.loading) {
+            Ext.callback(callback, scope, [null, null], 0);
+            return;
+        }
+
+        options = Ext.applyIf({
+            callback: callback,
+            scope: scope,
+            addRecords: 'merge'
+        }, options);
+
+        options.params = options.params || {};
+        options.params.lastModified = options.params.lastModified || new Date(0);
+        options.params.collection = options.params.collection || this.collection;
+
+        if (!options || !options.params || !options.params.collection){
+            Ext.callback(callback, scope, [{ message: 'options not valid' }, null], 0);
+            return;
+        }
+
+        return me.callParent([options]);
+    },
+
+    reload: function(options, callback, scope) {
+        return this.load(Ext.apply(this.lastOptions, options), callback, scope);
+    },
+
+    onProxyLoad: function(operation) {
         var me = this,
-            successful = operation.wasSuccessful(),
-            records = operation.getRecords();
+            resultSet = operation.getResultSet(),
+            records = operation.getRecords(),
+            successful = operation.wasSuccessful();
+
+        if (resultSet) {
+            me.totalCount = resultSet.total;
+        }
+
+        if (successful) {
+            me.loadRecords(records, operation);
+        }
 
         me.loading = false;
-        if (successful) {
-            //me.loadRecords(records, operation);
+        if (me.hasListeners.load) {
+            me.fireEvent('load', me, records, successful);
+        }
 
-            for (var i = 0; i < records.length; i++) {
+        //TODO: deprecate this event, it should always have been 'load' instead. 'load' is now documented, 'read' is not.
+        //People are definitely using this so can't deprecate safely until 2.x
+        if (me.hasListeners.read) {
+            me.fireEvent('read', me, records, successful);
+        }
+
+//IZS make callback result data compatible with async library
+//        Ext.callback(operation.callback, operation.scope || me, [records, operation, successful]);
+        Ext.callback(operation.callback, operation.scope || me, [null, {records: records, operation: operation, successful: successful}]);
+    },
+
+    loadRecords: function(records, options) {
+        var me     = this,
+            i      = 0,
+            length = records.length,
+            start,
+            addRecords,
+            snapshot = me.snapshot;
+
+        if (options) {
+            start = options.start;
+            addRecords = options.addRecords;
+        }
+
+        //IZS merge support lastModified
+        if (addRecords === false) {
+            delete me.snapshot;
+            me.clearData(true);
+            me.data.addAll(records);
+        }
+        else if (addRecords === true) {
+            if (snapshot) {
+                snapshot.addAll(records);
+            }
+            me.data.addAll(records);
+        }
+        else if (addRecords === 'merge'){
+            me.MergeModels(records);
+            for (i=0; i < records.length; i++) {
+                var model = records[i];
+                var _modified = model.get('_modified');
+                if (_modified > this.lastOptions.params.lastModified) {
+                    this.lastOptions.params.lastModified = _modified;
+                }
+            }
+        }
+
+        if (start !== undefined) {
+            for (i=0; i < length; i++) {
+                records[i].index = start + i;
+                records[i].join(me);
+            }
+        } else {
+            for (i=0; i < length; i++) {
                 records[i].join(me);
             }
         }
 
-        me.fireEvent('read', me, records, successful, operation);
-        me.fireEvent('load', me, records, successful, operation);
+        /*
+         * this rather inelegant suspension and resumption of events is required because both the filter and sort functions
+         * fire an additional datachanged event, which is not wanted. Ideally we would do this a different way. The first
+         * datachanged event is fired by the call to this.add, above.
+         */
+        me.suspendEvents();
 
-        Ext.callback(operation.callback, operation.scope || me, [records, operation, successful]);
+        if (me.filterOnLoad && !me.remoteFilter) {
+            me.filter();
+        }
+
+        if (me.sortOnLoad && !me.remoteSort) {
+            me.sort(undefined, undefined, undefined, true);
+        }
+
+        me.resumeEvents();
+        me.fireEvent('datachanged', me);
+        me.fireEvent('refresh', me);
+    },
+
+    save: function (op, callback, scope) {
+        if (this.saving) {
+            Ext.callback(callback, scope, [null, null], 0);
+            return;
+        }
+
+        this.saving = true;
+
+        var me = this;
+        async.waterfall([
+            function(cb){
+                me.ValidateChangedModels(null, cb, me);
+            },
+            function(result, cb){
+                var options = {
+                    scope: me,
+                    success: function(batch, options) {
+                        cb(null, options);
+                    },
+                    failure: function(batch, options) {
+                        cb('failure', options);
+                    }
+                };
+
+                me.sync(options);
+
+                if (!options.operations){
+                    cb(null, options);
+                    return;
+                }
+
+                if ((options.operations) && (!options.preventLoadingMask)) {
+                    app.ShowLoadingMask();
+                }
+            }
+        ],
+        function(err, options) {
+            me.saving = false;
+
+            if (err) {
+                alert("validation error, field: " + err.getAt(0).field);
+            }
+
+            options = options || {};
+            if ((options.operations) && (!options.preventLoadingMask)) {
+                app.HideLoadingMask();
+            }
+
+            Ext.callback(callback, scope, [null, options], 0);
+        });
     },
 
     //overridden!!! (Server sends the modified models back here)
@@ -6104,20 +6069,6 @@ Ext.define('NAT.data.Store', {
         }
     },
 
-    ProcessResponse: function (models, operation, success) {
-        if (!success) return;
-
-        this.MergeModels(models);
-
-        for (var i = 0; i < models.length; i++) {
-            var model = models[i];
-            var _modified = model.get('_modified');
-            if (_modified > this.lastParams.lastModified) {
-                this.lastParams.lastModified = _modified;
-            }
-        }
-    },
-
     MergeModels: function (models) {
         for (var i = 0; i < models.length; i++) {
             this.MergeModel(models[i]);
@@ -6164,6 +6115,89 @@ Ext.define('NAT.data.Store', {
     updateCurrModel: function() {
         if (this.currModel) return;
         this.Select(this.getAt(0));
+    },
+
+    filterNew: function(item) {
+        return (item.isNew()) && (item.isNATValid);
+    },
+    filterNewAll: function(item) {
+        return item.isNew();
+    },
+    filterUpdated: function(item) {
+        return (!item.isNew()) && (item.isNATDirty ) && (item.isNATValid);
+    },
+    filterUpdatedAll: function(item) {
+        return (!item.isNew()) && (item.isNATDirty );
+    },
+
+    GetChangedModels: function () {
+        return Ext.Array.union(this.getNewRecords(), this.getUpdatedRecords(), this.getRemovedRecords());
+    },
+    GetChangedModelsAll: function () {
+        return Ext.Array.union(this.getNewRecordsAll(), this.getUpdatedRecordsAll(), this.getRemovedRecords());
+    },
+
+    IsChanged: function () {
+        return (this.GetChangedModelsAll().length != 0);
+    },
+
+    ValidateChangedModels: function(op, callback, scope) {
+        async.forEach(this.GetChangedModelsAll(), function(model, done) {
+            model.ValidateModel(null, done, model);
+        },
+        function(err){
+            Ext.callback(callback, scope, [err, null], 0);
+        });
+    },
+
+    Select: function (model, suppressEvent) {
+        if (this.currModel == model) return;
+
+        if (!suppressEvent) {
+            this.OnSelect(this.currModel, model);
+        }
+
+        this.currModel = model;
+
+        if (!suppressEvent) {
+            this.OnCurrentModelChanged();
+        }
+    },
+
+    Deselect: function (suppressEvent) {
+        if (this.loading) return;
+        if (this.currModel == null) return;
+
+        if (!suppressEvent) {
+            this.OnDeselect(this.currModel);
+        }
+
+        this.currModel = null;
+
+        if (!suppressEvent) {
+            this.OnCurrentModelChanged();
+        }
+    },
+
+    hasModel: function() {
+        return ((this.currModel) && (typeof this.currModel == 'object'));
+    },
+
+    OnSelect: function(oldModel, newModel) {
+        this.fireEvent('select', oldModel, newModel);
+    },
+
+    OnDeselect: function(oldModel) {
+        this.fireEvent('deselect', oldModel);
+    },
+
+    //model calls it from callStore
+    OnModelDirtyChanged: function (model){
+        this.fireEvent('modeldirtychanged', model);
+    },
+
+    OnCurrentModelChanged: function () {
+        this.fireEvent('currentmodelchanged', this.currModel);
     }
 });
 
@@ -6173,7 +6207,9 @@ Ext.define('NAT.data.TreeStore', {
 
     requires: ['NAT.data.proxy.Ajax'],
 
-    lastParams: {},
+    collection: null,
+    currModel: null,
+    saving: false,
 
     constructor: function (config) {
         config = config || {};
@@ -6189,28 +6225,11 @@ Ext.define('NAT.data.TreeStore', {
         });
         this.proxy = Ext.create('NAT.data.proxy.Ajax', config);
 
-        config.sortOnLoad = false;
-
         this.callParent([config]);
-
-//        this.filter('_deleted', false);  //snapshot get wrong!
-
-        //IT DOESN'T WORK, because of prototye inheritance behaviour!!!
-        //this.lastParams.entityName = this.model.modelName;
-        //this.lastParams.lastModified = new Date(0);
-        config.params = config.params || {};
-
-        var defaultParams = {
-            lastModified: new Date(0),
-            collection: this.collection
-        };
-        this.lastParams = Ext.merge(defaultParams, config.params);
 
         this.on('move', this.OnMove, this);
 
         this.on('datachanged', this.onDataChanged, this);
-
-        return this;
     },
 
     getNewRecords: function() {
@@ -6230,7 +6249,37 @@ Ext.define('NAT.data.TreeStore', {
         this.updateCurrModel();
     },
 
-    //overridden!!! (Server sends the modified models back here)
+    load: function (options, callback, scope) {
+        var me = this;
+
+        if (me.loading) {
+            Ext.callback(callback, scope, [null, null], 0);
+            return;
+        }
+
+        options = Ext.applyIf({
+            callback: callback,
+            scope: scope,
+            addRecords: 'merge'
+        }, options);
+
+        options.params = options.params || {};
+        options.params.lastModified = options.params.lastModified || new Date(0);
+        options.params.collection = options.params.collection || this.collection;
+
+        if (!options || !options.params || !options.params.collection){
+            Ext.callback(callback, scope, [{ message: 'options not valid' }, null], 0);
+            return;
+        }
+
+        //Ignore Ext.data.TreeStore load method
+        return this.superclass.superclass.load.call(this, options);
+    },
+
+    reload: function(options, callback, scope) {
+        return this.load(Ext.apply(this.lastOptions, options), callback, scope);
+    },
+
     onProxyLoad: function (operation) {
         var me = this,
             successful = operation.wasSuccessful(),
@@ -6238,17 +6287,81 @@ Ext.define('NAT.data.TreeStore', {
 
         me.loading = false;
         if (successful) {
-            //me.loadRecords(records, operation);
+            var firstLoad = this.lastOptions.params.lastModified.getTime() == new Date(0).getTime();
+            if (firstLoad) {
+                this.BuildStore(records);
+            }
+            else {
+                this.MergeModels(records);
+            }
 
-//            for (var i = 0; i < records.length; i++) {
-//                records[i].join(me);
-//            }
+            for (i=0; i < records.length; i++) {
+                var model = records[i];
+                var _modified = model.get('_modified');
+                if (_modified > this.lastOptions.params.lastModified) {
+                    this.lastOptions.params.lastModified = _modified;
+                }
+            }
         }
 
-        me.fireEvent('read', me, records, successful, operation);
-        me.fireEvent('load', me, records, successful, operation);
+        me.fireEvent('read', me, operation.node, records, successful);
+        me.fireEvent('load', me, operation.node, records, successful);
 
-        Ext.callback(operation.callback, operation.scope || me, [records, operation, successful]);
+//IZS make callback result data compatible with async library
+//        Ext.callback(operation.callback, operation.scope || me, [records, operation, successful]);
+        Ext.callback(operation.callback, operation.scope || me, [null, {records: records, operation: operation, successful: successful}]);
+    },
+
+    save: function (op, callback, scope) {
+        if (this.saving) {
+            Ext.callback(callback, scope, [null, null], 0);
+            return;
+        }
+
+        this.saving = true;
+
+        var me = this;
+        async.waterfall([
+            function(cb){
+                me.ValidateChangedModels(null, cb, me);
+            },
+            function(result, cb){
+                var options = {
+                    scope: me,
+                    success: function(batch, options) {
+                        cb(null, options);
+                    },
+                    failure: function(batch, options) {
+                        cb('failure', options);
+                    }
+                };
+
+                me.sync(options);
+
+                if (!options.operations){
+                    cb(null, options);
+                    return;
+                }
+
+                if ((options.operations) && (!options.preventLoadingMask)) {
+                    app.ShowLoadingMask();
+                }
+            }
+        ],
+        function(err, options) {
+            me.saving = false;
+
+            if (err) {
+                alert("validation error, field: " + err.getAt(0).field);
+            }
+
+            options = options || {};
+            if ((options.operations) && (!options.preventLoadingMask)) {
+                app.HideLoadingMask();
+            }
+
+            Ext.callback(callback, scope, [null, options], 0);
+        });
     },
 
     //overridden!!! (Server sends the modified models back here)
@@ -6308,27 +6421,6 @@ Ext.define('NAT.data.TreeStore', {
         for (var i = 0; i < count; i++) {
             var model = changedModels[i];
             model.commit(silent);
-        }
-    },
-
-    ProcessResponse: function (models, operation, success) {
-        if (!success) return;
-
-        var firstLoad = this.lastParams.lastModified.getTime() == new Date(0).getTime();
-
-        if (firstLoad) {
-            this.BuildStore(models);
-        }
-        else {
-            this.MergeModels(models);
-        }
-
-        for (var i = 0; i < models.length; i++) {
-            var model = models[i];
-            var _modified = model.get('_modified');
-            if (_modified > this.lastParams.lastModified) {
-                this.lastParams.lastModified = _modified;
-            }
         }
     },
 
@@ -6514,6 +6606,136 @@ Ext.define('NAT.data.TreeStore', {
     updateCurrModel: function() {
         if (this.currModel) return;
         this.Select(this.getRootNode());
+    },
+
+    setRootNode: function(root, /* private */ preventLoad) {
+        var me = this,
+            model = me.model,
+            idProperty = model.prototype.idProperty
+
+        root = root || {};
+        if (!root.isModel) {
+            // create a default rootNode and create internal data struct.
+            Ext.applyIf(root, {
+                id: me.defaultRootId,
+                text: 'Root',
+                allowDrag: false
+            });
+            if (root[idProperty] === undefined) {
+                root[idProperty] = me.defaultRootId;
+            }
+            Ext.data.NodeInterface.decorate(model);
+            root = Ext.ModelManager.create(root, model);
+        } else if (root.isModel && !root.isNode) {
+            Ext.data.NodeInterface.decorate(model);
+        }
+
+        //IZS: to force decoration in setRootNode, appendChild ect:
+        Ext.data.NodeInterface.decorate(root);
+        //IZS end
+
+
+        // Because we have decorated the model with new fields,
+        // we need to build new extactor functions on the reader.
+        me.getProxy().getReader().buildExtractors(true);
+
+        // When we add the root to the tree, it will automaticaly get the NodeInterface
+        me.tree.setRootNode(root);
+
+//IZS begin
+//        if (preventLoad !== true && !root.isLoaded() && (me.autoLoad === true || root.isExpanded())) {
+//            me.load({
+//                node: root
+//            });
+//        }
+
+        root.join(this);
+//IZS end
+
+        return root;
+    },
+
+    filterNew: function(item) {
+        return (item.isNew()) && (item.isNATValid);
+    },
+    filterNewAll: function(item) {
+        return item.isNew();
+    },
+    filterUpdated: function(item) {
+        return (!item.isNew()) && (item.isNATDirty ) && (item.isNATValid);
+    },
+    filterUpdatedAll: function(item) {
+        return (!item.isNew()) && (item.isNATDirty );
+    },
+
+    GetChangedModels: function () {
+        return Ext.Array.union(this.getNewRecords(), this.getUpdatedRecords(), this.getRemovedRecords());
+    },
+    GetChangedModelsAll: function () {
+        return Ext.Array.union(this.getNewRecordsAll(), this.getUpdatedRecordsAll(), this.getRemovedRecords());
+    },
+
+    IsChanged: function () {
+        return (this.GetChangedModelsAll().length != 0);
+    },
+
+    ValidateChangedModels: function(op, callback, scope) {
+        async.forEach(this.GetChangedModelsAll(), function(model, done) {
+            model.ValidateModel(null, done, model);
+        },
+        function(err){
+            Ext.callback(callback, scope, [err, null], 0);
+        });
+    },
+
+    Select: function (model, suppressEvent) {
+        if (this.currModel == model) return;
+
+        if (!suppressEvent) {
+            this.OnSelect(this.currModel, model);
+        }
+
+        this.currModel = model;
+
+        if (!suppressEvent) {
+            this.OnCurrentModelChanged();
+        }
+    },
+
+    Deselect: function (suppressEvent) {
+        if (this.loading) return;
+        if (this.currModel == null) return;
+
+        if (!suppressEvent) {
+            this.OnDeselect(this.currModel);
+        }
+
+        this.currModel = null;
+
+        if (!suppressEvent) {
+            this.OnCurrentModelChanged();
+        }
+    },
+
+    hasModel: function() {
+        return ((this.currModel) && (typeof this.currModel == 'object'));
+    },
+
+    OnSelect: function(oldModel, newModel) {
+        this.fireEvent('select', oldModel, newModel);
+    },
+
+    OnDeselect: function(oldModel) {
+        this.fireEvent('deselect', oldModel);
+    },
+
+    //model calls it from callStore
+    OnModelDirtyChanged: function (model){
+        this.fireEvent('modeldirtychanged', model);
+    },
+
+    OnCurrentModelChanged: function () {
+        this.fireEvent('currentmodelchanged', this.currModel);
     }
 });
 
@@ -6538,10 +6760,23 @@ Ext.define('NAT.data.StoreManager', {
         store.active = false;
     },
 
-    Refresh: function (op, callback, scope) {
+    load: function (op, callback, scope) {
         async.forEach(this.items, function(store, done){
             if (store.active) {
-                store.Load(null, done);
+                store.load(null, done);
+            } else {
+                done(null, null);
+            }
+        },
+        function(err, data) {
+            Ext.callback(callback, scope, [err, null], 0);
+        });
+    },
+
+    reload: function (op, callback, scope) {
+        async.forEach(this.items, function(store, done){
+            if (store.active) {
+                store.reload(null, done);
             } else {
                 done(null, null);
             }

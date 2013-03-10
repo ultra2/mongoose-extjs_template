@@ -4099,7 +4099,7 @@ Ext.define('NAT.panel.persistent.Form', {
         this.down('#btnClose').setVisible(this.op.command == 'show');
 
         if (this.op.command == 'show' || this.op.command == 'delete' || this.op.command == 'modify'){
-            this.store.load({ params: { id: this.modelId }}, callback, scope);
+            this.store.load({ params: { id: this.modelId }}, null, this);
         }
     },
 
@@ -4179,7 +4179,7 @@ Ext.define('NAT.panel.persistent.Grid', {
 
     showPanel: function(op, callback, scope) {
         this.callParent(arguments);
-        this.load(null, null, this);
+        this.store.load(null, null, this);
     },
 
     gridMain_select: function(){
@@ -4272,7 +4272,7 @@ Ext.define('NAT.panel.persistent.Tree', {
 
     showPanel: function(op, callback, scope) {
         this.callParent(arguments);
-        this.refresh(null, null, this);
+        this.store.load(null, null, this);
     },
 
     treeMain_select: function(){
@@ -4354,7 +4354,7 @@ Ext.define('NAT.panel.persistent.Tree', {
     },
 
     refresh: function(op, callback, scope) {
-        this.store.Load(op, callback, scope);
+        this.store.reload(op, callback, scope);
     },
 
     refreshUI: function (op) {
@@ -4404,7 +4404,7 @@ Ext.define('NAT.panel.query.Grid', {
 
     showPanel: function(op, callback, scope) {
         this.callParent(arguments);
-        this.load(null, null, this);
+        this.store.load(null, null, this);
     },
 
     gridMain_select: function(){

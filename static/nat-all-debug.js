@@ -4141,7 +4141,7 @@ Ext.define('NAT.panel.persistent.Form', {
                 me.save(null, cb, me);
             },
             function(result, cb){
-                me.refreshUI(null);
+                me.close();
                 viewport.refresh(null, cb, me);
             }
         ]);

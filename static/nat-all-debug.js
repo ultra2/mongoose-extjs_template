@@ -5673,6 +5673,8 @@ Ext.define('NAT.data.ModelStore', {
     },
 
     save: function (op, callback, scope) {
+        op = op || {};
+
         if (this.saving) {
             Ext.callback(callback, scope, [null, null], 0);
             return;

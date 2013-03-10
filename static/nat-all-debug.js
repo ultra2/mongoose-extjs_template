@@ -4091,7 +4091,14 @@ Ext.define('NAT.panel.persistent.Form', {
 
         Ext.applyIf(this.op, { command: 'new' });
 
-        this.modelId = this.op.modelId;
+        if (this.op.command == 'new'){
+            var model = app.createModel(this.model);
+            model.endEdit(true);
+            this.store.setModel(model);
+        }
+        else{
+            this.modelId = this.op.modelId;
+        }
 
         this.down('#btnDelete').setVisible(this.op.command == 'delete');
         this.down('#btnSave').setVisible(this.op.command == 'new' || this.op.command == 'delete' || this.op.command == 'modify');

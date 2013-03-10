@@ -4094,7 +4094,7 @@ Ext.define('NAT.panel.persistent.Form', {
         this.modelId = this.op.modelId;
 
         this.down('#btnDelete').setVisible(this.op.command == 'delete');
-        this.down('#btnSave').setVisible(this.op.command == 'delete' || this.op.command == 'modify');
+        this.down('#btnSave').setVisible(this.op.command == 'new' || this.op.command == 'delete' || this.op.command == 'modify');
         this.down('#btnCancel').setVisible(true);
         this.down('#btnClose').setVisible(this.op.command == 'show');
 

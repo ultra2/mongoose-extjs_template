@@ -4062,7 +4062,6 @@ Ext.define('NAT.panel.persistent.Form', {
     alias: 'widget.natppform',
 
     store: null,
-    modelId: null,
 
     constructor : function(config) {
         if (!this.designMode){
@@ -4091,23 +4090,45 @@ Ext.define('NAT.panel.persistent.Form', {
 
         Ext.applyIf(this.op, { command: 'new' });
 
-        if (this.op.command == 'new'){
-            var model = app.createModel(this.model);
-            model.endEdit(true);
-            this.store.setModel(model);
-        }
-        else{
-            this.modelId = this.op.modelId;
-        }
+        this[this.op.command + 'Mode'].apply(this, arguments);
+    },
 
-        this.down('#btnDelete').setVisible(this.op.command == 'delete');
-        this.down('#btnSave').setVisible(this.op.command == 'new' || this.op.command == 'delete' || this.op.command == 'modify');
+    newMode: function(op, callback, scope){
+        this.down('#btnDelete').setVisible(false);
+        this.down('#btnSave').setVisible(true);
         this.down('#btnCancel').setVisible(true);
-        this.down('#btnClose').setVisible(this.op.command == 'show');
+        this.down('#btnClose').setVisible(false);
 
-        if (this.op.command == 'show' || this.op.command == 'delete' || this.op.command == 'modify'){
-            this.store.load({ params: { id: this.modelId }}, null, this);
-        }
+        var model = app.createModel(this.model);
+        model.endEdit(true);
+        this.store.setModel(model);
+    },
+
+    showMode: function(op, callback, scope){
+        this.down('#btnDelete').setVisible(false);
+        this.down('#btnSave').setVisible(false);
+        this.down('#btnCancel').setVisible(false);
+        this.down('#btnClose').setVisible(true);
+
+        this.store.load({ params: { id: op.modelId }}, null, this);
+    },
+
+    modifyMode: function(op, callback, scope){
+        this.down('#btnDelete').setVisible(false);
+        this.down('#btnSave').setVisible(true);
+        this.down('#btnCancel').setVisible(true);
+        this.down('#btnClose').setVisible(false);
+
+        this.store.load({ params: { id: op.modelId }}, null, this);
+    },
+
+    deleteMode: function(op, callback, scope){
+        this.down('#btnDelete').setVisible(true);
+        this.down('#btnSave').setVisible(false);
+        this.down('#btnCancel').setVisible(true);
+        this.down('#btnClose').setVisible(false);
+
+        this.store.load({ params: { id: op.modelId }}, null, this);
     },
 
     btnDelete_click: function(){

@@ -5683,7 +5683,7 @@ Ext.define('NAT.data.ModelStore', {
         var me = this;
         async.waterfall([
             function(cb){
-                this.currModel.ValidateModel(null, cb, me);
+                me.currModel.ValidateModel(null, cb, me);
             },
             function(result, cb){
                 if (!op.preventLoadingMask) {
@@ -5691,12 +5691,12 @@ Ext.define('NAT.data.ModelStore', {
                 }
 
                 var operation = Ext.create('Ext.data.Operation', {
-                    records: [this.currModel],
-                    action: this.currModel.isNew() ? 'create' : 'update'
+                    records: [me.currModel],
+                    action: me.currModel.isNew() ? 'create' : 'update'
                 });
 
-                this.proxy[operation.action](operation, function(operation){
-                    var me = this,
+                me.proxy[operation.action](operation, function(operation){
+                    var me = me,
                         success = operation.wasSuccessful(),
                         records = operation.getRecords();
 
@@ -5716,7 +5716,7 @@ Ext.define('NAT.data.ModelStore', {
                         me.fireEvent('write', me, operation);
                         me.fireEvent('datachanged', me);
                     }
-                }, this);
+                }, me);
             }
         ],
         function(err, options) {

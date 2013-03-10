@@ -2088,7 +2088,7 @@ Ext.define('natjs.overrides.data.BelongsToAssociation', {
                 reader = proxy.getReader();
 
             var rec = reader.read([associationData]).records[0];
-            store.SetModel(rec);
+            store.setModel(rec);
             rec.Loaded();
         },
 
@@ -5575,10 +5575,10 @@ Ext.define('NAT.data.ModelStore', {
 
     CreateModel: function() {
         var currModel = app.natCreateModel(this.currModel);
-        this.SetModel(currModel);
+        this.setModel(currModel);
     },
 
-    SetModel: function (model) {
+    setModel: function (model) {
         if (this.currModel === model) return;
 
         if (this.currModel) {
@@ -5648,7 +5648,7 @@ Ext.define('NAT.data.ModelStore', {
                     this.currModel.set('loaded', true);
                     this.currModel.commit();
                 } else {
-                    this.SetModel(model);
+                    this.setModel(model);
                     this.currModel.set('loaded', true);
                     this.currModel.commit();
                 }

@@ -5688,14 +5688,22 @@ Ext.define('NAT.data.ModelStore', {
                 me.currModel.ValidateModel(null, cb, me);
             },
             function(result, cb){
+                if (!me.currModel.isNATDirty){
+                    cb(null, {});
+                    return;
+                }
+
+                var options = {
+                    records: [me.currModel],
+                    action: me.currModel.isNew() ? 'create' : 'update'
+                };
+
                 if (!op.preventLoadingMask) {
                     app.ShowLoadingMask();
                 }
 
-                var operation = Ext.create('Ext.data.Operation', {
-                    records: [me.currModel],
-                    action: me.currModel.isNew() ? 'create' : 'update'
-                });
+                var operation = Ext.create('Ext.data.Operation', options);
+                options.operation = operation;
 
                 me.proxy[operation.action](operation, function(operation){
                     var me = this,
@@ -5717,6 +5725,10 @@ Ext.define('NAT.data.ModelStore', {
                     if (success) {
                         me.fireEvent('write', me, operation);
                         me.fireEvent('datachanged', me);
+                        cb(null, options);
+                    }
+                    else {
+                        cb('failure', options);
                     }
                 }, me);
             }
@@ -5729,7 +5741,7 @@ Ext.define('NAT.data.ModelStore', {
             }
 
             options = options || {};
-            if (!op.preventLoadingMask) {
+            if ((options.operation) && (!options.preventLoadingMask)) {
                 app.HideLoadingMask();
             }
 

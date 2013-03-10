@@ -5698,7 +5698,7 @@ Ext.define('NAT.data.ModelStore', {
                 });
 
                 me.proxy[operation.action](operation, function(operation){
-                    var me = me,
+                    var me = this,
                         success = operation.wasSuccessful(),
                         records = operation.getRecords();
 

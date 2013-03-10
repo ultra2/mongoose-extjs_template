@@ -4099,7 +4099,7 @@ Ext.define('NAT.panel.persistent.Form', {
         this.down('#btnCancel').setVisible(true);
         this.down('#btnClose').setVisible(false);
 
-        var model = app.createModel(this.model);
+        var model = app.natCreateModel(this.model);
         model.endEdit(true);
         this.store.setModel(model);
     },

@@ -5210,6 +5210,24 @@ Ext.define('NAT.data.ClientModel', {
     }
 });
 
+Ext.define('NAT.data.LookupModel', {
+    extend: 'NAT.data.Model',
+
+    fields: [
+        { name: '_created', type: 'date' },
+        { name: '_modified', type: 'date' },
+        { name: '_version', type: 'int' },
+        { name: '_deleted', type: 'boolean' }
+    ],
+
+    fieldsInfo: [
+    ],
+
+    constructor: function(data, id, raw) {
+        this.callParent(arguments);
+    }
+});
+
 Ext.define('NAT.data.proxy.Ajax', {
     extend: 'Ext.data.proxy.Ajax',
     alias: 'widget.natajaxproxy',

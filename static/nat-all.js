@@ -4048,7 +4048,8 @@ Ext.define('NAT.panel.Abstract', {
 //            var config = {
 //                collection: store.model
 //            };
-            store = Ext.create('widget.' + store.xtype, store);
+//            store = Ext.create('widget.' + store.xtype, store);
+            store = Ext.create(store);
             me.stores.add(store);
         }
     },

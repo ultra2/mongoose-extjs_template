@@ -4041,11 +4041,10 @@ Ext.define('NAT.panel.Abstract', {
         me.stores = new Ext.util.AbstractMixedCollection();
 
         for (var i=0; stores.length>i; i++){
-            debugger;
-
             var store = stores[i];
+            var xtype = store.xtype;
             delete store.xtype;
-            store = Ext.create('widget.' + store.xtype, store);
+            store = Ext.create('widget.' + xtype, store);
             me.stores.add(store);
         }
     },

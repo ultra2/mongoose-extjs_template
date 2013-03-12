@@ -4059,8 +4059,40 @@ Ext.define('NAT.panel.Abstract', {
         this.scope = scope;
     },
 
+    load: function(op, callback, scope) {
+        var me = this;
+        async.forEach(me.stores.getRange(), function(store, done){
+                store.load(null, done, me);
+        },
+        function(data, err){
+            Ext.callback(callback, scope, [err, null], 0);
+        })
+    },
+
+    reject: function(){
+        this.stores.each(function(store){
+            store.reject();
+        }, this)
+    },
+
+    save: function (op, callback, scope) {
+        var me = this;
+        async.forEach(me.stores.getRange(), function(store, done){
+            store.save(null, done, me);
+        },
+        function(data, err){
+            Ext.callback(callback, scope, [err, null], 0);
+        })
+    },
+
     refresh: function(op, callback, scope) {
-        Ext.callback(callback, scope, [null, null], 1);
+        var me = this;
+        async.forEach(me.stores.getRange(), function(store, done){
+            store.reload(null, done, me);
+        },
+        function(data, err){
+            Ext.callback(callback, scope, [err, null], 0);
+        })
     },
 
     refreshUI: function(op) {
@@ -4198,21 +4230,12 @@ Ext.define('NAT.panel.persistent.Grid', {
 
     store: null,
 
-    constructor : function(config) {
-//        if (!this.designMode){
-//            this.store = Ext.create('NAT.data.Store', {
-//                collection: this.model
-//            });
-//        }
-        debugger;
-        this.callParent([config]);  //it calls initComponent
-    },
-
     initComponent: function(){
         this.callParent(arguments);
 
         if (this.designMode) return;
-
+debugger;
+        this.store = this.stores.getAt(0);
         this.down('#gridMain').BindStore(this.store);
 
         this.down('#gridMain').on('select', this.gridMain_select, this);
@@ -4259,18 +4282,6 @@ Ext.define('NAT.panel.persistent.Grid', {
     btnCancel_click: function(){
         this.reject();
         this.refreshUI(null);
-    },
-
-    save: function (op, callback, scope) {
-        this.store.save(op, callback, scope);
-    },
-
-    reject: function(){
-        this.store.reject();
-    },
-
-    refresh: function(op, callback, scope) {
-        this.store.reload(op, callback, scope);
     },
 
     refreshUI: function(op) {

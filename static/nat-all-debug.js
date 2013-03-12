@@ -4028,22 +4028,24 @@ Ext.define('NAT.panel.Abstract', {
     scope: null,
     result: null,
 
-    stores: [],
-
-    constructor : function(config) {
-//    // if (!this.designMode){
-        for (var i=0; this.stores.length>i; i++){
-            var store = this.stores[i];
-            store.collection = store.model;
-            store = Ext.create('widget.' + store.xtype, store);
-        }
-        // }
-        this.callParent([config]);  //it calls initComponent
-    },
-
     initComponent: function(){
         this.callParent(arguments);
+        this.initStores();
         this.on('close', this.this_close, this);
+    },
+
+    initStores : function() {
+        var me = this,
+            stores = me.stores;
+debugger;
+        me.stores = new Ext.util.AbstractMixedCollection();
+
+        for (var i=0; stores.length>i; i++){
+            var store = stores[i];
+            store = Ext.create('widget.' + store.xtype, store);
+            store.collection = store.model;
+            me.stores.add(store);
+        }
     },
 
     this_close: function() {

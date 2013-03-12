@@ -1,4 +1,6862 @@
 /*
 Copyright(c) 2011 Company Name
 */
-Ext.define("NAT.button.Button",{extend:"Ext.button.Button",alias:"widget.natbutton",autoWidth:true,initComponent:function(){this.callParent(arguments)}});Ext.define("NAT.tree.plugin.CellEditing",{alias:"plugin.nattreecellediting",extend:"Ext.grid.plugin.CellEditing",getEditingContext:function(e,c){var f=this,a=f.grid,k=a.store,b,d,h=a.getView(),g=a.getRootNode(),j;if(Ext.isNumber(e)){b=e;e=k.tree.flatten()[b]}else{b=g.indexOfId(e._id)}if(Ext.isNumber(c)){d=c;c=a.headerCt.getHeaderAtIndex(d)}else{d=c.getIndex()}j=e.get(c.dataIndex);return{grid:a,record:e,field:c.dataIndex,value:j,row:h.getNode(b),column:c,rowIdx:b,colIdx:d}}});Ext.define("NAT.edit.Source",{extend:"Ext.panel.Panel",alias:"widget.natsourceedit",layout:"fit",border:false,isFormField:true,propertyPath:"",parser:"javascript",readOnly:false,firstRowReadonly:false,lastRowReadonly:false,path:"",sourceCode:"",fontSize:"18px",theme:"textmate",printMargin:false,highlightActiveLine:true,tabSize:4,useSoftTabs:false,showInvisible:false,useWrapMode:false,initEditor:function(){var a=this;a.editor=ace.edit(a.editorId);a.setMode(a.parser);a.setTheme(a.theme);a.editor.getSession().setUseWrapMode(a.useWrapMode);a.editor.setShowInvisibles(a.showInvisible);a.setFontSize(a.fontSize);a.editor.setShowPrintMargin(a.printMargin);a.editor.setHighlightActiveLine(a.highlightActiveLine);a.getSession().setTabSize(a.tabSize);a.getSession().setUseSoftTabs(a.useSoftTabs);a.setValue(a.sourceCode);a.editor.setReadOnly(a.readOnly);a.editor.container.addEventListener("keydown",function(d){var f=a.readOnly;var c=a.getLength();var b=a.editor.getCursorPosition();if((a.firstRowReadonly)&&(b.row==0)){f=true}if((a.lastRowReadonly)&&(b.row==c-1)){f=true}a.editor.setReadOnly(f)},true);a.editor.getSession().on("change",function(){if(a.readOnly===true){return}a.fireEvent("change",a,a.getValue())},a);a.editor.focus()},getEditor:function(){return this.editor},getSession:function(){return this.editor.getSession()},getTheme:function(){return this.editor.getTheme()},getLength:function(){return this.editor.getSession().getLength()},getAllLines:function(){return this.editor.getSession().getLines(0,this.getLength())},setTheme:function(a){this.editor.setTheme("ace/theme/"+a)},setMode:function(a){this.getSession().setMode("ace/mode/"+a)},getValue:function(){if(!this.editor){return}return this.editor.getSession().getValue()},setValue:function(b){if(Ext.isArray(b)){b={array:b}}if(Ext.isObject(b)){try{b=JSON.stringify(b,null,"\t")}catch(a){alert("Incorrect config "+this.get("name")+" \n error: "+a);return}}if(!this.editor){this.sourceCode=b;return}this.editor.getSession().setValue(b)},setFontSize:function(a){this.editor.setFontSize(a)},setReadOnly:function(a){if(!this.editor){this.readOnly=a;return}this.editor.setReadOnly(a)},undo:function(){this.editor.undo()},redo:function(){this.editor.redo()},listeners:{resize:function(){if(this.editor){this.editor.resize()}},activate:function(){if(this.editor){this.setValue(this.getValue());this.editor.focus()}}},initComponent:function(){var b=this,a={xtype:"component",autoEl:"pre"};b.addEvents("change");if(b.contentEl!=null){b.sourceCode=Ext.get(b.contentEl).dom.innerHTML}Ext.apply(b,{items:a});b.callParent(arguments)},onRender:function(){var a=this;if(a.contentEl!=null){a.sourceCode=Ext.get(a.contentEl).dom.innerHTML}a.editorId=a.items.keys[0];a.oldSourceCode=a.sourceCode;a.callParent(arguments);a.on("afterlayout",function(){if(a.url){Ext.Ajax.request({url:a.url,success:function(b){a.sourceCode=b.responseText;a.initEditor()}})}else{a.initEditor()}},a,{single:true})},isValid:function(){return true},isDirty:function(){return false}});Ext.define("NAT.edit.StringArray",{extend:"Ext.form.FieldContainer",alias:"widget.natstringarrayedit",mixins:{bindable:"Ext.util.Bindable",field:"Ext.form.field.Field"},requires:["Ext.panel.Panel","Ext.view.BoundList","Ext.layout.container.Fit"],uses:["Ext.view.DragZone","Ext.view.DropZone"],layout:{type:"vbox",align:"stretch"},propertyPath:"",itemRenderer:null,valueField:"id",displayField:"name",ddReorder:false,appendOnly:false,allowBlank:true,ignoreSelectChange:0,constructor:function(a){this.store=Ext.create("Ext.data.ArrayStore",{fields:["id","name"],data:[]});this.callParent([a])},initComponent:function(){var a=this;a.bindStore(a.store,true);a.items=[{xtype:"container",dock:"top",cls:"commandbar",defaults:{margins:2},layout:{type:"hbox",align:"middle"},items:[{xtype:"combobox",itemId:"cbAvailableTypes",editable:false,flex:1,valueField:"id",displayField:"name"},{xtype:"natbutton",itemId:"btnAddType",icon:"https://extsolutions.herokuapp.com/graphics/Momentum_MatteEntireSet1/16/add.png",tooltip:"Add type"},{xtype:"natbutton",itemId:"btnRemoveType",icon:"https://extsolutions.herokuapp.com/graphics/Momentum_MatteEntireSet1/16/delete.png",tooltip:"Remove type"}]},{xtype:"boundlist",itemId:"blItems",flex:1,deferInitialRefresh:false,border:1,multiSelect:false,store:a.store,displayField:a.displayField,disabled:a.disabled}];a.callParent();a.initField();a.addEvents("drop");a.down("#cbAvailableTypes").on("select",this.cbAvailableTypes_select,this);a.down("#blItems").on("select",this.blItems_select,this);a.down("#btnAddType").on("click",this.btnAddType_click,this);a.down("#btnRemoveType").on("click",this.btnRemoveType_click,this)},setItemsStore:function(a){this.itemsStore=a},setComboStore:function(a){this.down("#cbAvailableTypes").bindStore(a)},cbAvailableTypes_select:function(){this.RefreshUI()},blItems_select:function(a,b){this.RefreshUI()},btnAddType_click:function(){var a=this.down("#cbAvailableTypes").getValue();var b=this.getValue();var c=Ext.Array.clone(b);c.push(a);this.setValue(c);this.fireEvent("itemchanged",c)},btnRemoveType_click:function(){var b=this.getSelected();var a=this.getValue();var c=Ext.Array.clone(a);Ext.Array.remove(c,b.getId());this.setValue(c);this.fireEvent("itemchanged",c)},getSelected:function(){var a=this.down("#blItems").getSelectionModel().getSelection();return(a)?a[0]:null},isEqual:function(e,d){var b=Ext.Array.from,c=0,a;e=b(e);d=b(d);a=e.length;if(a!==d.length){return false}for(;c<a;c++){if(d[c]!==e[c]){return false}}return true},afterRender:function(){var b=this,a;b.callParent();if(b.ddReorder&&!b.dragGroup&&!b.dropGroup){b.dragGroup=b.dropGroup="MultiselectDD-"+Ext.id()}if(b.draggable||b.dragGroup){b.dragZone=Ext.create("Ext.view.DragZone",{view:b.boundList,ddGroup:b.dragGroup,dragText:"{0} Item{1}"})}if(b.droppable||b.dropGroup){b.dropZone=Ext.create("Ext.view.DropZone",{view:b.boundList,ddGroup:b.dropGroup,handleNodeDrop:function(j,h,c){var d=this.view,f=d.getStore(),e=j.records,g;j.view.store.remove(e);g=f.indexOf(h);if(c==="after"){g++}f.insert(g,e);d.getSelectionModel().select(e);b.fireEvent("drop",b,e)}})}},isValid:function(){var b=this,a=b.disabled,c=b.forceValidation||!a;return c?b.validateValue(b.value):a},validateValue:function(b){var a=this,d=a.getErrors(b),c=Ext.isEmpty(d);if(!a.preventMark){if(c){a.clearInvalid()}else{a.markInvalid(d)}}return c},markInvalid:function(c){var b=this,a=b.getActiveError();b.setActiveErrors(Ext.Array.from(c));if(a!==b.getActiveError()){b.updateLayout()}},clearInvalid:function(){var b=this,a=b.hasActiveError();b.unsetActiveError();if(a){b.updateLayout()}},getValue:function(){return this.value||[]},setValue:function(a){this.mixins.field.setValue.call(this,a);this.updateItems()},updateItems:function(){this.store.removeAll();if(Ext.isArray(this.value)){for(var a=0;this.value.length>a;a++){this.store.add({id:this.value[a],name:(this.itemRenderer)?this.itemRenderer(this.value[a]):this.value[a]})}}},clearValue:function(){this.setValue([])},onEnable:function(){var a=this.boundList;this.callParent();if(a){a.enable()}},onDisable:function(){var a=this.boundList;this.callParent();if(a){a.disable()}},getErrors:function(a){return[]},onDestroy:function(){var a=this;a.bindStore(null);Ext.destroy(a.dragZone,a.dropZone);a.callParent()},onBindStore:function(a){var b=this.boundList;if(b){b.bindStore(a)}},RefreshUI:function(){var a=this.down("#cbAvailableTypes").getValue();var b=this.getSelected();this.down("#btnAddType").setDisabled(!a);this.down("#btnRemoveType").setDisabled(!b)}});Ext.define("NAT.form.field.Checkbox",{extend:"Ext.form.field.Checkbox",alias:"widget.natcheckboxfield",validateOnChange:false,validateOnBlur:false,msgTarget:"side",propertyPath:"",hasErrors:function(){return((this.activeErrors)&&(this.activeErrors.length>0))}});Ext.define("NAT.form.field.ComboBox",{extend:"Ext.form.field.ComboBox",alias:"widget.natcombobox",validateOnChange:false,validateOnBlur:false,msgTarget:"side",propertyPath:"",valueField:"id",displayField:"name",editable:false,selectOnFocus:true,typeAhead:true,emptyText:"Please choose!",triggerAction:"none",matchFieldWidth:true,queryMode:"local",listConfig:{loadMask:false,width:400},constructor:function(a){this.store=Ext.create("Ext.data.ArrayStore",{fields:["id","name"],data:[]});if(a.comboData){this.setComboData(a.comboData)}this.callParent([a])},initComponent:function(){this.callParent(arguments);this.on("beforequery",this.this_beforequery,this)},setComboData:function(e){this.store.removeAll();var d=[],f,a;if(Ext.isArray(e[0])){d=e}else{for(var b=0;e.length>b;b++){f=e[b];a=e[b];try{f=JSON.parse(f)}catch(c){}d.push([f,a])}}this.store.add(d)},renderer:function(b,c){if(!this.store){return b}var a=this.store.getById(b);if(!a){return b}return a.get(this.displayField)},this_beforequery:function(){this.expand();return false},BindStore:function(a){this.bindStore(a)},hasErrors:function(){return((this.activeErrors)&&(this.activeErrors.length>0))}});Ext.define("NAT.form.field.Date",{extend:"Ext.form.field.Date",alias:"widget.natdatefield",validateOnChange:false,validateOnBlur:false,msgTarget:"side",propertyPath:"",hasErrors:function(){return((this.activeErrors)&&(this.activeErrors.length>0))}});Ext.define("NAT.form.field.Display",{extend:"Ext.form.field.Display",alias:"widget.natdisplayfield",validateOnChange:false,validateOnBlur:false,msgTarget:"side",propertyPath:"",hasErrors:function(){return((this.activeErrors)&&(this.activeErrors.length>0))}});Ext.define("NAT.form.field.File",{extend:"Ext.form.field.File",alias:"widget.natfilefield",validateOnChange:false,validateOnBlur:false,msgTarget:"side",propertyPath:"",hasErrors:function(){return((this.activeErrors)&&(this.activeErrors.length>0))}});Ext.define("NAT.form.field.Function",{extend:"Ext.form.field.Trigger",alias:"widget.natfunctionfield",requires:["NAT.edit.Source"],validateOnChange:false,validateOnBlur:false,msgTarget:"side",propertyPath:"",editable:false,functionName:"",functionParams:[],editorWindow:null,initComponent:function(){this.callParent(arguments)},onTriggerClick:function(){this.editorWindow=this.createEditor();this.editorWindow.show(null,function(d,c){this.onExpand()},this);this.editorWindow.center()},onExpand:function(){var b=this.getValue();var e=this.editorWindow.down("#sourceedit");if(b){var f=b.params;var a=b.body}else{f=this.functionParams;a="{\n\n}"}var d="function "+this.functionName+"(";if(f){for(var c=0;f.length>c;c++){d+=f[c];if(c<f.length-1){d+=", "}}}d+=")\n";d+=Ext.Array.convertToString(a,true);e.setValue(d);e.focus(false,1)},createEditor:function(){var a=this;return Ext.create("widget.natwindow",{title:"Function Editor",modal:true,height:600,width:1200,layout:{type:"vbox",align:"stretch"},items:[{xtype:"natsourceedit",itemId:"sourceedit",grow:true,fieldStyle:"border: none; background-image: none;",firstRowReadonly:true,lastRowReadonly:true,flex:1},{xtype:"container",layout:{type:"hbox",padding:"5",pack:"end",align:"middle"},defaults:{margins:"0 0 0 5",minWidth:100},cls:"commandpanel",dock:"bottom",items:[{xtype:"natbutton",itemId:"btnOk",text:"Ok",ui:"green",listeners:{scope:a,click:a.btnOk_click}},{xtype:"natbutton",itemId:"btnCancel",text:"Cancel",listeners:{scope:a,click:a.btnCancel_click}}]}]})},btnOk_click:function(a,f){var e=this.editorWindow.down("#sourceedit");var b=e.getAllLines();Ext.Array.erase(b,0,1);var c=Ext.Array.convertToString(b,false);c=Ext.String.removeFromStart(c,"{");c=Ext.String.removeFromEnd(c,"}");c=c.replace(/\s/g,"");if(c){c={params:this.functionParams,body:b}}else{c=null}this.setValue(c);this.editorWindow.close();this.focus(false,60)},btnCancel_click:function(){this.editorWindow.close();this.focus(false,60)},rawToValue:function(a){if(a=="Function..."){a=null}return a},valueToRaw:function(a){return a},getRawValue:function(){return this.rawValue},setRawValue:function(b){var a=this;a.rawValue=b;if(a.inputEl){a.inputEl.dom.value="Function..."}return b},isValid:function(){return true},hasErrors:function(){return((this.activeErrors)&&(this.activeErrors.length>0))}});Ext.define("NAT.form.field.Hidden",{extend:"Ext.form.field.Hidden",alias:"widget.nathiddenfield",validateOnChange:false,validateOnBlur:false,msgTarget:"side",propertyPath:"",hasErrors:function(){return((this.activeErrors)&&(this.activeErrors.length>0))}});Ext.define("NAT.form.field.HtmlEditor",{extend:"Ext.form.field.HtmlEditor",alias:"widget.htmleditor",validateOnChange:false,validateOnBlur:false,msgTarget:"side",propertyPath:"",hasErrors:function(){return((this.activeErrors)&&(this.activeErrors.length>0))}});Ext.define("NAT.form.field.Lookup",{extend:"Ext.form.field.ComboBox",alias:"widget.natlookupfield",validateOnChange:false,validateOnBlur:false,msgTarget:"side",propertyPath:"",valueField:"_id",displayField:"name",editable:false,selectOnFocus:true,typeAhead:true,emptyText:"Please choose!",triggerAction:"none",matchFieldWidth:true,queryMode:"local",listConfig:{loadMask:false,width:400},initComponent:function(){this.callParent(arguments);this.on("beforequery",this.this_beforequery,this)},this_beforequery:function(){this.expand();return false},renderer:function(b,c){if(!this.store){return b}var a=this.store.getById(b);if(!a){return b}return a.get(this.displayField)},BindStore:function(a){this.bindStore(a)},hasErrors:function(){return((this.activeErrors)&&(this.activeErrors.length>0))}});Ext.define("NAT.form.field.Object",{extend:"Ext.form.field.Trigger",alias:"widget.natobjectfield",requires:["NAT.edit.Source"],validateOnChange:false,validateOnBlur:false,msgTarget:"side",propertyPath:"",editable:false,functionName:"",functionParams:[],editorWindow:null,initComponent:function(){this.callParent(arguments)},onTriggerClick:function(){this.editorWindow=this.createEditor();this.editorWindow.show(null,function(d,c){this.onExpand()},this);this.editorWindow.center()},onExpand:function(){var a=this.getValue();var c=this.editorWindow.down("#sourceedit");var b=Ext.Array.convertToString(a,true);if(!b){b="{\n\n}"}c.setValue(b);c.focus(false,1)},createEditor:function(){var a=this;return Ext.create("widget.natwindow",{title:"Object Editor",modal:true,height:600,width:800,layout:{type:"vbox",align:"stretch"},items:[{xtype:"natsourceedit",itemId:"sourceedit",parser:"text",grow:true,fieldStyle:"border: none; background-image: none;",firstRowReadonly:false,lastRowReadonly:false,flex:1},{xtype:"container",layout:{type:"hbox",padding:"5",pack:"end",align:"middle"},defaults:{margins:"0 0 0 5",minWidth:100},cls:"commandpanel",dock:"bottom",items:[{xtype:"natbutton",itemId:"btnOk",text:"Ok",ui:"green",listeners:{scope:a,click:a.btnOk_click}},{xtype:"natbutton",itemId:"btnCancel",text:"Cancel",listeners:{scope:a,click:a.btnCancel_click}}]}]})},btnOk_click:function(a,e){var c=this.editorWindow.down("#sourceedit");var b=c.getAllLines();if(Ext.Object.isEmpty(Ext.Array.convertToObject(b))){b=null}this.setValue(b);this.editorWindow.close();this.focus(false,60)},btnCancel_click:function(){this.editorWindow.close();this.focus(false,60)},rawToValue:function(a){if(a=="Object..."){a=null}return a},valueToRaw:function(a){return a},getRawValue:function(){return this.rawValue},setRawValue:function(b){var a=this;a.rawValue=b;if(a.inputEl){a.inputEl.dom.value="Object..."}return b},isValid:function(){return true},hasErrors:function(){return((this.activeErrors)&&(this.activeErrors.length>0))}});Ext.define("NAT.form.field.Radio",{extend:"Ext.form.field.Radio",alias:"widget.natradiofield",validateOnChange:false,validateOnBlur:false,msgTarget:"side",propertyPath:"",propertyValue:"",hasErrors:function(){return((this.activeErrors)&&(this.activeErrors.length>0))}});Ext.define("NAT.form.field.StringArray",{extend:"Ext.form.field.TextArea",alias:"widget.natstringarrayfield",validateOnChange:false,validateOnBlur:false,msgTarget:"side",propertyPath:"",getValue:function(){var a=this.callParent(arguments);if(a){return a.split(",")}else{return[]}},setValue:function(c){c=c||[];var a="";for(var b=0;c.length>b;b++){a+=c[b];if(c.length>b){a+=","}}this.callParent([a])},hasErrors:function(){return((this.activeErrors)&&(this.activeErrors.length>0))}});Ext.define("NAT.form.field.StringArrayPicker",{extend:"Ext.form.field.Picker",alias:"widget.natstringarraypickerfield",requires:["Ext.form.field.TextArea"],validateOnChange:false,validateOnBlur:false,msgTarget:"side",propertyPath:"",editable:false,matchFieldWidth:false,initComponent:function(){this.callParent(arguments)},createPicker:function(){var a=this;return Ext.create("Ext.container.Container",{renderTo:document.body,floating:true,hidden:true,height:400,width:600,layout:{type:"vbox",align:"stretch"},items:[{xtype:"textarea",itemId:"textarea",grow:true,fieldStyle:"border: none; background-image: none;",flex:1},{xtype:"button",itemId:"btnOk",text:"ok",dock:"bottom",listeners:{scope:a,click:a.btnOk_click}}],style:{background:"white"}})},btnOk_click:function(a,e){var b=this.picker.down("#textarea");var c=b.getValue();this.setRawValue(c);this.collapse()},onExpand:function(){var b=this.getRawValue();var a=this.picker.down("#textarea");a.setValue(b);a.focus(false,1)},onCollapse:function(){this.focus(false,60)},rawToValue:function(a){return a.split("\n")},valueToRaw:function(c){if(!Ext.isArray(c)){return""}var b="";for(var a=0;c.length>a;a++){b+=c[a];if(c.length-1>a){b+="\n"}}return b},getRawValue:function(){return this.rawValue},setRawValue:function(b){var a=this;a.rawValue=b;if(a.inputEl){a.inputEl.dom.value="String Array..."}return b},hasErrors:function(){return((this.activeErrors)&&(this.activeErrors.length>0))}});Ext.define("NAT.form.field.Text",{extend:"Ext.form.field.Text",alias:"widget.nattextfield",validateOnChange:false,validateOnBlur:false,msgTarget:"side",propertyPath:"",hasErrors:function(){return((this.activeErrors)&&(this.activeErrors.length>0))}});Ext.define("NAT.form.field.TextArea",{extend:"Ext.form.field.TextArea",alias:"widget.nattextarea",validateOnChange:false,validateOnBlur:false,msgTarget:"side",propertyPath:"",initComponent:function(){this.callParent(arguments)},Write:function(a){var b=this.getValue();this.setValue(b+a)},Writeln:function(a){var b=this.getValue();this.setValue(b+a+" \n")},hasErrors:function(){return((this.activeErrors)&&(this.activeErrors.length>0))}});Ext.define("NAT.form.field.Time",{extend:"Ext.form.field.Time",alias:"widget.nattimefield",validateOnChange:false,validateOnBlur:false,msgTarget:"side",propertyPath:"",hasErrors:function(){return((this.activeErrors)&&(this.activeErrors.length>0))}});Ext.define("NAT.form.field.Trigger",{extend:"Ext.form.field.Trigger",alias:"widget.nattriggerfield",validateOnChange:false,validateOnBlur:false,msgTarget:"side",propertyPath:"",hasErrors:function(){return((this.activeErrors)&&(this.activeErrors.length>0))}});Ext.define("NAT.form.Panel",{extend:"Ext.form.Panel",alias:"widget.natform",store:null,propertyPath:"",children:[],isChanging:false,initComponent:function(){this.callParent(arguments);this.UpdateChildren()},UpdateChildren:function(){this.children=[];this.UpdateChildren_req(this)},UpdateChildren_req:function(a){if(!a.items){return}for(var b=0;a.items.getCount()>b;b++){var c=a.items.getAt(b);if(c.isFormField){this.children.push(c)}else{if(c.$className==="NAT.form.Panel"){this.children.push(c)}else{if(c.$className==="NAT.grid.Panel"){this.children.push(c)}else{if(c.$className==="NAT.tree.Panel"){this.children.push(c)}else{this.UpdateChildren_req(c)}}}}}},BindStore:function(a){this.store=a;this.InitBinding()},InitBinding:function(){if(!this.store){return}this.mon(this.store,"currentmodelchanged",function(c){this.ReadAllValue()},this);this.mon(this.store,"update",function(d,e,c,f){if(e==this.store.currModel){if(f.length>0){this.ReadValue(f[0],e.get(f[0]))}}},this);for(var a=0;this.children.length>a;a++){var b=this.children[a];if(b.isFormField){b.on("change",this.WriteValue,this);b.on("blur",this.field_blur,this)}}this.ReadAllValue()},field_blur:function(a,b){if(a.validateOnBlur||a.validateOnChange){return}if(!this.store){return}if(!this.store.hasModel()){return}this.store.currModel.ValidateField(a.propertyPath,function(d,e){if(a.preventMark){return}var c=this.store.currModel.errors.getByField(a.propertyPath);var f=(c.length==0);if(f){a.clearInvalid()}else{a.markInvalid(c[0].message)}},this)},ValidateEditorFields:function(d,c,a){d=d||{};if(!this.store){return}if(!this.store.hasModel()){return}this.store.currModel.errors.removeAll();var b=this;async.forEach(this.GetChildFields(),function(f,e){b.store.currModel.ValidateField(f.propertyPath,function(g,h){e(null,null)},b)},function(e,f){b.ShowErrors();if(b.store.currModel.errors.isValid()){Ext.callback(c,a,[null,null],0)}else{if(!d.skipFocusFirstInvalidField){b.FocusFirstInvalidField()}Ext.callback(c,a,[b.store.currModel.errors,null],0)}})},ValidateEditor:function(d,c,a){d=d||{};if(!this.store){return}if(!this.store.hasModel()){return}this.store.currModel.errors.removeAll();var b=this;this.store.currModel.ValidateModel(null,function(e,f){b.ShowErrors();if(b.store.currModel.errors.isValid()){Ext.callback(c,a,[null,null],0)}else{if(!d.skipFocusFirstInvalidField){b.FocusFirstInvalidField()}Ext.callback(c,a,[b.store.currModel.errors,null],0)}},this)},ShowErrors:function(){if(!this.store){return}if(!this.store.hasModel()){return}var b=this.GetChildFields();for(var c=0;b.length>c;c++){var e=b[c];if(e.preventMark){continue}var a=this.store.currModel.errors.getByField(e.propertyPath);var d=(a.length==0);if(d){e.clearInvalid()}else{e.markInvalid(a[0].message)}}},GetChildFields:function(){return Ext.Array.filter(this.children,function(a){return a.isFormField})},ReadAllValue:function(){if(this.isChanging){return}if(!this.store){return}if(!this.store.hasModel()){return}for(var a=0;this.children.length>a;a++){var c=this.children[a];if(!c.propertyPath){continue}if((c.isFormField)&&(c.$className==="NAT.form.field.Radio")){var b=this.store.currModel.get(c.propertyPath);this.isChanging=true;c.setValue(c.propertyValue===b);this.isChanging=false;continue}if(c.isFormField){this.isChanging=true;c.setValue(this.store.currModel.get(c.propertyPath));this.isChanging=false;continue}if(typeof c.BindStore=="function"){c.BindStore(this.store.currModel[c.propertyPath])}}},ReadValue:function(d,b){if(this.isChanging){return}for(var a=0;this.children.length>a;a++){var c=this.children[a];if(c.propertyPath==d){if((c.isFormField)&&(c.$className==="NAT.form.field.Radio")){this.isChanging=true;c.setValue(c.propertyValue===b);this.isChanging=false;continue}if(c.isFormField){this.isChanging=true;c.setValue(b);this.isChanging=false}}}},WriteValue:function(c,b,a,d){if(this.isChanging){return}if(!this.store){return}if(!this.store.hasModel()){return}if(c.$className==="NAT.form.field.Radio"){this.isChanging=true;this.store.currModel.set(c.propertyPath,c.propertyValue);this.isChanging=false;this.ReadAllRadioValue();return}this.isChanging=true;this.store.currModel.set(c.propertyPath,b);this.isChanging=false},ReadAllRadioValue:function(){if(this.isChanging){return}if(!this.store){return}if(!this.store.hasModel()){return}for(var a=0;this.children.length>a;a++){var c=this.children[a];if(!c.propertyPath){continue}if((c.isFormField)&&(c.$className==="NAT.form.field.Radio")){var b=this.store.currModel.get(c.propertyPath);this.isChanging=true;c.setValue(c.propertyValue===b);this.isChanging=false}}},SetEditable:function(d){var c=this.getForm();var a=c.getFields();for(var b=0;b<a.length;b++){var e=a.getAt(b);e.setReadOnly(!d)}},FocusFirstField:function(){var b=this.getForm();var a=b.getFields();if(a.length>0){var c=a.getAt(0);c.focus(true,200)}},FocusFirstInvalidField:function(){var c=this.getForm();var a=c.getFields();for(var b=0;b<a.length;b++){var d=a.getAt(b);if(d.hasErrors()){d.focus(true,200);return}}},Refresh:function(c,b,a){Ext.callback(b,a,[null,null],0)}});Ext.define("NAT.grid.column.Lookup",{extend:"Ext.grid.column.Column",alias:"widget.natlookupcolumn",initComponent:function(){this.callParent(arguments);if(!this.renderer){this.renderer=function(f,c,b,g,e){var d=this.columns[e],a=d.field.renderer(f,b);return Ext.util.Format.htmlEncode(a)}}},BindStore:function(a){this.getEditor().bindStore(a);this.fireEvent("bindstore",this,a)}});Ext.define("NAT.grid.column.Check",{extend:"Ext.grid.column.Column",alias:"widget.natcheckcolumn",constructor:function(){this.callParent(arguments)},renderer:function(c,b){var d=Ext.baseCSSPrefix,a=[d+"form-checkbox"];if(c){b.tdCls=d+"form-cb-checked"}b.style="text-align: -webkit-center;";return'<input type="button" class="'+a.join(" ")+'">'}});Ext.define("NAT.grid.Panel",{extend:"Ext.grid.Panel",alias:"widget.natgrid",requires:["Ext.grid.plugin.CellEditing"],deferredBind:false,deferredBindStore:null,constructor:function(a){this.callParent([a]);return this},initComponent:function(){this.viewConfig=Ext.applyIf(this.viewConfig||{},{loadMask:false});this.callParent(arguments);for(var a=0;this.columns.length>a;a++){var b=this.columns[a];if(b.natIsLookup){b.on("bindstore",this.luColumn_bindstore,this)}}this.on("beforedeselect",this.this_beforedeselect,this);this.on("select",this.this_select,this);this.on("deselect",this.this_deselect,this);this.on("afterrender",this.this_afterrender,this)},this_beforedeselect:function(b,a){},this_select:function(b,a){if(!this.store){return}this.store.Select(a)},this_deselect:function(b,a){if(!this.store){return}this.store.Deselect()},this_afterrender:function(){if(this.deferredBind){this.bindStore(this.deferredBindStore);this.deferredBind=false;this.deferredBindStore=null}},luColumn_bindstore:function(b,a){this.mon(a,"LoadCompleted",function(e,c,d){if(e&&e.length>0){this.getView().refresh()}},this)},BindStore:function(a){if(this.IsVisible()){this.bindStore(a)}else{this.deferredBind=true;this.deferredBindStore=a}},getSelected:function(){var a=this.getSelectionModel().getSelection();if(a.length==0){return null}return a[0]},Select:function(c,b,a){this.getSelectionModel().select(c,b,a)},Deselect:function(b,a){this.getSelectionModel().deselect(b,a)}});Ext.define("natjs.overrides.app.Application",{requires:["Ext.app.Application"]},function(){Ext.override(Ext.app.Application,{baseUrl:"",modelNamespace:"",constructor:function(a){a=a||{};Ext.global.app=this;this.baseUrl=this.GetBaseURL();this.modelNamespace=a.name+".model.";return this.callParent([a])},GetModelNameWithNamespace:function(a){if(Ext.String.startsWith(a,this.modelNamespace)){return a}return this.modelNamespace+a},GetModelNameWithoutNamespace:function(a){if(!Ext.String.startsWith(a,this.modelNamespace)){return a}return a.slice(this.modelNamespace.length)},GetBaseURL:function(){var a=location.href;var b=a.substring(0,a.indexOf("/",14));return b+"/"},ShowLoadingMask:function(){var a="Please wait...";Ext.getBody().mask(a,"loading")},HideLoadingMask:function(){Ext.getBody().unmask()},ShowLoadingMaskOnAjax:function(){var a="Please wait...";Ext.Ajax.on("beforerequest",function(){Ext.getBody().mask(a,"loading")},Ext.getBody());Ext.Ajax.on("requestcomplete",Ext.getBody().unmask,Ext.getBody());Ext.Ajax.on("requestexception",Ext.getBody().unmask,Ext.getBody())},natCreateModel:function(d,c){c=c||{};var g="";if(Ext.isString(d)){g=d}else{if(Ext.isFunction(d)){g=d.$className}}if(g==""){return null}var f=this.GetModelNameWithNamespace(g);var a=Ext.create(f);a.beginEdit();a.set("_type",g);a.set(c);for(var e=0;e<a.associations.length;e++){var b=a.associations.items[e];b.Created(a)}return a}})});Ext.define("natjs.overrides.container.Container",{requires:["Ext.container.Container"]},function(){Ext.override(Ext.container.Container,{queryByComponentId:function(a){var b=this.queryBy(function(c){return(c.id==a)},this);return(b.length==1)?b[0]:null},getChildByElement:function(e,a){var g,c,b=0,d=this.getRefItems(),f=d.length;e=Ext.getDom(e);for(;b<f;b++){g=d[b];c=g.getEl();if(c&&((c.dom===e)||c.contains(e))){if(a&&g.getChildByElement){return(g.getChildByElement(e,a))||g}else{return g}}}return null}})});Ext.define("natjs.overrides.data.BelongsToAssociation",{requires:["Ext.data.BelongsToAssociation"]},function(){Ext.override(Ext.data.BelongsToAssociation,{constructor:function(c){var e=this;Ext.data.BelongsToAssociation.superclass.constructor.call(this,c);var a=e.ownerModel.prototype,d=e.getterName||"get"+e.name,b=e.setterName||"set"+e.name;Ext.applyIf(e,{storeName:"belongsTo_"+e.name,foreignKey:e.name+"_id",associationKey:e.name});a[d]=e.createGetter();a[b]=e.createSetter();a[e.name]=e.createStore()},createStore:function(){var f=this,g=f.associatedModel,c=f.storeName,d=f.foreignKey,a=f.primaryKey,b=f.autoLoad,e=f.storeConfig||{};return function(){var l=this,j,k,h={};if(l[c]===undefined){h[d]=l.get(a);j=Ext.apply({},e,{model:g,modelDefaults:h});l[c]=Ext.create("widget.natmodelstore",j);if(b){l[c].load()}l[c].on("update",l.associationChanged,l);l[c].on("add",l.associationChanged,l);l[c].on("remove",l.associationChanged,l)}return l[c]}},Created:function(a){var b=a[this.name]();b.CreateModel()},Merge:function(a,c){var b=a[this.storeName];var d=c[this.storeName];b.Merge(d)},read:function(b,e){var c=b[this.name](),d=c.proxy,a=d.getReader();var f=a.read([e]).records[0];c.setModel(f);f.Loaded()},write:function(a,e){var b=a[this.storeName],c=b.proxy,d=c.getWriter();e[this.name]=d.getRecordData(b.model)},reject:function(a,c){var b=a[this.storeName];if(b){b.reject()}},commit:function(a,c){var b=a[this.storeName];if(b){b.commit()}},IsChanged:function(a){var b=a[this.storeName];return b.IsChanged()}})});Ext.define("natjs.overrides.data.HasManyAssociation",{requires:["Ext.data.HasManyAssociation"]},function(){Ext.override(Ext.data.HasManyAssociation,{constructor:function(c){var d=this,a,b;Ext.data.HasManyAssociation.superclass.constructor.call(this,c);d.name=d.name||Ext.util.Inflector.pluralize(d.associatedName.toLowerCase());a=d.ownerModel.prototype;b=d.name;Ext.applyIf(d,{storeName:"hasMany_"+d.name,foreignKey:d.ownerName.toLowerCase()+"_id"});a[b]=d.createStore()},createStore:function(){var g=this,h=g.associatedModel,c=g.storeName,d=g.foreignKey,a=g.primaryKey,f=g.filterProperty,b=g.autoLoad,e=g.storeConfig||{};return function(){var m=this,k,l,j={};if(m[c]===undefined){if(f){l={property:f,value:m.get(f),exactMatch:true}}else{l={property:d,value:m.get(a),exactMatch:true}}j[d]=m.get(a);k=Ext.apply({},e,{model:h,filters:[l],remoteFilter:false,modelDefaults:j});m[c]=Ext.create("widget.natstore",k);if(b){m[c].load()}m[c].on("update",m.associationChanged,m);m[c].on("add",m.associationChanged,m);m[c].on("remove",m.associationChanged,m)}return m[c]}},Created:function(a){a[this.name]()},Merge:function(a,c){var b=a[this.storeName];var d=c[this.storeName];b.Merge(d)},read:function(c,h){var e=c[this.name](),g=e.proxy,a=g.getReader(),b;var d=a.read(h).records;e.add(d);for(var f=0;f<d.length;f++){d[f].Loaded()}b=this.associatedModel.prototype.associations.findBy(function(j){return j.type==="belongsTo"&&j.associatedName===c.$className});if(b){e.data.each(function(j){j[b.instanceName]=c})}},write:function(a,e){var b=a[this.storeName],c=b.proxy,d=c.getWriter();var f=e[this.name]=[];b.data.each(function(h){var g=d.getRecordData(h);f.push(g)})},reject:function(a,c){var b=a[this.storeName];if(b){b.reject()}},commit:function(a,c){var b=a[this.storeName];if(b){b.commit()}},IsChanged:function(a){var b=a[this.storeName];return b.IsChanged()}})});Ext.define("natjs.overrides.data.validations",{requires:["Ext.data.validations"]},function(){Ext.data.validations.presenceMessage="This field is required";Ext.data.validations.getMessage=function(a){if(a.type=="length"){return"Length must be minimum "+a.min+" and maximum "+a.max+" character!"}return null}});Ext.define("natjs.overrides.grid.CellEditor",{requires:["Ext.grid.CellEditor"]},function(){Ext.override(Ext.grid.CellEditor,{realign:function(f){var l=this,h=l.boundEl,k=h.first(),c=k.dom.childNodes,g=c.length,e=Ext.Array.clone(l.offsets),m=l.field.inputEl,b,j,o,a,n;var d=h;var p=h.getViewSize();if(g===1&&c[0].nodeType!==3){d=c[0];p={width:d.offsetWidth,height:d.offsetHeight}}if(f===true){l.field.setWidth(p.width);l.field.setHeight(p.height)}e[0]-=m.dom.offsetLeft;e[1]-=m.dom.offsetTop;l.alignTo(d,l.alignment,e)}})});Ext.define("natjs.overrides.AbstractComponent",{requires:["Ext.AbstractComponent"]},function(){Ext.override(Ext.AbstractComponent,{deferredUpdateFrame:false,viewNode:null,initComponent:function(){this.callParent(arguments);this.on("move",this.this_move,this);this.on("resize",this.this_resize,this);this.on("afterrender",this.this_afterrender,this)},this_move:function(b,a,d,c){if(!this.viewNode){return}},this_resize:function(c,d,a,b,f,e){if(!this.viewNode){return}},this_afterrender:function(){if(this.deferredUpdateFrame){this.updateFrame();this.deferredUpdateFrame=false}},IsVisible:function(c){var b=this.up("tabpanel");if(!b){return this.isVisible(c)}var a=b.getActiveTab();return((this===a)||(this.isDescendantOf(a)))},getFramedChildren:function(){var a=[];if(this.items){a=this.queryBy(function(b){return(!!b.isFocusFramed)},this)}return a},updateFrame:function(){if(!this.IsVisible()){this.deferredUpdateFrame=true;return}if(((this.isFocusFramed)||(this.isSelectFramed))&&(!this.isNatFramed)){var b=this.getEl();var a=[];a.push('<div id="'+b.id+'-north-frame" class="viewedit-focus-frame viewedit-focus-frame-north"></div>');a.push('<div id="'+b.id+'-east-frame" class="viewedit-focus-frame viewedit-focus-frame-east"></div>');a.push('<div id="'+b.id+'-south-frame" class="viewedit-focus-frame viewedit-focus-frame-south"></div>');a.push('<div id="'+b.id+'-west-frame" class="viewedit-focus-frame viewedit-focus-frame-west"></div>');b.position();Ext.DomHelper.append(b,a.join(""));this["north-frame"]=b.getById(b.id+"-north-frame");this["east-frame"]=b.getById(b.id+"-east-frame");this["south-frame"]=b.getById(b.id+"-south-frame");this["west-frame"]=b.getById(b.id+"-west-frame");this.isNatFramed=true}if(this.isSelectFramed){this["north-frame"].addCls("viewedit-select-frame");this["east-frame"].addCls("viewedit-select-frame");this["south-frame"].addCls("viewedit-select-frame");this["west-frame"].addCls("viewedit-select-frame")}if((this.isFocusFramed)&&(!this.isSelectFramed)){this["north-frame"].removeCls("viewedit-select-frame");this["east-frame"].removeCls("viewedit-select-frame");this["south-frame"].removeCls("viewedit-select-frame");this["west-frame"].removeCls("viewedit-select-frame")}if((!this.isFocusFramed)&&(!this.isSelectFramed)&&(this.isNatFramed)){this["north-frame"].remove();this["east-frame"].remove();this["south-frame"].remove();this["west-frame"].remove();this.isNatFramed=false}},focusFrame:function(){this.isFocusFramed=true;this.updateFrame()},unFocusFrame:function(){this.isFocusFramed=false;this.updateFrame()},selectFrame:function(){this.isSelectFramed=true;this.updateFrame()},unSelectFrame:function(){this.isSelectFramed=false;this.updateFrame()}})});Ext.define("natjs.overrides.Object",{},function(){Ext.Array.find=function(array,attribute,value){if(!array){return}var matches=Ext.Array.filter(array,function(item){return(item[attribute]==value)});if(matches.length>0){return matches[0]}return null};Ext.Array.findAll=function(array,attribute,value){if(!array){return}return Ext.Array.filter(array,function(item){return(item[attribute]==value)})};Ext.Array.convertToString=function(array,includeNewLine){if(!array){return""}var result="";for(var j=0;array.length>j;j++){result+=array[j];if((includeNewLine)&&(j<array.length-1)){result+="\n"}}return result};Ext.Array.convertToObject=function(array){var strValue=Ext.Array.convertToString(array,false);strValue=Ext.String.removeFromStart(strValue,"{");strValue=Ext.String.removeFromEnd(strValue,"}");var properties=strValue.split(",");var obj={};properties.forEach(function(property){if(!property){return}var tup=property.split(":");tup[0]=Ext.String.trim(tup[0]);tup[1]=Ext.String.trim(tup[1]);if(Ext.String.startsWith(tup[1],"function")){obj[tup[0]]=tup[1]}else{obj[tup[0]]=eval(tup[1])}});return obj}});Ext.define("Ext.data.NodeInterface",{requires:["Ext.data.Field"],statics:{decorate:function(b){var a,c;if(typeof b=="string"){b=Ext.ModelManager.getModel(b)}else{if(b.isModel){b=Ext.ModelManager.getModel(b.modelName)}}if(b.prototype.isNode){return}a=b.prototype.idProperty;c=b.prototype.fields.get(a).type.type;b.override(this.getPrototypeBody());this.applyFields(b,[{name:"parentId",type:c,defaultValue:null},{name:"index",type:"int",defaultValue:null},{name:"depth",type:"int",defaultValue:0},{name:"expanded",type:"bool",defaultValue:false,persist:false},{name:"expandable",type:"bool",defaultValue:true,persist:false},{name:"checked",type:"auto",defaultValue:null,persist:false},{name:"leaf",type:"bool",defaultValue:false},{name:"cls",type:"string",defaultValue:null,persist:false},{name:"iconCls",type:"string",defaultValue:null,persist:false},{name:"icon",type:"string",defaultValue:null,persist:false},{name:"root",type:"boolean",defaultValue:false,persist:false},{name:"isLast",type:"boolean",defaultValue:false,persist:false},{name:"isFirst",type:"boolean",defaultValue:false,persist:false},{name:"allowDrop",type:"boolean",defaultValue:true,persist:false},{name:"allowDrag",type:"boolean",defaultValue:true,persist:false},{name:"loaded",type:"boolean",defaultValue:false,persist:false},{name:"loading",type:"boolean",defaultValue:false,persist:false},{name:"href",type:"string",defaultValue:null,persist:false},{name:"hrefTarget",type:"string",defaultValue:null,persist:false},{name:"qtip",type:"string",defaultValue:null,persist:false},{name:"qtitle",type:"string",defaultValue:null,persist:false},{name:"children",type:"auto",defaultValue:null,persist:false}])},applyFields:function(c,b){var g=c.prototype,a=g.fields,f=a.keys,e=b.length,h,d;for(d=0;d<e;d++){h=b[d];if(!Ext.Array.contains(f,h.name)){a.add(new Ext.data.Field(h))}}},removeField:function(b,d){var c=b.prototype,a=c.fields;return a.removeAtKey(d)},removeFields:function(h,f){var b=h.prototype,e=b.fields,k=e.keys,g=f.length,c,d,a,j=[];for(d=0;d<g;d++){c=j[d];if(Ext.Array.contains(k,c.name)){j.push(c);e.remove(c)}}return j},getPrototypeBody:function(){return{isNode:true,constructor:function(){var a=this;this.callParent(arguments);Ext.applyIf(a,{firstChild:null,lastChild:null,parentNode:null,previousSibling:null,nextSibling:null,childNodes:[]});a.enableBubble(["append","remove","move","insert","beforeappend","beforeremove","beforemove","beforeinsert","expand","collapse","beforeexpand","beforecollapse","sort"]);return a},createNode:function(a){if(Ext.isObject(a)&&!a.isModel){a=Ext.ModelManager.create(a,this.modelName)}if(!a.childNodes){Ext.applyIf(a,{firstChild:null,lastChild:null,parentNode:null,previousSibling:null,nextSibling:null,childNodes:[]})}return a},isLeaf:function(){return this.get("leaf")===true},setFirstChild:function(a){this.firstChild=a},setLastChild:function(a){this.lastChild=a},updateInfo:function(f){var l=this,b=l.isRoot(),j=l.parentNode,d=(!j||b?true:j.firstChild===l),h=(!j||b?true:j.lastChild===l),g=0,m=l,a=l.childNodes,k=a.length,e=0,c=l.phantom;while(m.parentNode){++g;m=m.parentNode}l.beginEdit();l.set({isFirst:d,isLast:h,depth:g,index:j?j.indexOf(l):0,parentId:j?j.getId():null});l.endEdit(true);if(f){l.commit();l.phantom=c}for(e=0;e<k;e++){a[e].updateInfo(f)}},isLast:function(){return this.get("isLast")},isFirst:function(){return this.get("isFirst")},hasChildNodes:function(){return !this.isLeaf()&&this.childNodes.length>0},isExpandable:function(){var a=this;if(a.get("expandable")){return !(a.isLeaf()||(a.isLoaded()&&!a.hasChildNodes()))}return false},appendChild:function(b,j,c){var g=this,d,f,e,h,a;if(Ext.isArray(b)){g.callStore("suspendAutoSync");for(d=0,f=b.length-1;d<f;d++){g.appendChild(b[d])}g.callStore("resumeAutoSync");g.appendChild(b[f])}else{b=g.createNode(b);if(j!==true&&(!g.hasListeners.beforeappend||g.fireEvent("beforeappend",g,b)===false)){return false}e=g.childNodes.length;h=b.parentNode;if(h){if(j!==true&&(!g.hasListeners.beforeremove||b.fireEvent("beforemove",b,h,g,e)===false)){return false}h.removeChild(b,false,false,true)}e=g.childNodes.length;if(e===0){g.setFirstChild(b)}g.childNodes.push(b);b.parentNode=g;b.nextSibling=null;g.setLastChild(b);a=g.childNodes[e-1];if(a){b.previousSibling=a;a.nextSibling=b;a.updateInfo(c)}else{b.previousSibling=null}b.updateInfo(c);if(!g.isLoaded()){g.set("loaded",true)}else{if(g.childNodes.length===1){if(!g.editing){g.afterEdit([])}}}if(!b.isLeaf()&&b.phantom){b.set("loaded",true)}if(j!==true){g.fireEvent("append",g,b,e);if(h){b.fireEvent("move",b,h,g,e)}}for(var k=0;g.stores.length>k;k++){if(g.stores[k].getRootNode){b.join(g.stores[k])}}return b}},getBubbleTarget:function(){return this.parentNode},removeChild:function(a,f,h,g){var e=this,d=e.indexOf(a),c,b;if(d==-1||(h!==true&&(!e.hasListeners.beforeremove||e.fireEvent("beforeremove",e,a,!!g)===false))){return false}Ext.Array.erase(e.childNodes,d,1);if(e.firstChild==a){e.setFirstChild(a.nextSibling)}if(e.lastChild==a){e.setLastChild(a.previousSibling)}if(a.previousSibling){a.previousSibling.nextSibling=a.nextSibling}if(a.nextSibling){a.nextSibling.previousSibling=a.previousSibling}for(c=d>0?d-1:0,b=e.childNodes.length;c<b;c++){e.childNodes[c].updateInfo()}if(!e.childNodes.length){e.set("loaded",e.isLoaded())}if(h!==true){if(e.hasListeners.remove){e.fireEvent("remove",e,a,!!g)}}for(var j=0;e.stores.length>j;j++){if(e.stores[j].getRootNode){a.unjoin(e.stores[j])}}if(f){a.destroy(true)}else{a.clear()}return a},copy:function(d,c){var f=this,b=f.callOverridden(arguments),a=f.childNodes?f.childNodes.length:0,e;if(c){for(e=0;e<a;e++){b.appendChild(f.childNodes[e].copy(true))}}return b},clear:function(a){var b=this;b.parentNode=b.previousSibling=b.nextSibling=null;if(a){b.firstChild=b.lastChild=null}},destroy:function(b){var d=this,c=d.destroyOptions,a=d.childNodes,e=a.length,f;if(b===true){d.clear(true);for(f=0;f<e;f++){a[f].destroy(true)}d.childNodes=null;delete d.destroyOptions;d.callOverridden([c])}else{d.destroyOptions=b;d.remove(true)}},insertBefore:function(b,f,k){var g=this,e=g.indexOf(f),h=b.parentNode,j=e,c,a,d;if(!f){return g.appendChild(b)}if(b==f){return false}b=g.createNode(b);if(k!==true&&(!g.hasListeners.beforeinsert||g.fireEvent("beforeinsert",g,b,f)===false)){return false}if(h==g&&g.indexOf(b)<e){j--}if(h){if(k!==true&&(!g.hasListeners.beforeremove||b.fireEvent("beforemove",b,h,g,e,f)===false)){return false}h.removeChild(b,false,false,true)}if(j===0){g.setFirstChild(b)}Ext.Array.splice(g.childNodes,j,0,b);b.parentNode=g;b.nextSibling=f;f.previousSibling=b;a=g.childNodes[j-1];if(a){b.previousSibling=a;a.nextSibling=b}else{b.previousSibling=null}for(d=j>0?j-1:0,c=g.childNodes.length;d<c;d++){g.childNodes[d].updateInfo()}if(!g.isLoaded()){g.set("loaded",true)}else{if(g.childNodes.length===1){g.set("loaded",g.isLoaded())}}if(!b.isLeaf()&&b.phantom){b.set("loaded",true)}if(k!==true){if(g.hasListeners.insert){g.fireEvent("insert",g,b,f)}if(h&&g.hasListeners.move){b.fireEvent("move",b,h,g,j,f)}}for(var l=0;g.stores.length>l;l++){if(g.stores[l].getRootNode){b.join(g.stores[l])}}return b},insertChild:function(a,c){var b=this.childNodes[a];if(b){return this.insertBefore(c,b)}else{return this.appendChild(c)}},remove:function(b,c){var a=this.parentNode;if(a){a.removeChild(this,b,c)}return this},removeAll:function(a,b){var d=this.childNodes,c;while((c=d[0])){this.removeChild(c,a,b)}return this},getChildAt:function(a){return this.childNodes[a]},replaceChild:function(a,d,c){var b=d?d.nextSibling:null;this.removeChild(d,false,c);this.insertBefore(a,b,c);return d},indexOf:function(a){return Ext.Array.indexOf(this.childNodes,a)},indexOfId:function(d){var c=this.childNodes,a=c.length,b=0;for(;b<a;++b){if(c[b].getId()===d){return b}}return -1},getPath:function(d,c){d=d||this.idProperty;c=c||"/";var b=[this.get(d)],a=this.parentNode;while(a){b.unshift(a.get(d));a=a.parentNode}return c+b.join(c)},getDepth:function(){return this.get("depth")},bubble:function(c,b,a){var d=this;while(d){if(c.apply(b||d,a||[d])===false){break}d=d.parentNode}},cascade:function(){if(Ext.isDefined(Ext.global.console)){Ext.global.console.warn("Ext.data.Node: cascade has been deprecated. Please use cascadeBy instead.")}return this.cascadeBy.apply(this,arguments)},cascadeBy:function(d,c,a){if(d.apply(c||this,a||[this])!==false){var f=this.childNodes,e=f.length,b;for(b=0;b<e;b++){f[b].cascadeBy(d,c,a)}}},eachChild:function(d,c,a){var f=this.childNodes,e=f.length,b;for(b=0;b<e;b++){if(d.apply(c||this,a||[f[b]])===false){break}}},findChild:function(b,c,a){return this.findChildBy(function(){return this.get(b)==c},null,a)},findChildBy:function(g,f,b){var e=this.childNodes,a=e.length,d=0,h,c;for(;d<a;d++){h=e[d];if(g.call(f||h,h)===true){return h}else{if(b){c=h.findChildBy(g,f,b);if(c!==null){return c}}}}return null},contains:function(a){return a.isAncestor(this)},isAncestor:function(a){var b=this.parentNode;while(b){if(b==a){return true}b=b.parentNode}return false},sort:function(f,b,a){var d=this.childNodes,e=d.length,c,g;if(e>0){Ext.Array.sort(d,f);for(c=0;c<e;c++){g=d[c];g.previousSibling=d[c-1];g.nextSibling=d[c+1];if(c===0){this.setFirstChild(g)}if(c==e-1){this.setLastChild(g)}g.updateInfo();if(b&&!g.isLeaf()){g.sort(f,true,true)}}if(a!==true){this.fireEvent("sort",this,d)}}},isExpanded:function(){return this.get("expanded")},isLoaded:function(){return this.get("loaded")},isLoading:function(){return this.get("loading")},isRoot:function(){return !this.parentNode},isVisible:function(){var a=this.parentNode;while(a){if(!a.isExpanded()){return false}a=a.parentNode}return true},expand:function(a,d,b){var c=this;if(!c.isLeaf()){if(c.isLoading()){c.on("expand",function(){c.expand(a,d,b)},c,{single:true})}else{if(!c.isExpanded()){c.fireEvent("beforeexpand",c,function(){c.set("expanded",true);if(c.hasListeners.expand){c.fireEvent("expand",c,c.childNodes,false)}if(a){c.expandChildren(true,d,b)}else{Ext.callback(d,b||c,[c.childNodes])}},c)}else{if(a){c.expandChildren(true,d,b)}else{Ext.callback(d,b||c,[c.childNodes])}}}}else{Ext.callback(d,b||c)}},expandChildren:function(d,h,j){var g=this,e=0,a=g.childNodes,f=a.length,c,b=0;for(;e<f;++e){c=a[e];if(!c.isLeaf()){b++;a[e].expand(d,function(){b--;if(h&&!b){Ext.callback(h,j||g,[g.childNodes])}})}}if(!b&&h){Ext.callback(h,j||g,[g.childNodes])}},collapse:function(a,d,b){var c=this;if(!c.isLeaf()){if(!c.collapsing&&c.isExpanded()){c.fireEvent("beforecollapse",c,function(){c.set("expanded",false);if(c.hasListeners.collapse){c.fireEvent("collapse",c,c.childNodes,false)}if(a){c.collapseChildren(true,d,b)}else{Ext.callback(d,b||c,[c.childNodes])}},c)}else{if(a){c.collapseChildren(true,d,b)}}}else{Ext.callback(d,b||c,[c.childNodes])}},collapseChildren:function(d,h,j){var g=this,e=0,b=g.childNodes,f=b.length,c,a=0;for(;e<f;++e){c=b[e];if(!c.isLeaf()){a++;b[e].collapse(d,function(){a--;if(h&&!a){Ext.callback(h,j||g,[g.childNodes])}})}}if(!a&&h){Ext.callback(h,j||g,[g.childNodes])}}}}}});Ext.define("natjs.overrides.Object",{},function(){Ext.Object.toQueryString=function(d,b){var e=[],c=[],g,f,h,a,k;for(g in d){if(d.hasOwnProperty(g)){e=e.concat(Ext.Object.toQueryObjects(g,d[g],b))}}for(f=0,h=e.length;f<h;f++){a=e[f];k=a.value;if(Ext.isEmpty(k)){k=""}else{if(Ext.isDate(k)){k=k.toJSON()}}c.push(encodeURIComponent(a.name)+"="+encodeURIComponent(String(k)))}return c.join("&")};Ext.Object.ReplaceKeyNames=function(c,d,b){var a={};Ext.Object.each(c,function(e,g,f){a[e.replace(d,b)]=g});return a};Ext.Object.Flatten=function(b){function c(e,g,d){if(!Ext.isObject(g)){d[e]=g}else{for(var f in g){if(g.hasOwnProperty(f)){var h=g[f];if(e){f=e+"."+f}c(f,h,d)}}}}var a={};c("",b,a);return a};Ext.Object.FlattenOneLevel=function(c){var a={};for(var d in c){if(!c.hasOwnProperty(d)){continue}var e=c[d];if(!Ext.isObject(e)){a[d]=e}else{for(var b in e){if(!e.hasOwnProperty(b)){continue}a[d+"."+b]=e[b]}}}return a};Ext.Object.isEmpty=function(a){for(var b in a){if(a.hasOwnProperty(b)){return false}}return true}});Ext.define("natjs.overrides.String",{},function(){Ext.String.startsWith=function(b,a){return b.slice(0,a.length)==a};Ext.String.endsWith=function(b,a){return b.slice(-a.length)==a};Ext.String.removeFromStart=function(b,a){if(!Ext.String.startsWith(b,a)){return b}return b.slice(a.length)};Ext.String.removeFromEnd=function(b,a){if(!Ext.String.endsWith(b,a)){return b}return b.slice(0,b.length-a.length)}});Ext.define("NAT.panel.Abstract",{extend:"Ext.panel.Panel",op:null,callback:null,scope:null,result:null,initComponent:function(){this.callParent(arguments);this.on("close",this.this_close,this)},this_close:function(){Ext.callback(this.callback,this.scope,[null,this.result],0)},showPanel:function(c,b,a){this.op=c||{};this.callback=b;this.scope=a},refresh:function(c,b,a){Ext.callback(b,a,[null,null],1)},refreshUI:function(a){}});Ext.define("NAT.panel.persistent.Abstract",{extend:"NAT.panel.Abstract",model:""});Ext.define("NAT.panel.persistent.Form",{extend:"NAT.panel.persistent.Abstract",alias:"widget.natppform",store:null,constructor:function(a){if(!this.designMode){this.store=Ext.create("NAT.data.ModelStore",{collection:this.model})}this.callParent([a])},initComponent:function(){this.callParent(arguments);if(this.designMode){return}this.down("#frmMain").BindStore(this.store);this.down("#btnDelete").on("click",this.btnDelete_click,this);this.down("#btnSave").on("click",this.btnSave_click,this);this.down("#btnCancel").on("click",this.btnCancel_click,this);this.down("#btnClose").on("click",this.btnClose_click,this)},showPanel:function(c,b,a){this.callParent(arguments);Ext.applyIf(this.op,{command:"new"});this[this.op.command+"Mode"].apply(this,arguments)},newMode:function(d,c,b){this.down("#btnDelete").setVisible(false);this.down("#btnSave").setVisible(true);this.down("#btnCancel").setVisible(true);this.down("#btnClose").setVisible(false);var a=app.natCreateModel(this.model);a.endEdit(true);this.store.setModel(a)},showMode:function(c,b,a){this.down("#btnDelete").setVisible(false);this.down("#btnSave").setVisible(false);this.down("#btnCancel").setVisible(false);this.down("#btnClose").setVisible(true);this.store.load({params:{id:c.modelId}},null,this)},modifyMode:function(c,b,a){this.down("#btnDelete").setVisible(false);this.down("#btnSave").setVisible(true);this.down("#btnCancel").setVisible(true);this.down("#btnClose").setVisible(false);this.store.load({params:{id:c.modelId}},null,this)},deleteMode:function(c,b,a){this.down("#btnDelete").setVisible(true);this.down("#btnSave").setVisible(false);this.down("#btnCancel").setVisible(true);this.down("#btnClose").setVisible(false);this.store.load({params:{id:c.modelId}},null,this)},btnDelete_click:function(){},btnSave_click:function(){var a=this;async.waterfall([function(b){a.save(null,b,a)},function(c,b){a.close();viewport.refresh(null,b,a)}])},btnCancel_click:function(){this.reject();this.refreshUI(null)},btnClose_click:function(){this.close()},save:function(c,b,a){this.store.save(c,b,a)},reject:function(){this.store.reject()},refresh:function(c,b,a){this.store.reload(null,b,a)},refreshUI:function(a){this.refreshToolbar()},refreshToolbar:function(){}});Ext.define("NAT.panel.persistent.Grid",{extend:"NAT.panel.persistent.Abstract",alias:"widget.natppgrid",store:null,constructor:function(a){if(!this.designMode){this.store=Ext.create("NAT.data.Store",{collection:this.model})}this.callParent([a])},initComponent:function(){this.callParent(arguments);if(this.designMode){return}this.down("#gridMain").BindStore(this.store);this.down("#gridMain").on("select",this.gridMain_select,this);this.down("#btnNew").on("click",this.btnNew_click,this);this.down("#btnDelete").on("click",this.btnDelete_click,this);this.down("#btnSave").on("click",this.btnSave_click,this);this.down("#btnCancel").on("click",this.btnCancel_click,this)},showPanel:function(c,b,a){this.callParent(arguments);this.store.load(null,null,this)},gridMain_select:function(){this.refreshToolbar()},btnNew_click:function(){if(!this.model){return}var a=app.natCreateModel(this.model);a.endEdit();this.store.add(a)},btnDelete_click:function(){var a=this.down("#gridMain").getSelected();this.store.remove(a)},btnSave_click:function(){var a=this;async.waterfall([function(b){a.save(null,b,a)},function(c,b){a.refreshUI(null);viewport.refresh(null,b,a)}])},btnCancel_click:function(){this.reject();this.refreshUI(null)},save:function(c,b,a){this.store.save(c,b,a)},reject:function(){this.store.reject()},refresh:function(c,b,a){this.store.reload(c,b,a)},refreshUI:function(a){this.refreshToolbar()},refreshToolbar:function(){var b=this.down("#gridMain");var a=b.getSelected();this.down("#btnDelete").setDisabled(!a)}});Ext.define("NAT.panel.persistent.Tree",{extend:"NAT.panel.persistent.Abstract",alias:"widget.natpptree",store:null,constructor:function(a){if(!this.designMode){this.store=Ext.create("NAT.data.TreeStore",{collection:this.model})}this.callParent([a])},initComponent:function(){this.callParent(arguments);if(this.designMode){return}this.down("#treeMain").BindStore(this.store);this.down("#treeMain").on("select",this.treeMain_select,this);this.down("#btnNew").on("click",this.btnNew_click,this);this.down("#btnDelete").on("click",this.btnDelete_click,this);this.down("#btnSave").on("click",this.btnSave_click,this);this.down("#btnCancel").on("click",this.btnCancel_click,this);this.down("#btnExpandAll").on("click",this.btnExpandAll,this)},showPanel:function(c,b,a){this.callParent(arguments);this.store.load(null,null,this)},treeMain_select:function(){this.refreshToolbar()},btnNew_click:function(){if(!this.model){return}var a=this.down("#treeMain");var b=this;async.waterfall([function(c){b.ensureRoot(null,c,b)},function(d,c){var f=a.getSelected()||b.store.getRootNode();var e=app.natCreateModel(b.model);e.set("loaded",true);e.endEdit();f.appendChild(e);b.saveRefresh(null,c,b)}])},btnDelete_click:function(){this.down("#treeMain").getSelected().remove();this.saveRefresh(null,null,this)},btnSave_click:function(){this.saveRefresh(null,null,this)},btnCancel_click:function(){this.reject();this.refreshUI(null)},btnExpandAll:function(){this.down("#treeMain").expandAll(null,this)},ensureRoot:function(d,c,b){if(this.store.getRootNode()){Ext.callback(c,b,[null,null],0);return}var a=app.natCreateModel(this.model);a.set("name","root");a.set("loaded",true);a.endEdit();this.store.setRootNode(a);this.saveRefresh(null,c,b)},reject:function(){this.store.reject()},saveRefresh:function(d,c,a){var b=this;async.waterfall([function(e){b.save(null,e,b)},function(f,e){viewport.refresh(null,e,b)}],function(e,f){Ext.callback(c,a,[e,null],0)})},save:function(c,b,a){this.store.save(c,b,a)},refresh:function(c,b,a){this.store.reload(c,b,a)},refreshUI:function(a){this.refreshToolbar()},refreshToolbar:function(){var a=this.down("#treeMain");var b=a.getSelected();this.down("#btnDelete").setDisabled(!b)}});Ext.define("NAT.panel.query.Abstract",{extend:"NAT.panel.Abstract"});Ext.define("NAT.panel.query.Grid",{extend:"NAT.panel.query.Abstract",alias:"widget.natpqgrid",model:"",formpanel:null,store:null,constructor:function(a){if(!this.designMode){this.store=Ext.create("NAT.data.Store",{collection:this.model})}this.callParent([a])},initComponent:function(){this.callParent(arguments);if(this.designMode){return}this.down("#gridMain").BindStore(this.store);this.down("#gridMain").on("select",this.gridMain_select,this);this.down("#btnShow").on("click",this.btnShow_click,this)},showPanel:function(c,b,a){this.callParent(arguments);this.store.load(null,null,this)},gridMain_select:function(){this.refreshToolbar()},btnShow_click:function(){var b=this.down("#gridMain");var a=b.getSelected();viewport.showPanel({panel:this.formpanel,command:"show",modelId:a.getId()},null,this)},refresh:function(c,b,a){this.store.reload(c,b,a)},refreshUI:function(a){this.refreshToolbar()},refreshToolbar:function(){var b=this.down("#gridMain");var a=b.getSelected();this.down("#btnShow").setDisabled(!a)}});Ext.define("NAT.tree.Panel",{extend:"Ext.tree.Panel",alias:"widget.nattree",requires:["NAT.tree.plugin.CellEditing"],deferredBind:false,deferredBindStore:null,animate:false,constructor:function(a){this.callParent([a]);return this},initComponent:function(){this.callParent(arguments);this.on("beforedeselect",this.tree_beforedeselect,this);this.on("select",this.tree_select,this);this.on("deselect",this.tree_deselect,this);this.on("afterrender",this.tree_afterrender,this)},tree_beforedeselect:function(b,a){},tree_select:function(b,a){if(!this.store){return}this.store.Select(a)},tree_deselect:function(b,a){if(!this.store){return}this.store.Deselect()},tree_afterrender:function(){if(this.deferredBind){this.bindStore(this.deferredBindStore);this.deferredBind=false;this.deferredBindStore=null}},BindStore:function(a){if(this.IsVisible()){this.bindStore(a)}else{this.deferredBind=true;this.deferredBindStore=a}},bindStore:function(b){if(!b){return}this.store=b;var c=this;c.mon(c.store,{scope:c,rootchange:c.onRootChange,clear:c.onClear});c.relayEvents(c.store,["beforeload","load"]);c.mon(c.store,{append:c.createRelayer("itemappend"),remove:c.createRelayer("itemremove"),move:c.createRelayer("itemmove",[0,4]),insert:c.createRelayer("iteminsert"),beforeappend:c.createRelayer("beforeitemappend"),beforeremove:c.createRelayer("beforeitemremove"),beforemove:c.createRelayer("beforeitemmove"),beforeinsert:c.createRelayer("beforeiteminsert"),expand:c.createRelayer("itemexpand",[0,1]),collapse:c.createRelayer("itemcollapse",[0,1]),beforeexpand:c.createRelayer("beforeitemexpand",[0,1]),beforecollapse:c.createRelayer("beforeitemcollapse",[0,1])});var a=b.getRootNode();if(!a){return}this.view.setRootNode(a)},getSelected:function(){var a=this.getSelectionModel().getSelection();if(a.length==0){return null}return a[0]},SelectRoot:function(a){this.getSelectionModel().select(this.getRootNode(),false,a)},Select:function(c,b,a){this.getSelectionModel().select(c,b,a)},getById:function(a){return this.store.getById(a)},SelectById:function(b){if(!this.store){return}var a=this.store.getNodeById(b);if(!a){return}this.selectPath(a.getPath())},Deselect:function(b,a){this.getSelectionModel().deselect(b,a)}});Ext.define("NAT.view.MessageDialog",{extend:"Ext.window.Window",alias:"widget.natmessagedialog",width:500,height:250,resizable:false,closable:false,layout:{align:"top",type:"hbox"},modal:true,bodyPadding:10,callback:null,scope:null,initComponent:function(){this.items=[{xtype:"image",itemId:"img",height:70,width:70,flex:0},{xtype:"component",itemId:"lMessage",margin:"10 10 10 10",flex:1}];this.dockedItems=[{xtype:"container",height:50,cls:"commandpanel",layout:{align:"stretch",padding:10,type:"hbox"},dock:"bottom",defaults:{flex:1,margin:"0 5",hidden:true},items:[{xtype:"button",itemId:"btnSave",ui:"green",text:"Save",result:"save"},{xtype:"button",itemId:"btnDontSave",ui:"blue",text:"Don't Save",result:"dontsave"},{xtype:"button",itemId:"btnOk",ui:"green",text:"Ok",result:"ok"},{xtype:"button",itemId:"btnYes",ui:"green",text:"Yes",result:"yes"},{xtype:"button",itemId:"btnNo",ui:"blue",text:"No",result:"no"},{xtype:"button",itemId:"btnCancel",ui:"gray",text:"Cancel",result:"cancel"}]}];this.callParent(arguments);this.down("#btnSave").on("click",this.btn_click,this);this.down("#btnDontSave").on("click",this.btn_click,this);this.down("#btnOk").on("click",this.btn_click,this);this.down("#btnYes").on("click",this.btn_click,this);this.down("#btnNo").on("click",this.btn_click,this);this.down("#btnCancel").on("click",this.btn_click,this)},ShowModal:function(c,j,k){this.callback=j;this.scope=k;c=c||{};c.type=c.type||"success";c.msg=c.msg||"";var g=this.down("#img");var a=this.down("#lMessage");var e=this.down("#btnSave");var d=this.down("#btnDontSave");var l=this.down("#btnOk");var h=this.down("#btnYes");var b=this.down("#btnNo");var f=this.down("#btnCancel");if(c.type=="message"){this.setTitle(c.type);g.setSrc("/natjs/resources/images/message.png");l.setVisible(true)}if(c.type=="success"){this.setTitle(c.type);g.setSrc("/natjs/resources/images/message.png");l.setVisible(true)}else{if(c.type=="failure"){this.setTitle(c.type);g.setSrc("/natjs/resources/images/error.png");l.setVisible(true)}else{if(c.type=="confirm"){this.setTitle(c.type);g.setSrc("/natjs/resources/images/warning.png");h.setVisible(true);b.setVisible(true)}else{if(c.type=="confirmexit"){this.setTitle("confirm");g.setSrc("/natjs/resources/images/warning.png");e.setVisible(true);d.setVisible(true);f.setVisible(true)}else{if(c.type=="error"){this.setTitle(c.type);g.setSrc("/natjs/resources/images/error.png");l.setVisible(true)}else{if(c.type=="custom"){this.setTitle(c.title);g.setSrc("/natjs/resources/images/"+c.image+".png");l.setVisible(true);f.setVisible(true);l.setText(c.okButtonText)}}}}}}a.html=c.msg;this.show()},btn_click:function(a){Ext.callback(this.callback,this.scope,[null,{result:a.result}],0);this.close()}});Ext.define("NAT.viewport.Abstract",{extend:"Ext.container.Viewport"});Ext.define("NAT.viewport.MenuItem",{extend:"Ext.menu.Item",alias:"widget.natviewportmenuitem",panel:"",initComponent:function(){this.callParent(arguments);this.on("click",this.this_click,this)},this_click:function(){viewport.showPanel({panel:this.panel},null,this)}});Ext.define("NAT.viewport.Tabbed",{extend:"NAT.viewport.Abstract",alias:"widget.nattabbedviewport",initComponent:function(){this.callParent(arguments);this.down("#btnRefresh").on("click",this.btnRefresh_click,this)},showPanel:function(e,d,c){var a=Ext.create("widget."+e.panel);var b=this.down("#tpMain");b.add(a);b.setActiveTab(a);a.showPanel(e,d,c)},btnRefresh_click:function(){this.refresh(null,null,this)},refresh:function(d,c,a){var b=this;async.parallel([function(e){var f=b.down("#tpMain");async.forEach(f.items.getRange(),function(h,g){h.refresh(null,g,b)},e)}],function(e,f){b.refreshUI(d);Ext.callback(c,a,[e,null],1)})},refreshUI:function(a){}});Ext.define("NAT.window.Window",{extend:"Ext.window.Window",alias:"widget.natwindow",isActivated:false,initComponent:function(){this.callParent(arguments);this.on("activate",this.this_activate,this);this.InitEditorsBinding()},this_activate:function(){if(this.isActivated){return}this.fireEvent("shown");this.isActivated=true},InitEditorsBinding:function(){var c=this.query("form");for(var a=0;a<c.length;a++){var b=c[a];b.InitBinding()}},FocusFirstField:function(){var a=this.query("[isFormField]");if(a.length>0){var b=a[0];b.focus(true,200)}},FocusFirstInvalidField:function(){var a=this.query("[isFormField]");for(var b=0;b<a.length;b++){var c=a[b];if(c.hasErrors()){c.focus(true,200);return}}},Refresh:function(c,b,a){Ext.callback(b,a,[null,null],0)},RebindUI:function(){this.InitEditorsBinding()},RefreshUI:function(){}});Ext.define("NAT.data.Model",{extend:"Ext.data.Model",alias:"widget.natdatamodel",fields:[{name:"_id",type:"string"},{name:"_type",type:"string"}],fieldsInfo:[],idProperty:"_id",state:null,isNATDirty:false,isNATValid:false,errors:null,skipFieldSetters:[],constructor:function(b,c,a){this.callParent(arguments);this.errors=Ext.create("Ext.data.Errors")},Created:function(){},associationChanged:function(){this.afterEdit()},get:function(c){if(Ext.isObject(c)){return this.callParent(arguments)}var b;var a="get_"+c;if(typeof this[a]=="function"){b=this[a]()}else{b=this.callParent(arguments)}return b},afterEdit:function(b){b=b||[];this.isNATValid=false;this.natUpdateDirty();if(b.length>0){var c=b[0];var a="set_"+c;if(typeof this[a]=="function"){if(Ext.Array.contains(this.skipFieldSetters,c)){Ext.Array.remove(this.skipFieldSetters,c)}else{Ext.callback(this[a],this,[this.get(c)],1)}}}this.callStore("afterEdit",b)},natUpdateDirty:function(){var a=false;if(this.dirty){a=true}if(!a){for(var c=0;c<this.associations.length;c++){var b=this.associations.items[c];if(b.IsChanged(this)){a=true;break}}}if(this.isNATDirty!=a){this.isNATDirty=a;this.callStore("OnModelDirtyChanged",this)}},Merge:function(c){this.set(c.data);for(var b=0;b<this.associations.length;b++){var a=this.associations.items[b];a.Merge(this,c)}},isNew:function(){return this.getId()==""},reject:function(b){var e=this,c=e.modified,f;for(f in c){if(c.hasOwnProperty(f)){if(typeof c[f]!="function"){e[e.persistenceProperty][f]=c[f]}}}e.dirty=false;e.editing=false;e.modified={};for(var d=0;d<this.associations.length;d++){var a=this.associations.items[d];a.reject(this,b)}this.natUpdateDirty();if(b!==true){e.afterReject()}},commit:function(b){var d=this;d.phantom=d.dirty=d.editing=false;d.modified={};for(var c=0;c<this.associations.length;c++){var a=this.associations.items[c];a.commit(this,b)}this.natUpdateDirty();if(b!==true){d.afterCommit()}},ValidateField:function(j,m,o){var n=Ext.isString(j)?j:j.name;var l=this.errors.getByField(n);for(var g=0;l.length>g;g++){this.errors.remove(l[g])}var b=Ext.Array.filter(this.validations,function(f){return(f.field===n)},this),d=Ext.data.validations,k=this.get(n);for(var e=0;b.length>e;e++){var c=b[e];var a=d[c.type](c,k);if(!a){this.errors.add({field:n,message:c.message||d.getMessage(c)||d[c.type+"Message"]})}}l=this.errors.getByField(n);if(l.length>0){Ext.callback(m,o,[l,null],0);return}var h=n+"_validator";if(typeof this[h]=="function"){this[h](null,function(f,p){if(f){this.errors.add({field:n,message:f});Ext.callback(m,o,[f,null],0)}else{Ext.callback(m,o,[null,null],0)}},this)}else{Ext.callback(m,o,[null,null],0)}},ValidateModel:function(d,c,a){this.errors.removeAll();var b=this;async.forEachSeries(b.fields.items,function(f,e){b.ValidateField(f,function(g,h){e(null,null)},b)},function(e){if(b.errors.isValid()){b.isNATValid=true;Ext.callback(c,a,[null,null],0)}else{b.isNATValid=false;Ext.callback(c,a,[b.errors,null],0)}})},GetFieldInfo:function(b){for(var a=0;a<this.fieldInfos.length;a++){if(this.fieldInfos[a].name==b){return this.fieldInfos[a]}}return null}});Ext.define("NAT.data.PersistentModel",{extend:"NAT.data.Model",fields:[{name:"_created",type:"date"},{name:"_modified",type:"date"},{name:"_version",type:"int"},{name:"_deleted",type:"boolean"}],fieldsInfo:[],constructor:function(b,c,a){this.callParent(arguments)}});Ext.define("NAT.data.QueryModel",{extend:"NAT.data.Model",fields:[{name:"_created",type:"date"},{name:"_modified",type:"date"},{name:"_version",type:"int"},{name:"_deleted",type:"boolean"}],fieldsInfo:[],constructor:function(b,c,a){this.callParent(arguments)}});Ext.define("NAT.data.RequestModel",{extend:"NAT.data.Model",fields:[],fieldsInfo:[],constructor:function(b,c,a){this.callParent(arguments)}});Ext.define("NAT.data.ClientModel",{extend:"NAT.data.Model",fields:[],fieldsInfo:[],constructor:function(b,c,a){this.callParent(arguments)}});Ext.define("NAT.data.LookupModel",{extend:"NAT.data.Model",fields:[{name:"_created",type:"date"},{name:"_modified",type:"date"},{name:"_version",type:"int"},{name:"_deleted",type:"boolean"}],fieldsInfo:[],constructor:function(b,c,a){this.callParent(arguments)}});Ext.define("NAT.data.proxy.Ajax",{extend:"Ext.data.proxy.Ajax",alias:"widget.natajaxproxy",requires:["NAT.view.MessageDialog"],mergeClientRecords:true,constructor:function(b){var a={type:"ajax",model:"NAT.data.Model",batchActions:false,reader:{type:"json",root:"data",messageProperty:"message",extractData:function(m){var l=this,f=[],d=l.model,c=m.length,g,e,j,h;if(!m.length&&Ext.isObject(m)){m=[m];c=1}for(h=0;h<c;h++){e=m[h];if(e._type){var k=app.getModuleClassName(e._type,"model");if(l.model.$className!=k){this.setModel(k)}}j=new l.model(undefined,l.getId(e),e,g={});j.phantom=false;l.convertRecordData(g,e,j);f.push(j);if(l.implicitIncludes){l.readAssociated(j,e)}}return f},readAssociated:function(d,j){var g=d.associations.items,f=0,h=g.length,c,e;for(;f<h;f++){c=g[f];e=j[c.name];if(e){c.read(d,e)}}}},writer:{type:"json",encode:false,listful:true,writeAllFields:true,getRecordData:function(h){var o=h.phantom===true,d=this.writeAllFields||o,e=this.nameProperty,j=h.fields,q=j.items,g={},n=h.clientIdProperty,m,c,l,p,k,r;if(d){r=q.length;for(k=0;k<r;k++){l=q[k];if(l.persist){c=l[e]||l.name;g[c]=h.get(l.name);if(l.dateFormat&&Ext.isDate(g[c])){g[c]=Ext.Date.format(g[c],l.dateFormat)}else{if((l.type)&&(l.type.type=="date")){if(g[c]!=null){g[c]=g[c].toJSON()}else{g[c]=null}}}}}}else{m=h.getChanges();for(p in m){if(m.hasOwnProperty(p)){l=j.get(p);c=l[e]||l.name;g[c]=m[p]}}}if(o){if(n&&operation&&operation.records.length>1){g[n]=h.internalId}}else{g[h.idProperty]=h.getId()}this.writeAssociated(h,g);return g},writeAssociated:function(d,j){var g=d.associations.items,f=0,h=g.length,c,e;for(;f<h;f++){c=g[f];c.write(d,j)}}}};b=Ext.merge(a,b);this.callParent([b]);this.on("exception",this.this_exception,this);return this},NATRequest:function(a,d,b){var c=Ext.create("Ext.data.Request",{url:a.url||app.baseUrl+"request",method:a.method||"POST",timeout:this.timeout,params:a.params,jsonData:this.Serialize(a.jsonData),scope:this,callback:this.NATCreateRequestCallback(a,d,b),preventLoadingMask:a.preventLoadingMask});if(!a.preventLoadingMask){app.ShowLoadingMask()}Ext.Ajax.request(c);return c},Serialize:function(a){if(typeof a==="undefined"){return""}if(a.isModel){return this.SerializeModel(a)}if(Ext.isArray(a)){return this.SerializeArray(a)}if(Ext.isObject(a)){return this.SerializeObject(a)}if(Ext.isBoolean(a)){return a}return this.SerializePrimitive(a)},SerializeObject:function(a){for(var c in a){if(!a.hasOwnProperty(c)){continue}var b=a[c];a[c]=this.Serialize(b)}return JSON.stringify(a)},SerializeModel:function(a){return this.getWriter().getRecordData(a)},SerializePrimitive:function(a){if(typeof a.toJSON=="function"){return a.toJSON()}else{return a.toString()}},SerializeArray:function(b){var a=[];Ext.Array.every(b,function(c){a.push(this.Serialize(c));return true},this);return a},NATCreateRequestCallback:function(a,d,b){var c=this;return function(f,g,e){c.NATProcessResponse(g,f,e,d,b)}},NATProcessResponse:function(e,c,b,f,d){if(!c.preventLoadingMask){app.HideLoadingMask()}if(!e){this.fireEvent("exception",this,b,null);return}var a=Ext.decode(b.responseText);if(!a.success){b.result=a;this.fireEvent("exception",this,b,null);Ext.callback(f,d,[{message:"error"},a],0)}else{Ext.callback(f,d,[null,a],0)}},processResponse:function(g,a,c,b,f,h){var e=this,d,j;if(g===true){d=e.getReader();j=d.read(e.extractResponseData(b));if(j.success!==false){Ext.apply(a,{response:b,resultSet:j});if(this.mergeClientRecords){a.commitRecords(j.records)}a.setCompleted();a.setSuccessful()}else{a.setException(j.message);e.fireEvent("exception",this,b,a)}}else{e.setException(a,b);e.fireEvent("exception",this,b,a)}if(typeof f=="function"){f.call(h||e,a)}e.afterRequest(c,g)},this_exception:function(c,b,a,g){var f,d;if(!a){if(b.result){f=b.result.message;d="failure"}else{f=b.responseText;d="error"}}else{if(typeof a.error=="object"){f=a.error.statusText;d="error"}else{f=a.error;d="failure"}}var e=Ext.create("NAT.view.MessageDialog");e.ShowModal({type:d,msg:f})}});Ext.define("NAT.data.ModelStore",{extend:"Ext.util.Observable",alias:"widget.natmodelstore",requires:["NAT.data.proxy.Ajax","Ext.data.reader.Reader","Ext.data.writer.Writer"],collection:null,lastOptions:null,currModel:null,proxy:null,autoLoad:false,loading:false,saving:false,constructor:function(a){a=a||{};Ext.applyIf(a,{api:{read:app.baseUrl+"data/readOne",create:app.baseUrl+"data/create",update:app.baseUrl+"data/update",destroy:app.baseUrl+"data/destroy"},mergeClientRecords:true});this.proxy=Ext.create("NAT.data.proxy.Ajax",a);this.callParent([a]);if(this.autoLoad){Ext.defer(this.load,10,this)}return this},CreateModel:function(){var a=app.natCreateModel(this.currModel);this.setModel(a)},setModel:function(a){if(this.currModel===a){return}if(this.currModel){this.currModel.unjoin(this)}this.currModel=a;if(this.currModel){this.currModel.join(this);this.proxy.setModel(this.currModel.self)}this.OnCurrentModelChanged()},load:function(b,e,c){var d=this;if(d.loading){Ext.callback(e,c,[null,null],0);return}b=Ext.applyIf({action:"read",callback:e,scope:c},b);b.params=b.params||{};b.params.lastModified=b.params.lastModified||new Date(0);b.params.collection=b.params.collection||this.collection;if(!b||!b.params||!b.params.collection||!b.params.id){Ext.callback(e,c,[{message:"options not valid"},null],0);return}d.lastOptions=b;var a=new Ext.data.Operation(b);if(d.fireEvent("beforeload",d,a)!==false){d.loading=true;d.proxy.read(a,d.onProxyLoad,d)}return d},reload:function(a,c,b){return this.load(Ext.apply(this.lastOptions,a),c,b)},onProxyLoad:function(b){var e=this,d=b.getResultSet(),a=b.getRecords(),f=b.wasSuccessful();if(f){var c=b.resultSet.records[0];if(c){if(this.hasModel()&&(this.currModel.getId()==c.getId())){this.currModel.Merge(c);this.currModel.set("loaded",true);this.currModel.commit()}else{this.setModel(c);this.currModel.set("loaded",true);this.currModel.commit()}e.lastOptions.params.lastModified=c.get("_modified");e.fireEvent("datachanged",e);e.fireEvent("refresh",e)}}e.loading=false;if(e.hasListeners.load){e.fireEvent("load",e,a,f)}if(e.hasListeners.read){e.fireEvent("read",e,a,f)}Ext.callback(b.callback,b.scope||e,[a,b,f])},save:function(d,c,a){d=d||{};if(this.saving){Ext.callback(c,a,[null,null],0);return}this.saving=true;var b=this;async.waterfall([function(e){b.currModel.ValidateModel(null,e,b)},function(f,e){if(!b.currModel.isNATDirty){e(null,{});return}var h={records:[b.currModel],action:b.currModel.isNew()?"create":"update"};if(!d.preventLoadingMask){app.ShowLoadingMask()}var g=Ext.create("Ext.data.Operation",h);h.operation=g;b.proxy[g.action](g,function(k){var l=this,m=k.wasSuccessful(),j=k.getRecords();switch(k.action){case"create":l.onCreateRecords(j,k,m);break;case"update":l.onUpdateRecords(j,k,m);break;case"destroy":l.onDestroyRecords(j,k,m);break}if(m){l.fireEvent("write",l,k);l.fireEvent("datachanged",l);e(null,h)}else{e("failure",h)}},b)}],function(f,e){b.saving=false;if(f){alert("validation error, field: "+f.getAt(0).field)}e=e||{};if((e.operation)&&(!e.preventLoadingMask)){app.HideLoadingMask()}Ext.callback(c,a,[null,e],0)})},onCreateRecords:function(c,b,e){if(!e){return}var a=c[0];var d=b.records[0];if(d){d.setId(a.getId())}},onUpdateRecords:function(b,a,c){},onDestroyRecords:function(b,a,c){if(!c){return}this.removed=[]},Merge:function(a){this.currModel.Merge(a.currModel)},reject:function(a){if(!this.hasModel()){return}this.currModel.reject(a)},commit:function(a){if(!this.hasModel()){return}this.currModel.commit(a)},IsChanged:function(){return(this.currModel)&&(this.currModel.isNATDirty)},getModel:function(){if(this.hasModel()){return this.currModel}else{return null}},hasModel:function(){return((this.currModel)&&(typeof this.currModel=="object")&&(!this.currModel.removed))},afterEdit:function(a,b){this.fireEvent("update",this,a,Ext.data.Model.EDIT,b)},OnModelDirtyChanged:function(a){this.fireEvent("modeldirtychanged",a)},OnCurrentModelChanged:function(){this.fireEvent("currentmodelchanged",this.currModel)}});Ext.define("NAT.data.Store",{extend:"Ext.data.Store",alias:"widget.natstore",requires:["NAT.data.proxy.Ajax"],collection:null,currModel:null,saving:false,constructor:function(a){a=a||{};Ext.applyIf(a,{model:"NAT.data.Model",api:{read:app.baseUrl+"data/read",create:app.baseUrl+"data/create",update:app.baseUrl+"data/update",destroy:app.baseUrl+"data/destroy"},mergeClientRecords:false});this.proxy=Ext.create("NAT.data.proxy.Ajax",a);this.callParent([a]);this.on("datachanged",this.onDataChanged,this)},getNewRecords:function(){return this.data.filterBy(this.filterNew).items},getUpdatedRecords:function(){return this.data.filterBy(this.filterUpdated).items},getNewRecordsAll:function(){return this.data.filterBy(this.filterNewAll).items},getUpdatedRecordsAll:function(){return this.data.filterBy(this.filterUpdatedAll).items},onDataChanged:function(){this.updateCurrModel()},load:function(a,d,b){var c=this;if(c.loading){Ext.callback(d,b,[null,null],0);return}a=Ext.applyIf({callback:d,scope:b,addRecords:"merge"},a);a.params=a.params||{};a.params.lastModified=a.params.lastModified||new Date(0);a.params.collection=a.params.collection||this.collection;if(!a||!a.params||!a.params.collection){Ext.callback(d,b,[{message:"options not valid"},null],0);return}return c.callParent([a])},reload:function(a,c,b){return this.load(Ext.apply(this.lastOptions,a),c,b)},onProxyLoad:function(b){var d=this,c=b.getResultSet(),a=b.getRecords(),e=b.wasSuccessful();if(c){d.totalCount=c.total}if(e){d.loadRecords(a,b)}d.loading=false;if(d.hasListeners.load){d.fireEvent("load",d,a,e)}if(d.hasListeners.read){d.fireEvent("read",d,a,e)}Ext.callback(b.callback,b.scope||d,[null,{records:a,operation:b,successful:e}])},loadRecords:function(e,k){var h=this,f=0,d=e.length,c,a,b=h.snapshot;if(k){c=k.start;a=k.addRecords}if(a===false){delete h.snapshot;h.clearData(true);h.data.addAll(e)}else{if(a===true){if(b){b.addAll(e)}h.data.addAll(e)}else{if(a==="merge"){h.MergeModels(e);for(f=0;f<e.length;f++){var g=e[f];var j=g.get("_modified");if(j>this.lastOptions.params.lastModified){this.lastOptions.params.lastModified=j}}}}}if(c!==undefined){for(f=0;f<d;f++){e[f].index=c+f;e[f].join(h)}}else{for(f=0;f<d;f++){e[f].join(h)}}h.suspendEvents();if(h.filterOnLoad&&!h.remoteFilter){h.filter()}if(h.sortOnLoad&&!h.remoteSort){h.sort(undefined,undefined,undefined,true)}h.resumeEvents();h.fireEvent("datachanged",h);h.fireEvent("refresh",h)},save:function(d,c,a){if(this.saving){Ext.callback(c,a,[null,null],0);return}this.saving=true;var b=this;async.waterfall([function(e){b.ValidateChangedModels(null,e,b)},function(f,e){var g={scope:b,success:function(j,h){e(null,h)},failure:function(j,h){e("failure",h)}};b.sync(g);if(!g.operations){e(null,g);return}if((g.operations)&&(!g.preventLoadingMask)){app.ShowLoadingMask()}}],function(f,e){b.saving=false;if(f){alert("validation error, field: "+f.getAt(0).field)}e=e||{};if((e.operations)&&(!e.preventLoadingMask)){app.HideLoadingMask()}Ext.callback(c,a,[null,e],0)})},onCreateRecords:function(c,b,g){if(!g){return}var f=b.resultSet.records;for(var e=0;e<f.length;++e){var a=f[e];var d=b.records[e];if(d){d.setId(a.getId())}}},onUpdateRecords:function(b,a,c){},onDestroyRecords:function(b,a,c){if(c){this.removed=[]}},Merge:function(e){var f=[],d=this.getCount();for(var c=0;c<d;c++){var b=this.getAt(c);if(!e.getById(b.getId())){f.push(b)}}for(var a=0;a<f.length;a++){this.remove(f[a])}this.MergeModels(e.getRange(0))},reject:function(b){var e=this.getRemovedRecords();for(d=0;d<e.length;d++){c=e[d];this.add(c)}var f=this.getUpdatedRecordsAll();for(var d=0;d<f.length;d++){var c=f[d];c.reject(b)}var a=this.getNewRecordsAll();for(d=0;d<a.length;d++){c=a[d];this.remove(c)}this.commit()},commit:function(a){this.removed=[];var e=this.GetChangedModelsAll();var d=e.length;for(var c=0;c<d;c++){var b=e[c];b.commit(a)}},MergeModels:function(b){for(var a=0;a<b.length;a++){this.MergeModel(b[a])}},MergeModel:function(a){var c=a.get("_deleted");var b=this.getById(a.getId());if(c){if(b){this.deleteRecord(b)}return true}if(!b){this.add(a);return true}b.beginEdit();b.Merge(a);b.endEdit(true);b.commit();return true},deleteRecord:function(a){var b=this.data.indexOf(a);if(this.snapshot){this.snapshot.remove(a)}a.unjoin(this);this.data.remove(a);this.remove(a);this.fireEvent("remove",this,a,b);this.fireEvent("datachanged",this)},updateCurrModel:function(){if(this.currModel){return}this.Select(this.getAt(0))},filterNew:function(a){return(a.isNew())&&(a.isNATValid)},filterNewAll:function(a){return a.isNew()},filterUpdated:function(a){return(!a.isNew())&&(a.isNATDirty)&&(a.isNATValid)},filterUpdatedAll:function(a){return(!a.isNew())&&(a.isNATDirty)},GetChangedModels:function(){return Ext.Array.union(this.getNewRecords(),this.getUpdatedRecords(),this.getRemovedRecords())},GetChangedModelsAll:function(){return Ext.Array.union(this.getNewRecordsAll(),this.getUpdatedRecordsAll(),this.getRemovedRecords())},IsChanged:function(){return(this.GetChangedModelsAll().length!=0)},ValidateChangedModels:function(c,b,a){async.forEach(this.GetChangedModelsAll(),function(e,d){e.ValidateModel(null,d,e)},function(d){Ext.callback(b,a,[d,null],0)})},Select:function(b,a){if(this.currModel==b){return}if(!a){this.OnSelect(this.currModel,b)}this.currModel=b;if(!a){this.OnCurrentModelChanged()}},Deselect:function(a){if(this.loading){return}if(this.currModel==null){return}if(!a){this.OnDeselect(this.currModel)}this.currModel=null;if(!a){this.OnCurrentModelChanged()}},hasModel:function(){return((this.currModel)&&(typeof this.currModel=="object"))},OnSelect:function(b,a){this.fireEvent("select",b,a)},OnDeselect:function(a){this.fireEvent("deselect",a)},OnModelDirtyChanged:function(a){this.fireEvent("modeldirtychanged",a)},OnCurrentModelChanged:function(){this.fireEvent("currentmodelchanged",this.currModel)}});Ext.define("NAT.data.TreeStore",{extend:"Ext.data.TreeStore",alias:"widget.nattreestore",requires:["NAT.data.proxy.Ajax"],collection:null,currModel:null,saving:false,constructor:function(a){a=a||{};Ext.applyIf(a,{model:"NAT.data.Model",api:{read:app.baseUrl+"data/read",create:app.baseUrl+"data/create",update:app.baseUrl+"data/update",destroy:app.baseUrl+"data/destroy"},mergeClientRecords:false});this.proxy=Ext.create("NAT.data.proxy.Ajax",a);this.callParent([a]);this.on("move",this.OnMove,this);this.on("datachanged",this.onDataChanged,this)},getNewRecords:function(){return Ext.Array.filter(this.tree.flatten(),this.filterNew)},getUpdatedRecords:function(){return Ext.Array.filter(this.tree.flatten(),this.filterUpdated)},getNewRecordsAll:function(){return Ext.Array.filter(this.tree.flatten(),this.filterNewAll)},getUpdatedRecordsAll:function(){return Ext.Array.filter(this.tree.flatten(),this.filterUpdatedAll)},onDataChanged:function(){this.updateCurrModel()},load:function(a,d,b){var c=this;if(c.loading){Ext.callback(d,b,[null,null],0);return}a=Ext.applyIf({callback:d,scope:b,addRecords:"merge"},a);a.params=a.params||{};a.params.lastModified=a.params.lastModified||new Date(0);a.params.collection=a.params.collection||this.collection;if(!a||!a.params||!a.params.collection){Ext.callback(d,b,[{message:"options not valid"},null],0);return}return this.superclass.superclass.load.call(this,a)},reload:function(a,c,b){return this.load(Ext.apply(this.lastOptions,a),c,b)},onProxyLoad:function(b){var e=this,g=b.wasSuccessful(),a=b.getRecords();e.loading=false;if(g){var f=this.lastOptions.params.lastModified.getTime()==new Date(0).getTime();if(f){this.BuildStore(a)}else{this.MergeModels(a)}for(i=0;i<a.length;i++){var c=a[i];var d=c.get("_modified");if(d>this.lastOptions.params.lastModified){this.lastOptions.params.lastModified=d}}}e.fireEvent("read",e,b.node,a,g);e.fireEvent("load",e,b.node,a,g);Ext.callback(b.callback,b.scope||e,[null,{records:a,operation:b,successful:g}])},save:function(d,c,a){if(this.saving){Ext.callback(c,a,[null,null],0);return}this.saving=true;var b=this;async.waterfall([function(e){b.ValidateChangedModels(null,e,b)},function(f,e){var g={scope:b,success:function(j,h){e(null,h)},failure:function(j,h){e("failure",h)}};b.sync(g);if(!g.operations){e(null,g);return}if((g.operations)&&(!g.preventLoadingMask)){app.ShowLoadingMask()}}],function(f,e){b.saving=false;if(f){alert("validation error, field: "+f.getAt(0).field)}e=e||{};if((e.operations)&&(!e.preventLoadingMask)){app.HideLoadingMask()}Ext.callback(c,a,[null,e],0)})},onCreateRecords:function(c,b,g){if(!g){return}var f=b.resultSet.records;for(var e=0;e<f.length;++e){var a=f[e];var d=b.records[e];if(d){this.tree.unregisterNode(d,false);d.setId(a.getId());this.tree.registerNode(d,false)}}},onUpdateRecords:function(b,a,c){},onDestroyRecords:function(b,a,c){if(c){this.removed=[]}},remove:function(a){if(!a.parentNode){return}a.parentNode.removeChild(a)},reject:function(a){var e=this.GetChangedModelsAll();var d=e.length;for(var c=0;c<d;c++){var b=e[c];if(b.get("loaded")){b.reject(a)}else{b.isReplace=true;b.parentNode.removeChild(b);b.isReplace=false}}this.commit()},commit:function(a){var e=this.GetChangedModelsAll();var d=e.length;for(var c=0;c<d;c++){var b=e[c];b.commit(a)}},BuildStore:function(c){var a=this.GetChildByParentId(c,"");if(a.length!=1){return}var b=a[0];b.beginEdit();b.set("loaded",true);this.setRootNode(b);b.endEdit(true);b.commit();this.BuildStoreReq(c,b);this.builded=true},BuildStoreReq:function(e,a){var c=this.GetChildByParentId(e,a.getId());if(c.length==0){return}c.sort(function(g,f){return g.get("index")-f.get("index")});for(var b=0;b<c.length;b++){var d=c[b];d.beginEdit();d.set("loaded",true);if(!d.get("_deleted")){a.beginEdit();a.appendChild(d);a.endEdit(true);a.commit();this.BuildStoreReq(e,d)}d.endEdit(true);d.commit()}},GetChildByParentId:function(e,d){var a=[];for(var c=0;c<e.length;c++){var b=e[c];if(b.get("parentId")==d){a[a.length]=b}}return a},MergeModels:function(e){e.sort(function(g,f){return g.get("index")-f.get("index")});for(var d=0;d<e.length;d++){e[d].merged=false}var c=this.GetMergedModelsCount(e);while(c<e.length){for(d=0;d<e.length;d++){var b=e[d];if(b.merged){continue}if(this.MergeModel(b)){b.merged=true}}var a=this.GetMergedModelsCount(e);if(a==c){break}c=a}},GetMergedModelsCount:function(c){var a=0;for(var b=0;b<c.length;b++){if(c[b].merged){a+=1}}return a},MergeModel:function(e){var d=e.get("parentId"),f=e.get("index"),a=e.get("_deleted");if(!d){var g=this.getRootNode();g.beginEdit();Ext.apply(e.data,{root:true,isFirst:true,isLast:true,depth:0,expanded:g.get("expanded"),loaded:true});g.Merge(e);g.endEdit(true);g.commit();return true}var h=this.tree.getNodeById(d);if(!h){return false}var j=h.getChildAt(f);var b=this.tree.getNodeById(e.getId());if(a){if(b){b.isReplace=true;b.parentNode.removeChild(b);b.isReplace=false}return true}if(!b){var c=Ext.data.NodeInterface.decorate(e);c.beginEdit();h.insertBefore(c,j);h.updateInfo(false);c.set("loaded",true);c.endEdit(true);c.commit();return true}if((b.get("parentId")==d)&&(b.get("index")==f)){b.beginEdit();Ext.apply(e.data,{root:false,isFirst:b.get("isFirst"),isLast:b.get("isLast"),depth:b.get("depth"),expanded:b.get("expanded"),loaded:true});b.Merge(e);b.endEdit(true);b.commit();return true}b.beginEdit();b.isReplace=true;b.parentNode.removeChild(b);b.isReplace=false;Ext.apply(e.data,{loaded:true});b.Merge(e);h.insertBefore(b,j);h.updateInfo(false);b.endEdit(true);b.commit();return true},OnMove:function(a,b,c){if(b!=c){b.updateInfo(false)}c.updateInfo(false)},updateCurrModel:function(){if(this.currModel){return}this.Select(this.getRootNode())},setRootNode:function(a,e){var d=this,c=d.model,b=c.prototype.idProperty;a=a||{};if(!a.isModel){Ext.applyIf(a,{id:d.defaultRootId,text:"Root",allowDrag:false});if(a[b]===undefined){a[b]=d.defaultRootId}Ext.data.NodeInterface.decorate(c);a=Ext.ModelManager.create(a,c)}else{if(a.isModel&&!a.isNode){Ext.data.NodeInterface.decorate(c)}}Ext.data.NodeInterface.decorate(a);d.getProxy().getReader().buildExtractors(true);d.tree.setRootNode(a);a.join(this);return a},filterNew:function(a){return(a.isNew())&&(a.isNATValid)},filterNewAll:function(a){return a.isNew()},filterUpdated:function(a){return(!a.isNew())&&(a.isNATDirty)&&(a.isNATValid)},filterUpdatedAll:function(a){return(!a.isNew())&&(a.isNATDirty)},GetChangedModels:function(){return Ext.Array.union(this.getNewRecords(),this.getUpdatedRecords(),this.getRemovedRecords())},GetChangedModelsAll:function(){return Ext.Array.union(this.getNewRecordsAll(),this.getUpdatedRecordsAll(),this.getRemovedRecords())},IsChanged:function(){return(this.GetChangedModelsAll().length!=0)},ValidateChangedModels:function(c,b,a){async.forEach(this.GetChangedModelsAll(),function(e,d){e.ValidateModel(null,d,e)},function(d){Ext.callback(b,a,[d,null],0)})},Select:function(b,a){if(this.currModel==b){return}if(!a){this.OnSelect(this.currModel,b)}this.currModel=b;if(!a){this.OnCurrentModelChanged()}},Deselect:function(a){if(this.loading){return}if(this.currModel==null){return}if(!a){this.OnDeselect(this.currModel)}this.currModel=null;if(!a){this.OnCurrentModelChanged()}},hasModel:function(){return((this.currModel)&&(typeof this.currModel=="object"))},OnSelect:function(b,a){this.fireEvent("select",b,a)},OnDeselect:function(a){this.fireEvent("deselect",a)},OnModelDirtyChanged:function(a){this.fireEvent("modeldirtychanged",a)},OnCurrentModelChanged:function(){this.fireEvent("currentmodelchanged",this.currModel)}});Ext.define("NAT.data.StoreManager",{extend:"Ext.util.MixedCollection",alias:"widget.natstoremanager",constructor:function(a){this.callParent([a])},Init:function(){},Activate:function(b){var a=this.getByKey(b);a.active=true},Deactivate:function(b){var a=this.getByKey(b);a.active=false},load:function(c,b,a){async.forEach(this.items,function(e,d){if(e.active){e.load(null,d)}else{d(null,null)}},function(d,e){Ext.callback(b,a,[d,null],0)})},reload:function(c,b,a){async.forEach(this.items,function(e,d){if(e.active){e.reload(null,d)}else{d(null,null)}},function(d,e){Ext.callback(b,a,[d,null],0)})}});
+Ext.define('NAT.button.Button', {
+    extend: 'Ext.button.Button',
+    alias: 'widget.natbutton',
+
+    autoWidth: true,
+
+    initComponent: function () {
+        this.callParent(arguments);
+    }
+});
+
+Ext.define('NAT.tree.plugin.CellEditing', {
+    alias: 'plugin.nattreecellediting',
+    extend: 'Ext.grid.plugin.CellEditing',
+
+    /**
+     * @override
+     * @private Collects all information necessary for any subclasses to perform their editing functions.
+     * @param record
+     * @param columnHeader
+     * @returns {Object} The editing context based upon the passed record and column
+     */
+    getEditingContext: function (record, columnHeader) {
+        var me = this,
+            grid = me.grid,
+            store = grid.store,
+            rowIdx,
+            colIdx,
+            view = grid.getView(),
+            root = grid.getRootNode(),
+            value;
+
+        // If they'd passed numeric row, column indices, look them up.
+        if (Ext.isNumber(record)) {
+            rowIdx = record;
+            //record = root.getChildAt(rowIdx);
+            record = store.tree.flatten()[rowIdx]; //IZS: support for multi deep level
+        } else {
+            //rowIdx = root.indexOf(record);
+            rowIdx = root.indexOfId(record._id); //IZS: support for multi deep level
+        }
+        if (Ext.isNumber(columnHeader)) {
+            colIdx = columnHeader;
+            columnHeader = grid.headerCt.getHeaderAtIndex(colIdx);
+        } else {
+            colIdx = columnHeader.getIndex();
+        }
+
+        value = record.get(columnHeader.dataIndex);
+        return {
+            grid: grid,
+            record: record,
+            field: columnHeader.dataIndex,
+            value: value,
+            row: view.getNode(rowIdx),
+            column: columnHeader,
+            rowIdx: rowIdx,
+            colIdx: colIdx
+        };
+    }
+});
+
+Ext.define('NAT.edit.Source', {
+    extend: 'Ext.panel.Panel',
+    alias: 'widget.natsourceedit',
+
+    layout: 'fit',
+    border: false,
+    isFormField: true,
+
+    propertyPath: '',
+    parser: 'javascript',
+    readOnly: false,
+    firstRowReadonly: false,
+    lastRowReadonly: false,
+
+    path: '',
+    sourceCode: '',
+    fontSize: '18px',
+    theme: 'textmate',
+    printMargin: false,
+    highlightActiveLine: true,
+    tabSize: 4,
+    useSoftTabs: false,
+    showInvisible: false,
+    useWrapMode: false,
+
+//EDITOR BEGIN
+    initEditor: function()
+    {
+        var me = this;
+
+        me.editor = ace.edit(me.editorId);
+        me.setMode(me.parser);
+        me.setTheme(me.theme);
+        me.editor.getSession().setUseWrapMode(me.useWrapMode);
+        me.editor.setShowInvisibles(me.showInvisible);
+        me.setFontSize(me.fontSize);
+        me.editor.setShowPrintMargin(me.printMargin);
+        me.editor.setHighlightActiveLine(me.highlightActiveLine);
+        me.getSession().setTabSize(me.tabSize);
+        me.getSession().setUseSoftTabs(me.useSoftTabs);
+        me.setValue(me.sourceCode);
+        me.editor.setReadOnly(me.readOnly);
+
+        me.editor.container.addEventListener("keydown", function(e){
+            var readOnly = me.readOnly;
+            var length = me.getLength();
+            var position = me.editor.getCursorPosition();
+            if ((me.firstRowReadonly) && (position.row == 0)) readOnly = true;
+            if ((me.lastRowReadonly) && (position.row == length-1)) readOnly = true;
+            me.editor.setReadOnly(readOnly);
+        }, true);
+
+        me.editor.getSession().on('change', function(){
+            if (me.readOnly === true) return;
+            me.fireEvent('change', me, me.getValue());
+        }, me);
+
+        me.editor.focus();
+    },
+
+    getEditor: function(){
+        return this.editor;
+    },
+
+    getSession: function(){
+        return this.editor.getSession();
+    },
+
+    getTheme: function(){
+        return this.editor.getTheme();
+    },
+
+    getLength: function(){
+        return this.editor.getSession().getLength();
+    },
+
+    getAllLines: function(){
+        return this.editor.getSession().getLines(0,this.getLength());
+    },
+
+    setTheme: function(name){
+        // require("theme-" + name + ".js");
+        this.editor.setTheme("ace/theme/" + name);
+    },
+
+    setMode: function(mode){
+        //var Mode = require("ace/mode/" + mode).Mode;
+        this.getSession().setMode("ace/mode/" + mode);
+    },
+
+    getValue: function(){
+        if (!this.editor) return;
+        return this.editor.getSession().getValue();
+    },
+
+    setValue: function(value){
+        if (Ext.isArray(value)) {
+            value = { array: value };
+        }
+        if (Ext.isObject(value)) {
+            try {
+                value = JSON.stringify(value, null, '\t');
+            }
+            catch(err){
+                alert('Incorrect config ' + this.get('name') + " \n error: " + err);
+                return;
+            }
+        }
+//            if (Ext.isObject(value)) {
+//                value = QuotelessJSON.stringify(value, null, '\t');
+//            }
+
+        if (!this.editor) {
+            this.sourceCode = value;
+            return;
+        }
+        this.editor.getSession().setValue(value);
+    },
+
+    setFontSize: function(value){
+        this.editor.setFontSize(value);
+    },
+
+    setReadOnly: function(value){
+        if (!this.editor) {
+            this.readOnly = value;
+            return;
+        }
+        this.editor.setReadOnly(value);
+    },
+
+    undo: function(){
+        this.editor.undo();
+    },
+
+    redo: function(){
+        this.editor.redo();
+    },
+//EDITOR END
+
+    listeners: {
+
+        resize: function()
+        {
+            if(this.editor)
+            {
+                this.editor.resize();
+            }
+        },
+
+        activate: function()
+        {
+            if(this.editor)
+            {
+                this.setValue(this.getValue());
+                this.editor.focus();
+            }
+        }
+    },
+
+    initComponent: function()
+    {
+        var me = this,
+            items = {
+                xtype: 'component',
+                autoEl: 'pre'
+            };
+
+        me.addEvents(
+            /**
+             * @event change Fires after a change.
+             * @param {Ext.ux.aceeditor.Editor} this
+             */
+            'change');
+
+        if(me.contentEl != null)
+        {
+            me.sourceCode = Ext.get(me.contentEl).dom.innerHTML;
+        }
+
+        Ext.apply(me, {
+            items: items
+        });
+
+        me.callParent(arguments);
+    },
+
+    onRender: function()
+    {
+        var me = this;
+
+        if(me.contentEl != null)
+        {
+            me.sourceCode = Ext.get(me.contentEl).dom.innerHTML;
+        }
+
+        me.editorId = me.items.keys[0];
+        me.oldSourceCode = me.sourceCode;
+        me.callParent(arguments);
+
+        // init editor on afterlayout
+        me.on('afterlayout', function()
+        {
+
+            if(me.url)
+            {
+                Ext.Ajax.request({
+                    url: me.url,
+                    success: function(response)
+                    {
+                        me.sourceCode = response.responseText;
+                        me.initEditor();
+                    }
+                });
+            }
+            else
+            {
+                me.initEditor();
+            }
+        }, me, {
+            single: true
+        });
+    },
+
+    //IZS BEGIN
+    isValid : function() {
+        return true;
+    },
+
+    isDirty: function() {
+        return false;
+    }
+    //IZS END
+});
+
+Ext.define('NAT.edit.StringArray', {
+    extend: 'Ext.form.FieldContainer',
+    alias: 'widget.natstringarrayedit',
+
+    mixins: {
+        bindable: 'Ext.util.Bindable',
+        field: 'Ext.form.field.Field'
+    },
+
+    requires: ['Ext.panel.Panel', 'Ext.view.BoundList', 'Ext.layout.container.Fit'],
+
+    uses: ['Ext.view.DragZone', 'Ext.view.DropZone'],
+
+    layout: {
+        type: 'vbox',
+        align: 'stretch'
+    },
+
+    propertyPath: '',
+    itemRenderer: null,
+
+    valueField: 'id',
+    displayField: 'name',
+
+    ddReorder: false,
+    appendOnly: false,
+    allowBlank: true,
+    ignoreSelectChange: 0,
+
+    constructor : function(config) {
+        this.store = Ext.create('Ext.data.ArrayStore', {
+            fields: ['id', 'name'],
+            data: []
+        });
+        this.callParent([config]);
+    },
+
+    initComponent: function(){
+        var me = this;
+
+        me.bindStore(me.store, true);
+
+        me.items = [
+            {
+                xtype: 'container',
+                dock: 'top',
+                cls: 'commandbar',
+                defaults: {
+                    margins: 2
+                },
+                layout: {
+                    type: 'hbox',
+                    align: 'middle'
+                },
+                items: [
+                    {
+                        xtype: 'combobox',
+                        itemId: 'cbAvailableTypes',
+                        editable: false,
+                        flex: 1,
+                        valueField: 'id',
+                        displayField: 'name'
+                    },
+                    {
+                        xtype: 'natbutton',
+                        itemId: 'btnAddType',
+                        icon: 'https://extsolutions.herokuapp.com/graphics/Momentum_MatteEntireSet1/16/add.png',
+                        tooltip: 'Add type'
+                    },
+                    {
+                        xtype: 'natbutton',
+                        itemId: 'btnRemoveType',
+                        icon: 'https://extsolutions.herokuapp.com/graphics/Momentum_MatteEntireSet1/16/delete.png',
+                        tooltip: 'Remove type'
+                    }
+                ]
+            },
+            {
+                xtype: 'boundlist',
+                itemId: 'blItems',
+                flex: 1,
+                deferInitialRefresh: false,
+                border: 1,
+                multiSelect: false,
+                store: me.store,
+                displayField: me.displayField,
+                disabled: me.disabled
+            }
+        ];
+
+        me.callParent();
+        me.initField();
+        me.addEvents('drop');
+
+        me.down('#cbAvailableTypes').on('select', this.cbAvailableTypes_select, this);
+        me.down('#blItems').on('select', this.blItems_select, this);
+        me.down('#btnAddType').on('click', this.btnAddType_click, this);
+        me.down('#btnRemoveType').on('click', this.btnRemoveType_click, this);
+    },
+
+    setItemsStore: function(store){
+        this.itemsStore = store;
+    },
+
+    setComboStore: function(store){
+        this.down('#cbAvailableTypes').bindStore(store);
+    },
+
+    cbAvailableTypes_select: function(){
+        this.RefreshUI();
+    },
+
+    blItems_select: function(selModel, selections){
+        this.RefreshUI();
+    },
+
+    btnAddType_click: function(){
+        var selectedInCombo = this.down('#cbAvailableTypes').getValue();
+        var v = this.getValue();
+        var newValue = Ext.Array.clone(v);
+        newValue.push(selectedInCombo);
+        this.setValue(newValue);
+        this.fireEvent('itemchanged', newValue);
+    },
+
+    btnRemoveType_click: function(){
+        var selected = this.getSelected();
+        var v = this.getValue();
+        var newValue = Ext.Array.clone(v);
+        Ext.Array.remove(newValue, selected.getId());
+        this.setValue(newValue);
+        this.fireEvent('itemchanged', newValue);
+    },
+
+    getSelected: function(){
+        var selection = this.down('#blItems').getSelectionModel().getSelection();
+        return (selection) ? selection[0] : null;
+    },
+
+    // compare array values
+    isEqual: function(v1, v2) {
+        var fromArray = Ext.Array.from,
+            i = 0,
+            len;
+
+        v1 = fromArray(v1);
+        v2 = fromArray(v2);
+        len = v1.length;
+
+        if (len !== v2.length) {
+            return false;
+        }
+
+        for(; i < len; i++) {
+            if (v2[i] !== v1[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    },
+
+    afterRender: function(){
+        var me = this,
+            records;
+
+        me.callParent();
+
+        if (me.ddReorder && !me.dragGroup && !me.dropGroup){
+            me.dragGroup = me.dropGroup = 'MultiselectDD-' + Ext.id();
+        }
+
+        if (me.draggable || me.dragGroup){
+            me.dragZone = Ext.create('Ext.view.DragZone', {
+                view: me.boundList,
+                ddGroup: me.dragGroup,
+                dragText: '{0} Item{1}'
+            });
+        }
+        if (me.droppable || me.dropGroup){
+            me.dropZone = Ext.create('Ext.view.DropZone', {
+                view: me.boundList,
+                ddGroup: me.dropGroup,
+                handleNodeDrop: function(data, dropRecord, position) {
+                    var view = this.view,
+                        store = view.getStore(),
+                        records = data.records,
+                        index;
+
+                    // remove the Models from the source Store
+                    data.view.store.remove(records);
+
+                    index = store.indexOf(dropRecord);
+                    if (position === 'after') {
+                        index++;
+                    }
+                    store.insert(index, records);
+                    view.getSelectionModel().select(records);
+                    me.fireEvent('drop', me, records);
+                }
+            });
+        }
+    },
+
+    isValid : function() {
+        var me = this,
+            disabled = me.disabled,
+            validate = me.forceValidation || !disabled;
+
+
+        return validate ? me.validateValue(me.value) : disabled;
+    },
+
+    validateValue: function(value) {
+        var me = this,
+            errors = me.getErrors(value),
+            isValid = Ext.isEmpty(errors);
+
+        if (!me.preventMark) {
+            if (isValid) {
+                me.clearInvalid();
+            } else {
+                me.markInvalid(errors);
+            }
+        }
+
+        return isValid;
+    },
+
+    markInvalid : function(errors) {
+        // Save the message and fire the 'invalid' event
+        var me = this,
+            oldMsg = me.getActiveError();
+        me.setActiveErrors(Ext.Array.from(errors));
+        if (oldMsg !== me.getActiveError()) {
+            me.updateLayout();
+        }
+    },
+
+    clearInvalid : function() {
+        // Clear the message and fire the 'valid' event
+        var me = this,
+            hadError = me.hasActiveError();
+        me.unsetActiveError();
+        if (hadError) {
+            me.updateLayout();
+        }
+    },
+
+    getValue: function(){
+        return this.value || [];
+    },
+
+    setValue: function(value){
+        this.mixins.field.setValue.call(this, value);
+        this.updateItems();
+    },
+
+    updateItems: function(){
+        this.store.removeAll();
+        if (Ext.isArray(this.value)){
+            for (var i=0; this.value.length > i; i++){
+                this.store.add({
+                    id: this.value[i],
+                    name: (this.itemRenderer) ? this.itemRenderer(this.value[i]) : this.value[i]
+                })
+            }
+        }
+    },
+
+    clearValue: function(){
+        this.setValue([]);
+    },
+
+    onEnable: function(){
+        var list = this.boundList;
+        this.callParent();
+        if (list) {
+            list.enable();
+        }
+    },
+
+    onDisable: function(){
+        var list = this.boundList;
+        this.callParent();
+        if (list) {
+            list.disable();
+        }
+    },
+
+    getErrors : function(value) {
+        return [];
+    },
+
+    onDestroy: function(){
+        var me = this;
+
+        me.bindStore(null);
+        Ext.destroy(me.dragZone, me.dropZone);
+        me.callParent();
+    },
+
+    onBindStore: function(store){
+        var boundList = this.boundList;
+
+        if (boundList) {
+            boundList.bindStore(store);
+        }
+    },
+
+    RefreshUI: function () {
+        var selectedInCombo = this.down('#cbAvailableTypes').getValue();
+        var selected = this.getSelected();
+        this.down('#btnAddType').setDisabled(!selectedInCombo);
+        this.down('#btnRemoveType').setDisabled(!selected);
+    }
+});
+Ext.define('NAT.form.field.Checkbox', {
+    extend: 'Ext.form.field.Checkbox',
+    alias: 'widget.natcheckboxfield',
+
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
+    propertyPath: '',
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
+});
+
+Ext.define('NAT.form.field.ComboBox', {
+    extend: 'Ext.form.field.ComboBox',
+    alias: 'widget.natcombobox',
+
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
+    propertyPath: '',
+
+    valueField: 'id',
+    displayField: 'name',
+
+    editable: false,
+    selectOnFocus: true,
+    typeAhead: true,
+    emptyText: 'Please choose!',
+    triggerAction: 'none',
+    matchFieldWidth: true,
+    queryMode: 'local',
+    listConfig: {
+        loadMask: false, //a loadmask nem tunik el, a masodik store load utan!
+        width: 400 //for multicolumn combo, set matchFieldWidth to false!
+    },
+
+    constructor : function(config) {
+        this.store = Ext.create('Ext.data.ArrayStore', {
+            fields: ['id', 'name'],
+            data: []
+        });
+        if (config.comboData){
+            this.setComboData(config.comboData);
+        }
+        this.callParent([config]);
+    },
+
+    initComponent: function () {
+        this.callParent(arguments);
+        this.on('beforequery', this.this_beforequery, this);
+    },
+
+    setComboData: function(value){
+        this.store.removeAll();
+
+        var data = [], id, name;
+
+        if (Ext.isArray(value[0])){    //if value format is two dimensional [[1,1],[2,2]]...
+            data = value;
+        }
+        else{
+            for (var i=0; value.length > i; i++){
+                id = value[i];
+                name = value[i];
+                try { id = JSON.parse(id); } catch(err){}
+                data.push([id, name]);
+            }
+        }
+
+        this.store.add(data);
+    },
+
+    renderer: function(value, rec){
+        if (!this.store) return value;
+        var lookupModel = this.store.getById(value);
+        if (!lookupModel) return value;
+        return lookupModel.get(this.displayField);
+    },
+
+    this_beforequery: function() {
+        this.expand();
+        return false;  //prevent clearFilter() on store, cause we have '_deleted = false' filter
+                       //todo: override combobox's doQuery function to preserve our filter
+    },
+
+    BindStore: function(store) {
+        this.bindStore(store);
+    },
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
+});
+
+Ext.define('NAT.form.field.Date', {
+    extend: 'Ext.form.field.Date',
+    alias: 'widget.natdatefield',
+
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
+    propertyPath: '',
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
+});
+
+Ext.define('NAT.form.field.Display', {
+    extend: 'Ext.form.field.Display',
+    alias: 'widget.natdisplayfield',
+
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
+    propertyPath: '',
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
+});
+
+Ext.define('NAT.form.field.File', {
+    extend: 'Ext.form.field.File',
+    alias: 'widget.natfilefield',
+
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
+    propertyPath: '',
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
+});
+
+Ext.define('NAT.form.field.Function', {
+    extend:'Ext.form.field.Trigger',
+    alias: 'widget.natfunctionfield',
+    requires: [
+        'NAT.edit.Source'
+    ],
+
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
+    propertyPath: '',
+
+    editable: false,
+
+    functionName: '',
+    functionParams: [],
+
+    editorWindow: null,
+
+    initComponent: function () {
+        this.callParent(arguments);
+    },
+
+    onTriggerClick: function() {
+        this.editorWindow = this.createEditor();
+        this.editorWindow.show(null, function(a,b){
+            this.onExpand();
+        }, this);
+        this.editorWindow.center();
+    },
+
+    //Sets the sourceedit's value to match the current field value when expanding.
+    onExpand: function() {
+        var oFunction = this.getValue();
+        var sourceedit = this.editorWindow.down('#sourceedit');
+
+        if (oFunction){
+            var params = oFunction.params;
+            var body = oFunction.body;
+        }else{
+            params = this.functionParams;
+            body = '{\n\n}';
+        }
+
+        var value = 'function ' + this.functionName + '(';
+        if (params){
+            for (var i=0; params.length>i; i++){
+                value += params[i];
+                if (i < params.length-1) value += ', ';
+            }
+        }
+        value += ')\n';
+        value += Ext.Array.convertToString(body, true);
+
+        sourceedit.setValue(value);
+        sourceedit.focus(false, 1);
+    },
+
+    createEditor: function() {
+        var me = this;
+
+        return Ext.create('widget.natwindow', {
+            title: 'Function Editor',
+            modal: true,
+            height: 600,
+            width: 1200,
+            layout: {
+                type: 'vbox',
+                align: 'stretch'
+            },
+            items: [
+                {
+                    xtype: 'natsourceedit',
+                    itemId: 'sourceedit',
+                    grow: true,
+                    fieldStyle: 'border: none; background-image: none;',
+                    firstRowReadonly: true,
+                    lastRowReadonly: true,
+                    flex: 1
+                },
+                {
+                    xtype: 'container',
+                    layout: {
+                        type: 'hbox',
+                        padding: '5',
+                        pack: 'end',
+                        align: 'middle'
+                    },
+                    defaults: {
+                        margins: '0 0 0 5',
+                        minWidth: 100
+                    },
+                    cls: 'commandpanel',
+                    dock: 'bottom',
+                    items: [
+                        {
+                            xtype: 'natbutton',
+                            itemId: 'btnOk',
+                            text: 'Ok',
+                            ui: 'green',
+                            listeners: {
+                                scope: me,
+                                click: me.btnOk_click
+                            }
+                        },
+                        {
+                            xtype: 'natbutton',
+                            itemId: 'btnCancel',
+                            text: 'Cancel',
+                            listeners: {
+                                scope: me,
+                                click: me.btnCancel_click
+                            }
+                        }
+                    ]
+                }
+            ]
+        });
+    },
+
+    //Sets the current field value and collapse.
+    btnOk_click: function(m, d) {
+        var sourceedit = this.editorWindow.down('#sourceedit');
+        var lines = sourceedit.getAllLines();
+
+        Ext.Array.erase(lines, 0, 1);
+
+        var value = Ext.Array.convertToString(lines, false);
+        value = Ext.String.removeFromStart(value, '{');
+        value = Ext.String.removeFromEnd(value, '}');
+        value = value.replace(/\s/g, ''); //remove whitespaces
+
+        if (value){
+            value = {
+                params: this.functionParams,
+                body: lines
+            };
+        }else{
+            value = null
+        }
+
+        this.setValue(value);
+        this.editorWindow.close();
+        this.focus(false, 60);
+    },
+
+    btnCancel_click: function() {
+        this.editorWindow.close();
+        this.focus(false, 60);
+    },
+
+    rawToValue: function(rawValue) {
+        if (rawValue == 'Function...'){
+            rawValue = null;
+        }
+        return rawValue;
+    },
+
+    valueToRaw: function(value) {
+        return value;
+    },
+
+    getRawValue: function() {
+        return this.rawValue;
+    },
+
+    setRawValue: function(value) {
+        var me = this;
+       /// value = Ext.value(me.transformRawValue(value), '');
+        me.rawValue = value;
+
+        if (me.inputEl) {
+            me.inputEl.dom.value = 'Function...';
+        }
+        return value;
+    },
+
+    isValid : function() {
+        return true;
+    },
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
+});
+
+Ext.define('NAT.form.field.Hidden', {
+    extend: 'Ext.form.field.Hidden',
+    alias: 'widget.nathiddenfield',
+
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
+    propertyPath: '',
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
+});
+
+Ext.define('NAT.form.field.HtmlEditor', {
+    extend: 'Ext.form.field.HtmlEditor',
+    alias: 'widget.htmleditor',
+
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
+    propertyPath: '',
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
+});
+
+Ext.define('NAT.form.field.Lookup', {
+    extend: 'Ext.form.field.ComboBox',
+    alias: 'widget.natlookupfield',
+
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
+    propertyPath: '',
+
+    valueField: '_id',
+    displayField: 'name',
+
+    editable: false,
+    selectOnFocus: true,
+    typeAhead: true,
+    emptyText: 'Please choose!',
+    triggerAction: 'none',
+    matchFieldWidth: true,
+    queryMode: 'local',
+    listConfig: {
+        loadMask: false, //a loadmask nem tunik el, a masodik store load utan!
+        width: 400 //for multicolumn combo, set matchFieldWidth to false!
+    },
+//        deferredBind: false,
+//        deferredBindStore: null,
+
+    initComponent: function () {
+        this.callParent(arguments);
+        this.on('beforequery', this.this_beforequery, this);
+//            this.on('afterrender', this.this_afterrender, this);
+    },
+
+    this_beforequery: function() {
+       this.expand();
+       return false;  //prevent clearFilter() on store, cause we have '_deleted = false' filter
+                      //todo: override combobox's doQuery function to preserve our filter
+    },
+
+//        this_afterrender: function() {
+//            if (this.deferredBind) {
+//                this.bindStore(this.deferredBindStore);
+//                this.deferredBind = false;
+//                this.deferredBindStore = null;
+//            }
+//        },
+
+    renderer: function(value, rec){
+        if (!this.store) return value;
+        var lookupModel = this.store.getById(value);
+        if (!lookupModel) return value;
+        return lookupModel.get(this.displayField);
+    },
+
+    BindStore: function(store) {
+        this.bindStore(store);
+//            if (this.IsVisible()) {
+//                this.bindStore(store);
+//            } else {
+//                this.deferredBind = true;
+//                this.deferredBindStore = store;
+//            }
+    },
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
+});
+
+Ext.define('NAT.form.field.Object', {
+    extend:'Ext.form.field.Trigger',
+    alias: 'widget.natobjectfield',
+    requires: [
+        'NAT.edit.Source'
+    ],
+
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
+    propertyPath: '',
+
+    editable: false,
+
+    functionName: '',
+    functionParams: [],
+
+    editorWindow: null,
+
+    initComponent: function () {
+        this.callParent(arguments);
+    },
+
+    onTriggerClick: function() {
+        this.editorWindow = this.createEditor();
+        this.editorWindow.show(null, function(a,b){
+            this.onExpand();
+        }, this);
+        this.editorWindow.center();
+    },
+
+    //Sets the sourceedit's value to match the current field value when expanding.
+    onExpand: function() {
+        var lines = this.getValue();
+        var sourceedit = this.editorWindow.down('#sourceedit');
+
+        var value = Ext.Array.convertToString(lines, true);
+        if (!value){
+            value = '{\n\n}';
+        }
+
+        sourceedit.setValue(value);
+        sourceedit.focus(false, 1);
+    },
+
+    createEditor: function() {
+        var me = this;
+
+        return Ext.create('widget.natwindow', {
+            title: 'Object Editor',
+            modal: true,
+            height: 600,
+            width: 800,
+            layout: {
+                type: 'vbox',
+                align: 'stretch'
+            },
+            items: [
+                {
+                    xtype: 'natsourceedit',
+                    itemId: 'sourceedit',
+                    parser: 'text',
+                    grow: true,
+                    fieldStyle: 'border: none; background-image: none;',
+                    firstRowReadonly: false,
+                    lastRowReadonly: false,
+                    flex: 1
+                },
+                {
+                    xtype: 'container',
+                    layout: {
+                        type: 'hbox',
+                        padding: '5',
+                        pack: 'end',
+                        align: 'middle'
+                    },
+                    defaults: {
+                        margins: '0 0 0 5',
+                        minWidth: 100
+                    },
+                    cls: 'commandpanel',
+                    dock: 'bottom',
+                    items: [
+                        {
+                            xtype: 'natbutton',
+                            itemId: 'btnOk',
+                            text: 'Ok',
+                            ui: 'green',
+                            listeners: {
+                                scope: me,
+                                click: me.btnOk_click
+                            }
+                        },
+                        {
+                            xtype: 'natbutton',
+                            itemId: 'btnCancel',
+                            text: 'Cancel',
+                            listeners: {
+                                scope: me,
+                                click: me.btnCancel_click
+                            }
+                        }
+                    ]
+                }
+            ]
+        });
+    },
+
+    //Sets the current field value and collapse.
+    btnOk_click: function(m, d) {
+        var sourceedit = this.editorWindow.down('#sourceedit');
+        var lines = sourceedit.getAllLines();
+
+        if (Ext.Object.isEmpty(Ext.Array.convertToObject(lines))){
+            lines = null;
+        }
+
+        this.setValue(lines);
+        this.editorWindow.close();
+        this.focus(false, 60);
+    },
+
+    btnCancel_click: function() {
+        this.editorWindow.close();
+        this.focus(false, 60);
+    },
+
+    rawToValue: function(rawValue) {
+        if (rawValue == 'Object...'){
+            rawValue = null;
+        }
+        return rawValue;
+    },
+
+    valueToRaw: function(value) {
+        return value;
+    },
+
+    getRawValue: function() {
+        return this.rawValue;
+    },
+
+    setRawValue: function(value) {
+        var me = this;
+        /// value = Ext.value(me.transformRawValue(value), '');
+        me.rawValue = value;
+
+        if (me.inputEl) {
+            me.inputEl.dom.value = 'Object...';
+        }
+        return value;
+    },
+
+    isValid : function() {
+        return true;
+    },
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
+});
+
+Ext.define('NAT.form.field.Radio', {
+    extend: 'Ext.form.field.Radio',
+    alias: 'widget.natradiofield',
+
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
+    propertyPath: '',
+    propertyValue: '',
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
+});
+
+    Ext.define('NAT.form.field.StringArray', {
+    extend: 'Ext.form.field.TextArea',
+    alias: 'widget.natstringarrayfield',
+
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
+    propertyPath: '',
+
+    getValue: function(){
+        var value = this.callParent(arguments);
+        if (value){
+            return value.split(',');
+        }else{
+            return [];
+        }
+    },
+
+    setValue: function(value){
+        value = value || [];
+        var result = '';
+        for (var i=0; value.length > i; i++){
+            result += value[i];
+            if (value.length > i) result += ',';
+        }
+        this.callParent([result]);
+    },
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
+});
+
+Ext.define('NAT.form.field.StringArrayPicker', {
+    extend:'Ext.form.field.Picker',
+    alias: 'widget.natstringarraypickerfield',
+    requires: [
+        'Ext.form.field.TextArea'
+    ],
+
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
+    propertyPath: '',
+
+    editable: false,
+    matchFieldWidth: false,
+
+    initComponent: function () {
+        this.callParent(arguments);
+    },
+
+    createPicker: function() {
+        var me = this;
+
+        return Ext.create('Ext.container.Container', {
+            renderTo: document.body,
+            floating: true,
+            hidden: true,
+            height: 400,
+            width: 600,
+            layout: {
+                type: 'vbox',
+                align: 'stretch'
+            },
+            items: [
+                {
+                    xtype: 'textarea',
+                    itemId: 'textarea',
+                    grow: true,
+                    fieldStyle: 'border: none; background-image: none;',
+                    flex: 1
+                },
+                {
+                    xtype: 'button',
+                    itemId: 'btnOk',
+                    text: 'ok',
+                    dock: 'bottom',
+                    listeners: {
+                        scope: me,
+                        click: me.btnOk_click
+                    }
+                }
+            ],
+            style: { background: 'white' }
+        });
+    },
+
+    /**
+     * @private
+     * Sets the current field value and collapse.
+     */
+    btnOk_click: function(m, d) {
+        var textarea = this.picker.down('#textarea');
+        var value = textarea.getValue();
+        this.setRawValue(value);
+        this.collapse();
+    },
+
+    /**
+     * @private
+     * Sets the textarea's value to match the current field value when expanding.
+     */
+    onExpand: function() {
+        var rawValue = this.getRawValue();
+        var textarea = this.picker.down('#textarea');
+        textarea.setValue(rawValue);
+        textarea.focus(false, 1);
+    },
+
+    /**
+     * @private
+     * Focuses the field when collapsing the Date picker.
+     */
+    onCollapse: function() {
+        this.focus(false, 60);
+    },
+
+    rawToValue: function(rawValue) {
+        return rawValue.split('\n');
+    },
+
+    valueToRaw: function(value) {
+        if (!Ext.isArray(value)) return '';
+        var rawValue = '';
+        for (var i=0; value.length > i; i++){
+            rawValue += value[i];
+            if (value.length-1 > i) rawValue += '\n';
+        }
+        return rawValue;
+    },
+
+    getRawValue: function() {
+        return this.rawValue;
+    },
+
+    setRawValue: function(value) {
+        var me = this;
+        /// value = Ext.value(me.transformRawValue(value), '');
+        me.rawValue = value;
+
+        if (me.inputEl) {
+            me.inputEl.dom.value = 'String Array...';
+        }
+        return value;
+    },
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
+});
+
+Ext.define('NAT.form.field.Text', {
+    extend: 'Ext.form.field.Text',
+    alias: 'widget.nattextfield',
+
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
+    propertyPath: '',
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
+});
+
+Ext.define('NAT.form.field.TextArea', {
+    extend: 'Ext.form.field.TextArea',
+    alias: 'widget.nattextarea',
+
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
+    propertyPath: '',
+
+    initComponent: function () {
+        this.callParent(arguments);
+    },
+
+    Write: function(line) {
+        var  value = this.getValue();
+        this.setValue(value + line);
+    },
+
+    Writeln: function(line) {
+        var  value = this.getValue();
+        this.setValue(value + line + ' \n');
+    },
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
+});
+
+Ext.define('NAT.form.field.Time', {
+    extend: 'Ext.form.field.Time',
+    alias: 'widget.nattimefield',
+
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
+    propertyPath: '',
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
+});
+
+Ext.define('NAT.form.field.Trigger', {
+    extend: 'Ext.form.field.Trigger',
+    alias: 'widget.nattriggerfield',
+
+    validateOnChange: false,
+    validateOnBlur: false,
+    msgTarget: 'side',
+
+    propertyPath: '',
+
+    hasErrors: function() {
+        return ((this.activeErrors) && (this.activeErrors.length > 0));
+    }
+});
+
+Ext.define('NAT.form.Panel', {
+    extend: 'Ext.form.Panel',
+    alias: 'widget.natform',
+
+    store: null,
+    propertyPath: '',
+
+    children: [],
+
+    isChanging: false,
+
+//        layout: {
+//            type: 'vbox'
+//        },
+
+    initComponent: function () {
+        this.callParent(arguments);
+        this.UpdateChildren();
+    },
+
+    UpdateChildren: function() {
+        this.children = [];
+        this.UpdateChildren_req(this);
+    },
+
+    UpdateChildren_req: function(container) {
+        if (!container.items) return;
+
+        for (var i = 0; container.items.getCount() > i; i++) {
+            var item = container.items.getAt(i);
+            if (item.isFormField) this.children.push(item);
+            else if (item.$className === 'NAT.form.Panel') this.children.push(item);
+            else if (item.$className === 'NAT.grid.Panel') this.children.push(item);
+            else if (item.$className === 'NAT.tree.Panel') this.children.push(item);
+            else this.UpdateChildren_req(item);
+        }
+    },
+
+    BindStore: function(store) {
+        this.store = store;
+        this.InitBinding();
+    },
+
+    InitBinding: function () {
+        if (!this.store) return;
+
+        this.mon(this.store, 'currentmodelchanged', function(model) {
+            this.ReadAllValue();
+        }, this);
+
+        this.mon(this.store, 'update', function(store, model, operation, modifiedFieldNames) {
+            if (model == this.store.currModel) { //not embedded model
+                if (modifiedFieldNames.length>0){ //no modifiedFieldNames if operation is commit...
+                    this.ReadValue(modifiedFieldNames[0], model.get(modifiedFieldNames[0]));
+                }
+            }
+        }, this);
+
+        for (var i = 0; this.children.length > i; i++) {
+            var child = this.children[i];
+            if (child.isFormField) {
+                child.on('change', this.WriteValue, this);
+//                child.on('getErrors', this.field_getErrors, this);
+                child.on('blur', this.field_blur, this);
+            }
+        }
+
+        this.ReadAllValue();
+    },
+
+    field_blur: function(field, op) {
+        if (field.validateOnBlur || field.validateOnChange) return; //UI validation
+
+        if (!this.store) return;
+        if (!this.store.hasModel()) return;
+
+        this.store.currModel.ValidateField(field.propertyPath, function(err, data) {
+            if (field.preventMark) return;
+            var fieldErrors = this.store.currModel.errors.getByField(field.propertyPath);
+            var isValid = (fieldErrors.length == 0);
+            if (isValid) {
+                field.clearInvalid();
+            } else {
+                field.markInvalid(fieldErrors[0].message);
+            }
+        }, this);
+    },
+
+    ValidateEditorFields: function(op, callback, scope) {
+        op = op || {};
+
+        if (!this.store) return;
+        if (!this.store.hasModel()) return;
+
+        this.store.currModel.errors.removeAll();
+
+        var me = this;
+        async.forEach(this.GetChildFields(), function(field, done){
+            me.store.currModel.ValidateField(field.propertyPath, function(err, data) {
+                done(null, null);
+            }, me);
+        },
+        function(err, data) {
+            me.ShowErrors();
+            if (me.store.currModel.errors.isValid()) {
+                Ext.callback(callback, scope, [null, null], 0);
+            }
+            else {
+                if (!op.skipFocusFirstInvalidField) me.FocusFirstInvalidField();
+                Ext.callback(callback, scope, [me.store.currModel.errors, null], 0);
+            }
+        });
+    },
+
+    ValidateEditor: function(op, callback, scope) {
+        op = op || {};
+
+        if (!this.store) return;
+        if (!this.store.hasModel()) return;
+
+        this.store.currModel.errors.removeAll();
+
+        var me = this;
+        this.store.currModel.ValidateModel(null, function(err, data) {
+            me.ShowErrors();
+            if (me.store.currModel.errors.isValid()) {
+                Ext.callback(callback, scope, [null, null], 0);
+            }
+            else {
+                if (!op.skipFocusFirstInvalidField) me.FocusFirstInvalidField();
+                Ext.callback(callback, scope, [me.store.currModel.errors, null], 0);
+            }
+        }, this);
+    },
+
+    ShowErrors: function() {
+        if (!this.store) return;
+        if (!this.store.hasModel()) return;
+
+        var childFields = this.GetChildFields();
+        for (var i = 0; childFields.length > i; i++) {
+            var field = childFields[i];
+            if (field.preventMark) continue;
+            var fieldErrors = this.store.currModel.errors.getByField(field.propertyPath);
+            var isValid = (fieldErrors.length == 0);
+            if (isValid) {
+                field.clearInvalid();
+            } else {
+                field.markInvalid(fieldErrors[0].message);
+            }
+        }
+    },
+
+    GetChildFields: function() {
+        return Ext.Array.filter(this.children, function(child) {
+            return child.isFormField;
+        });
+    },
+
+//    field_getErrors: function(field, value, errors) {
+//        if (!this.store) return;
+//        if (!this.store.hasModel()) return;
+//
+//        this.store.model.ValidateField(field.propertyPath, errors);
+//    },
+
+    ReadAllValue: function () {
+        if (this.isChanging) return;
+        if (!this.store) return;
+        if (!this.store.hasModel()) return;
+
+        for (var i = 0; this.children.length > i; i++) {
+            var child = this.children[i];
+            if (!child.propertyPath) continue;
+            if ((child.isFormField) && (child.$className === 'NAT.form.field.Radio')) {
+                var value = this.store.currModel.get(child.propertyPath);
+                this.isChanging = true;
+                child.setValue(child.propertyValue === value);
+                this.isChanging = false;
+                continue;
+            }
+            if (child.isFormField) {
+                this.isChanging = true;
+                child.setValue(this.store.currModel.get(child.propertyPath));
+                this.isChanging = false;
+                continue;
+            }
+            if (typeof child.BindStore == 'function'){
+                child.BindStore(this.store.currModel[child.propertyPath]);
+            }
+        }
+    },
+
+    ReadValue: function (fieldName, value) {
+        if (this.isChanging) return;
+
+        for (var i = 0; this.children.length > i; i++) {
+            var child = this.children[i];
+            if (child.propertyPath == fieldName) {
+                if ((child.isFormField) && (child.$className === 'NAT.form.field.Radio')) {
+                    this.isChanging = true;
+                    child.setValue(child.propertyValue === value);
+                    this.isChanging = false;
+                    continue;
+                }
+                if (child.isFormField) {
+                    this.isChanging = true;
+                    child.setValue(value);
+                    this.isChanging = false;
+                }
+            }
+        }
+    },
+
+    WriteValue: function (field, newValue, oldValue, op) {
+        if (this.isChanging) return;
+        if (!this.store) return;
+        if (!this.store.hasModel()) return;
+
+        if (field.$className === 'NAT.form.field.Radio') {
+            this.isChanging = true;
+            this.store.currModel.set(field.propertyPath, field.propertyValue);
+            this.isChanging = false;
+            this.ReadAllRadioValue();
+            return;
+        }
+
+        this.isChanging = true;
+        this.store.currModel.set(field.propertyPath, newValue);
+        this.isChanging = false;
+    },
+
+    ReadAllRadioValue: function () {
+        if (this.isChanging) return;
+        if (!this.store) return;
+        if (!this.store.hasModel()) return;
+
+        for (var i = 0; this.children.length > i; i++) {
+            var child = this.children[i];
+            if (!child.propertyPath) continue;
+            if ((child.isFormField) && (child.$className === 'NAT.form.field.Radio')) {
+                var value = this.store.currModel.get(child.propertyPath);
+                this.isChanging = true;
+                child.setValue(child.propertyValue === value);
+                this.isChanging = false;
+            }
+        }
+    },
+
+    SetEditable: function(value) {
+        var frm = this.getForm();
+        var fields = frm.getFields();
+        for (var i = 0; i < fields.length; i++) {
+            var field = fields.getAt(i);
+            field.setReadOnly(!value);
+        }
+    },
+
+    FocusFirstField: function() {
+        var frm = this.getForm();
+        var fields = frm.getFields();
+        if (fields.length > 0) {
+            var field = fields.getAt(0);
+            field.focus(true, 200);
+        }
+    },
+
+    FocusFirstInvalidField: function() {
+        var frm = this.getForm();
+        var fields = frm.getFields();
+        for (var i = 0; i < fields.length; i++) {
+            var field = fields.getAt(i);
+            if (field.hasErrors()) {
+                field.focus(true, 200);
+                return;
+            }
+        }
+    },
+
+//    FindOwnerEditor: function() {
+//        if (this.ownerEditor) return this.ownerEditor;
+//        this.ownerEditor = this.findParentByType('NATEditor');
+//        return this.ownerEditor;
+//    },
+//
+//    FindDataSource: function() {
+//        if (this.dataSource) return this.dataSource;
+//        if (!this.FindOwnerEditor()) return null;
+//        this.dataSource = this.ownerEditor.dataSource.model[this.propertyPath];
+//        return this.dataSource;
+//    },
+
+    Refresh: function(op, callback, scope) {
+        Ext.callback(callback, scope, [null, null], 0);
+    }
+});
+
+Ext.define('NAT.grid.column.Lookup', {
+    extend: 'Ext.grid.column.Column',
+    alias: 'widget.natlookupcolumn',
+
+    initComponent: function(){
+        this.callParent(arguments);
+
+        if (!this.renderer) {
+            this.renderer = function(value, metaData, record, rowIndex, colIndex) {
+                var col = this.columns[colIndex],
+                    result = col.field.renderer(value, record);
+                return Ext.util.Format.htmlEncode(result);
+            };
+        }
+    },
+
+    BindStore: function(store) {
+        //if (!this.natIsLookup) return;
+        this.getEditor().bindStore(store);
+        this.fireEvent('bindstore', this, store);
+    }
+});
+
+Ext.define('NAT.grid.column.Check', {
+    extend: 'Ext.grid.column.Column',
+    alias: 'widget.natcheckcolumn',
+
+    constructor: function() {
+        this.callParent(arguments);
+    },
+
+    renderer : function(value, metaData){
+        var cssPrefix = Ext.baseCSSPrefix,
+            cls = [cssPrefix + 'form-checkbox'];
+
+        if (value) {
+            metaData.tdCls = cssPrefix + 'form-cb-checked';
+        }
+
+        metaData.style = "text-align: -webkit-center;";
+
+        return '<input type="button" class="' + cls.join(' ') + '">';
+    }
+});
+
+Ext.define('NAT.grid.Panel', {
+    extend: 'Ext.grid.Panel',
+    alias: 'widget.natgrid',
+    requires: ['Ext.grid.plugin.CellEditing'],
+
+    deferredBind: false,
+    deferredBindStore: null,
+
+    constructor: function (config) {
+        //config.plugins = [Ext.create('Ext.grid.plugin.CellEditing', { clicksToEdit: 1 })];
+        this.callParent([config]);
+        return this;
+    },
+
+    initComponent: function () {
+        this.viewConfig = Ext.applyIf(this.viewConfig || {}, {
+            loadMask: false //if true after refreshing the store grid rows cant be selected
+        });
+
+        this.callParent(arguments);
+
+        for (var i = 0; this.columns.length > i; i++) {
+            var column = this.columns[i];
+            if (column.natIsLookup) {
+                column.on('bindstore', this.luColumn_bindstore, this);
+            }
+        }
+
+        this.on('beforedeselect', this.this_beforedeselect, this);
+        this.on('select', this.this_select, this);
+        this.on('deselect', this.this_deselect, this);
+        this.on('afterrender', this.this_afterrender, this);
+    },
+
+    this_beforedeselect: function (rowModel, model) {
+//        var plugin = this.getPlugin();
+//        plugin.completeEdit();
+    },
+
+    this_select: function (rowModel, model) {
+        if (!this.store) return;
+        this.store.Select(model);
+    },
+
+    this_deselect: function (rowModel, model) {
+        if (!this.store) return;
+        this.store.Deselect();
+    },
+
+    this_afterrender: function() {
+        if (this.deferredBind) {
+            this.bindStore(this.deferredBindStore);
+            this.deferredBind = false;
+            this.deferredBindStore = null;
+        }
+    },
+
+    luColumn_bindstore: function(column, store) {
+        this.mon(store, 'LoadCompleted', function(models, operation, success) {
+            if (models && models.length > 0) {
+                this.getView().refresh();
+            }
+        }, this);
+    },
+
+    BindStore: function(store) {
+        if (this.IsVisible()) {
+            this.bindStore(store);
+        } else {
+            this.deferredBind = true;
+            this.deferredBindStore = store;
+        }
+    },
+
+    getSelected: function () {
+        var selRecords = this.getSelectionModel().getSelection();
+        if (selRecords.length == 0) return null;
+        return selRecords[0];
+    },
+
+    Select: function (models, keepExisting, suppressEvent) {
+        this.getSelectionModel().select(models, keepExisting, suppressEvent);
+    },
+
+    Deselect: function (models, suppressEvent) {
+        this.getSelectionModel().deselect(models, suppressEvent);
+    }
+
+//    startEdit: function(model, columnItemId) {
+//        var plugin = this.getPlugin();
+//        var column = this.headerCt.child(columnItemId);
+//        if (!column) return;
+//
+//        if (Ext.isString(model)) {
+//            model = this.store.getById(model);
+//        }
+//        if (!model) return;
+//
+//        this.Select(model);
+//        plugin.startEdit(model, column);
+//    }
+});
+
+Ext.define('natjs.overrides.app.Application', {
+    requires: ['Ext.app.Application']
+}, function() {
+    Ext.override(Ext.app.Application, {
+
+        baseUrl: '',
+        modelNamespace: '',
+
+        constructor: function(config) {
+            config = config || {};
+            Ext.global.app = this;
+
+            this.baseUrl = this.GetBaseURL();
+            this.modelNamespace = config.name + '.model.';
+
+            return this.callParent([config]);
+        },
+
+        GetModelNameWithNamespace: function(modelName) {
+            if (Ext.String.startsWith(modelName, this.modelNamespace)) return modelName;
+            return this.modelNamespace + modelName;
+        },
+
+        GetModelNameWithoutNamespace: function(modelName) {
+            if (!Ext.String.startsWith(modelName, this.modelNamespace)) return modelName;
+            return modelName.slice(this.modelNamespace.length);
+        },
+
+        GetBaseURL: function() {
+            var url = location.href;  // entire url including querystring - also: window.location.href;
+            var baseUrl = url.substring(0, url.indexOf('/', 14));
+            return baseUrl + "/";
+        },
+
+        ShowLoadingMask: function () {
+            var loadText = 'Please wait...';
+            Ext.getBody().mask(loadText, 'loading');
+        },
+
+        HideLoadingMask: function () {
+            Ext.getBody().unmask();
+        },
+
+        ShowLoadingMaskOnAjax: function () {
+            var loadText = 'Please wait...';
+            Ext.Ajax.on('beforerequest',function(){Ext.getBody().mask(loadText, 'loading') }, Ext.getBody());
+            Ext.Ajax.on('requestcomplete',Ext.getBody().unmask ,Ext.getBody());
+            Ext.Ajax.on('requestexception', Ext.getBody().unmask , Ext.getBody());
+        },
+
+        natCreateModel: function(model, config) {
+            config = config || {};
+            var className = '';
+
+            if (Ext.isString(model)) className = model;
+            else if (Ext.isFunction(model)) className = model.$className;
+
+            if (className == '') return null;
+
+            var fullClassName = this.GetModelNameWithNamespace(className);
+
+            var m = Ext.create(fullClassName);
+            m.beginEdit();
+            m.set('_type', className);
+            m.set(config);
+
+            for (var i = 0; i < m.associations.length; i++) {
+                var association = m.associations.items[i];
+                association.Created(m);
+            }
+
+            return m;
+        }
+    });
+});
+
+Ext.define('natjs.overrides.container.Container', {
+    requires: ['Ext.container.Container']
+}, function() {
+    Ext.override(Ext.container.Container, {
+
+        queryByComponentId: function(componentId) {
+            var components = this.queryBy(function(comp){
+                return (comp.id == componentId);
+            }, this);
+
+            return (components.length == 1) ? components[0] : null;
+        },
+
+        getChildByElement: function(el, deep) {
+            var item,
+                itemEl,
+                i = 0,
+                it = this.getRefItems(),
+                ln = it.length;
+
+            el = Ext.getDom(el);
+            for (; i < ln; i++) {
+                item = it[i];
+                itemEl = item.getEl();
+                if (itemEl && ((itemEl.dom === el) || itemEl.contains(el))) {
+                    if (deep && item.getChildByElement) {
+                        return (item.getChildByElement(el, deep)) || item;
+                    } else {
+                        return item;
+                    }
+                }
+            }
+            return null;
+        }
+    });
+});
+
+Ext.define('natjs.overrides.data.BelongsToAssociation', {
+    requires: ['Ext.data.BelongsToAssociation']
+}, function() {
+    Ext.override(Ext.data.BelongsToAssociation, {
+
+        constructor: function(config) {
+            var me = this;
+
+            Ext.data.BelongsToAssociation.superclass.constructor.call(this, config);
+
+            var ownerProto = me.ownerModel.prototype,
+                getterName = me.getterName || 'get' + me.name,
+                setterName = me.setterName || 'set' + me.name;
+
+            Ext.applyIf(me, {
+                storeName: 'belongsTo_' + me.name,
+                foreignKey : me.name + "_id",
+                associationKey: me.name
+            });
+            ownerProto[getterName] = me.createGetter();
+            ownerProto[setterName] = me.createSetter();
+
+            ownerProto[me.name] = me.createStore();
+        },
+
+        createStore: function() {
+            var that            = this,
+                associatedModel = that.associatedModel,
+                storeName       = that.storeName,
+                foreignKey      = that.foreignKey,
+                primaryKey      = that.primaryKey,
+                autoLoad        = that.autoLoad,
+                storeConfig     = that.storeConfig || {};
+
+            return function() {
+                var me = this,
+                    config, filter,
+                    modelDefaults = {};
+
+                if (me[storeName] === undefined) {
+                    modelDefaults[foreignKey] = me.get(primaryKey);
+
+                    config = Ext.apply({}, storeConfig, {
+                        model        : associatedModel,
+                        modelDefaults: modelDefaults
+                    });
+
+                    me[storeName] = Ext.create('widget.natmodelstore', config); //NAT Support!!!
+                    if (autoLoad) {
+                        me[storeName].load();
+                    }
+
+                    //Owner record fires change event when its belongsTo association changes
+                    me[storeName].on('update', me.associationChanged, me);
+                    me[storeName].on('add', me.associationChanged, me);
+                    me[storeName].on('remove', me.associationChanged, me);
+                }
+
+                return me[storeName];
+            };
+        },
+
+        Created: function(record) {
+            var store = record[this.name]();
+            store.CreateModel();
+        },
+
+        Merge: function(record, source) {
+            var store = record[this.storeName];
+            var sourceStore = source[this.storeName];
+            store.Merge(sourceStore);
+        },
+
+        read: function(record, associationData){
+            var store = record[this.name](),
+                proxy = store.proxy,
+                reader = proxy.getReader();
+
+            var rec = reader.read([associationData]).records[0];
+            store.setModel(rec);
+            rec.Loaded();
+        },
+
+        write: function(record, data){
+            var store = record[this.storeName],
+                proxy = store.proxy,
+                writer = proxy.getWriter();
+
+            data[this.name] = writer.getRecordData(store.model);
+        },
+
+        reject: function (record, silent) {
+            var store = record[this.storeName];
+            if (store) store.reject();
+        },
+
+        commit : function(record, silent) {
+            var store = record[this.storeName];
+            if (store) store.commit();
+        },
+
+        IsChanged: function(record) {
+            var store = record[this.storeName];
+            return store.IsChanged();
+        }
+    });
+});
+
+Ext.define('natjs.overrides.data.HasManyAssociation', {
+    requires: ['Ext.data.HasManyAssociation']
+}, function() {
+    Ext.override(Ext.data.HasManyAssociation, {
+
+        constructor: function(config) {
+            var me = this,
+                ownerProto,
+                name;
+
+            Ext.data.HasManyAssociation.superclass.constructor.call(this, config);
+
+            me.name = me.name || Ext.util.Inflector.pluralize(me.associatedName.toLowerCase());
+
+            ownerProto = me.ownerModel.prototype;
+            name = me.name;
+
+            Ext.applyIf(me, {
+                storeName : 'hasMany_' + me.name,
+                foreignKey: me.ownerName.toLowerCase() + "_id"
+            });
+
+            ownerProto[name] = me.createStore();
+        },
+
+        createStore: function() {
+            var that            = this,
+                associatedModel = that.associatedModel,
+                storeName       = that.storeName,
+                foreignKey      = that.foreignKey,
+                primaryKey      = that.primaryKey,
+                filterProperty  = that.filterProperty,
+                autoLoad        = that.autoLoad,
+                storeConfig     = that.storeConfig || {};
+
+            return function() {
+                var me = this,
+                    config, filter,
+                    modelDefaults = {};
+
+                if (me[storeName] === undefined) {
+                    if (filterProperty) {
+                        filter = {
+                            property  : filterProperty,
+                            value     : me.get(filterProperty),
+                            exactMatch: true
+                        };
+                    } else {
+                        filter = {
+                            property  : foreignKey,
+                            value     : me.get(primaryKey),
+                            exactMatch: true
+                        };
+                    }
+
+                    modelDefaults[foreignKey] = me.get(primaryKey);
+
+                    config = Ext.apply({}, storeConfig, {
+                        model        : associatedModel,
+                        filters      : [filter],
+                        remoteFilter : false,
+                        modelDefaults: modelDefaults
+                    });
+
+                    //me[storeName] = Ext.create('Ext.data.Store', config);
+                    me[storeName] = Ext.create('widget.natstore', config); //NAT Support!!!
+                    if (autoLoad) {
+                        me[storeName].load();
+                    }
+
+                    //Owner record fires change event when its hasMany association changes
+                    me[storeName].on('update', me.associationChanged, me);
+                    me[storeName].on('add', me.associationChanged, me);
+                    me[storeName].on('remove', me.associationChanged, me);
+                }
+
+                return me[storeName];
+            };
+        },
+
+        Created: function(record) {
+            record[this.name]();
+        },
+
+        Merge: function(record, source) {
+            var store = record[this.storeName];
+            var sourceStore = source[this.storeName];
+            store.Merge(sourceStore);
+        },
+
+        read: function(record, associationData){
+            var store = record[this.name](),
+                proxy = store.proxy,
+                reader = proxy.getReader(),
+                inverse;
+
+
+
+            var records = reader.read(associationData).records;
+            store.add(records);
+            for (var i = 0; i < records.length; i++) {
+                records[i].Loaded();
+            }
+
+            //now that we've added the related records to the hasMany association, set the inverse belongsTo
+            //association on each of them if it exists
+            inverse = this.associatedModel.prototype.associations.findBy(function(assoc){
+                return assoc.type === 'belongsTo' && assoc.associatedName === record.$className;
+            });
+
+            //if the inverse association was found, set it now on each record we've just created
+            if (inverse) {
+                store.data.each(function(associatedRecord){
+                    associatedRecord[inverse.instanceName] = record;
+                });
+            }
+        },
+
+        write: function(record, data) {
+            var store = record[this.storeName],
+                proxy = store.proxy,
+                writer = proxy.getWriter();
+
+            var collection = data[this.name] = [];
+            store.data.each(function(associatedRecord){
+                var associatedData = writer.getRecordData(associatedRecord);
+                collection.push(associatedData);
+            });
+        },
+
+        reject: function (record, silent) {
+            var store = record[this.storeName];
+            if (store) store.reject();
+        },
+
+        commit : function(record, silent) {
+            var store = record[this.storeName];
+            if (store) store.commit();
+        },
+
+        IsChanged: function(record) {
+            var store = record[this.storeName];
+            return store.IsChanged();
+        }
+    });
+});
+
+Ext.define('natjs.overrides.data.validations', {
+    requires: ['Ext.data.validations']
+}, function() {
+
+    Ext.data.validations['presenceMessage'] = 'This field is required';
+
+
+    Ext.data.validations.getMessage = function(validation) {
+        if (validation.type == "length") {
+            return "Length must be minimum " + validation.min + " and maximum " + validation.max + " character!";
+        }
+        return null;
+    }
+});
+
+Ext.define('natjs.overrides.grid.CellEditor', {
+    requires: ['Ext.grid.CellEditor']
+}, function() {
+    Ext.override(Ext.grid.CellEditor, {
+
+        /**
+         * @private
+         * Realigns the Editor to the grid cell, or to the text node in the grid inner cell
+         * if the inner cell contains multiple child nodes.
+         */
+        realign: function(autoSize) {
+            var me = this,
+                boundEl = me.boundEl,
+                innerCell = boundEl.first(),
+                children = innerCell.dom.childNodes,
+                childCount = children.length,
+                offsets = Ext.Array.clone(me.offsets),
+                inputEl = me.field.inputEl,
+                lastChild, leftBound, rightBound, width, height;
+
+// IZS BEGIN: I changed this behaviour bc I rendering a div into a tree cell,
+// but dont want this fact to impact on the editor show up position
+
+//            // If the inner cell has more than one child, or the first child node is not a text node,
+//            // let's assume this cell contains additional elements before the text node.
+//            // This is the case for tree cells, but could also be used to accomodate grid cells that
+//            // have a custom renderer that render, say, an icon followed by some text for example
+//            // For now however, this support will only be used for trees.
+//            if(me.isForTree && (childCount > 1 || (childCount === 1 && children[0].nodeType !== 3))) {
+//                // get the inner cell's last child
+//                lastChild = innerCell.last();
+//                // calculate the left bound of the text node
+//                leftBound = lastChild.getOffsetsTo(innerCell)[0] + lastChild.getWidth();
+//                // calculate the right bound of the text node (this is assumed to be the right edge of
+//                // the inner cell, since we are assuming the text node is always the last node in the
+//                // inner cell)
+//                rightBound = innerCell.getWidth();
+//                // difference between right and left bound is the text node's allowed "width",
+//                // this will be used as the width for the editor.
+//                width = rightBound - leftBound;
+//                // adjust width for column lines - this ensures the editor will be the same width
+//                // regardless of columLines config
+//                if(!me.editingPlugin.grid.columnLines) {
+//                    width --;
+//                }
+//                // set the editor's x offset to the left bound position
+//                offsets[0] += leftBound;
+//
+//                me.addCls(Ext.baseCSSPrefix + 'grid-editor-on-text-node');
+//            } else {
+//                width = boundEl.getWidth() - 1; works only if columnLines: true,
+//            }
+
+            var refEl = boundEl;
+            var size = boundEl.getViewSize();
+            if (childCount === 1 && children[0].nodeType !== 3){
+                refEl = children[0];
+                size = { width: refEl.offsetWidth, height: refEl.offsetHeight };
+            }
+
+            if (autoSize === true) {
+                me.field.setWidth(size.width);
+                me.field.setHeight(size.height);
+            }
+
+            offsets[0] -= inputEl.dom.offsetLeft;
+            offsets[1] -= inputEl.dom.offsetTop;
+
+            me.alignTo(refEl, me.alignment, offsets);
+// IZS END
+        }
+    });
+});
+
+Ext.define('natjs.overrides.AbstractComponent', {
+    requires: ['Ext.AbstractComponent']
+}, function() {
+    Ext.override(Ext.AbstractComponent, {
+
+        deferredUpdateFrame: false,
+        viewNode: null,
+
+        initComponent: function () {
+            this.callParent(arguments);
+
+            //if (this.designMode) return;
+
+            this.on('move', this.this_move, this);
+            this.on('resize', this.this_resize, this);
+            this.on('afterrender', this.this_afterrender, this);
+        },
+
+        this_move: function(comp, x, y, op) {
+            if (!this.viewNode) return;
+//            this.SetConfig('x', x);
+//            this.SetConfig('y', y);
+        },
+
+        this_resize: function(comp, width, height, oldWidth, oldHeight, op) {
+            if (!this.viewNode) return;
+//            this.viewNode.SetConfig('width', width);
+//            this.viewNode.SetConfig('height', height);
+        },
+
+        this_afterrender: function() {
+            if (this.deferredUpdateFrame) {
+                this.updateFrame();
+                this.deferredUpdateFrame = false;
+            }
+        },
+
+        IsVisible: function(deep) {
+            var ownerTabPanel = this.up('tabpanel');
+            if (!ownerTabPanel) return this.isVisible(deep);
+            var activeTab = ownerTabPanel.getActiveTab();
+            return  ((this === activeTab) || (this.isDescendantOf(activeTab)));
+        },
+
+        getFramedChildren: function() {
+            var result = [];
+            if (this.items) {
+                result = this.queryBy(function(childComponent) {
+                    return (!!childComponent.isFocusFramed);
+                }, this);
+            }
+            return result;
+        },
+
+        updateFrame: function() {
+            if (!this.IsVisible()) {
+                this.deferredUpdateFrame = true;
+                return;
+            }
+
+            if (((this.isFocusFramed) || (this.isSelectFramed)) && (!this.isNatFramed)) {
+                var domEl = this.getEl();
+
+                var handleEls = [];
+                handleEls.push('<div id="' + domEl.id + '-north-frame" class="viewedit-focus-frame viewedit-focus-frame-north"></div>');
+                handleEls.push('<div id="' + domEl.id + '-east-frame" class="viewedit-focus-frame viewedit-focus-frame-east"></div>');
+                handleEls.push('<div id="' + domEl.id + '-south-frame" class="viewedit-focus-frame viewedit-focus-frame-south"></div>');
+                handleEls.push('<div id="' + domEl.id + '-west-frame" class="viewedit-focus-frame viewedit-focus-frame-west"></div>');
+
+                // From Extjs Resizer.js
+                // Position the element, this enables us to absolute position
+                // the handles within this.el
+                domEl.position();
+
+                Ext.DomHelper.append(domEl, handleEls.join(''));
+
+                this['north-frame'] = domEl.getById(domEl.id + '-north-frame');
+                this['east-frame'] = domEl.getById(domEl.id + '-east-frame');
+                this['south-frame'] = domEl.getById(domEl.id + '-south-frame');
+                this['west-frame'] = domEl.getById(domEl.id + '-west-frame');
+
+                this.isNatFramed = true;
+            }
+
+            if (this.isSelectFramed) {
+                this['north-frame'].addCls('viewedit-select-frame');
+                this['east-frame'].addCls('viewedit-select-frame');
+                this['south-frame'].addCls('viewedit-select-frame');
+                this['west-frame'].addCls('viewedit-select-frame');
+            }
+
+            if ((this.isFocusFramed) && (!this.isSelectFramed)) {
+                this['north-frame'].removeCls('viewedit-select-frame');
+                this['east-frame'].removeCls('viewedit-select-frame');
+                this['south-frame'].removeCls('viewedit-select-frame');
+                this['west-frame'].removeCls('viewedit-select-frame');
+            }
+
+            if ((!this.isFocusFramed) && (!this.isSelectFramed) && (this.isNatFramed)) {
+                this['north-frame'].remove();
+                this['east-frame'].remove();
+                this['south-frame'].remove();
+                this['west-frame'].remove();
+                this.isNatFramed = false;
+            }
+        },
+
+        focusFrame: function() {
+            this.isFocusFramed = true;
+            this.updateFrame();
+        },
+
+        unFocusFrame: function() {
+            this.isFocusFramed = false;
+            this.updateFrame();
+        },
+
+        selectFrame: function() {
+            this.isSelectFramed = true;
+            this.updateFrame();
+        },
+        unSelectFrame: function() {
+            this.isSelectFramed = false;
+            this.updateFrame();
+        }
+    });
+});
+
+Ext.define('natjs.overrides.Object', {
+}, function() {
+
+    Ext.Array.find = function(array, attribute, value) {
+        if (!array) return;
+        var matches = Ext.Array.filter(array, function(item){ return (item[attribute] == value); });
+        if (matches.length > 0){
+            return matches[0];
+        }
+        return null;
+    };
+
+    Ext.Array.findAll = function(array, attribute, value) {
+        if (!array) return;
+        return Ext.Array.filter(array, function(item){ return (item[attribute] == value); });
+    };
+
+    //Concat a string array into one string
+    Ext.Array.convertToString = function(array, includeNewLine) {
+        if (!array) return '';
+        var result = '';
+        for (var j=0; array.length > j; j++){
+            result += array[j];
+            if ((includeNewLine) && (j < array.length-1)) result += '\n';
+        }
+        return result;
+    };
+
+    //It takes a string array what defines a javascript object
+    Ext.Array.convertToObject = function(array) {
+        var strValue = Ext.Array.convertToString(array, false);
+        strValue = Ext.String.removeFromStart(strValue, '{');
+        strValue = Ext.String.removeFromEnd(strValue, '}');
+        //strValue = strValue.replace(/\s/g, ''); //remove whitespaces/ ruin embedded function body!!!
+        var properties = strValue.split(',');
+        var obj = {};
+        properties.forEach(function(property) {
+            if (!property) return;
+            var tup = property.split(':');
+            tup[0] = Ext.String.trim(tup[0]);
+            tup[1] = Ext.String.trim(tup[1]);
+            if (Ext.String.startsWith(tup[1], 'function')){
+                obj[tup[0]] = tup[1];
+            }else{
+                obj[tup[0]] = eval(tup[1]);
+            }
+        });
+        return obj;
+    };
+});
+
+/**
+ * This class is used as a set of methods that are applied to the prototype of a
+ * Model to decorate it with a Node API. This means that models used in conjunction with a tree
+ * will have all of the tree related methods available on the model. In general this class will
+ * not be used directly by the developer. This class also creates extra fields on the model if
+ * they do not exist, to help maintain the tree state and UI. These fields are documented as
+ * config options.
+ */
+Ext.define('Ext.data.NodeInterface', {
+    requires: ['Ext.data.Field'],
+
+    /**
+     * @cfg {String} parentId
+     * ID of parent node.
+     */
+
+    /**
+     * @cfg {Number} index
+     * The position of the node inside its parent. When parent has 4 children and the node is third amongst them,
+     * index will be 2.
+     */
+
+    /**
+     * @cfg {Number} depth
+     * The number of parents this node has. A root node has depth 0, a child of it depth 1, and so on...
+     */
+
+    /**
+     * @cfg {Boolean} [expanded=false]
+     * True if the node is expanded.
+     */
+
+    /**
+     * @cfg {Boolean} [expandable=false]
+     * Set to true to allow for expanding/collapsing of this node.
+     */
+
+    /**
+     * @cfg {Boolean} [checked=null]
+     * Set to true or false to show a checkbox alongside this node.
+     */
+
+    /**
+     * @cfg {Boolean} [leaf=false]
+     * Set to true to indicate that this child can have no children. The expand icon/arrow will then not be
+     * rendered for this node.
+     */
+
+    /**
+     * @cfg {String} cls
+     * CSS class to apply for this node.
+     */
+
+    /**
+     * @cfg {String} iconCls
+     * CSS class to apply for this node's icon.
+     */
+
+    /**
+     * @cfg {String} icon
+     * URL for this node's icon.
+     */
+
+    /**
+     * @cfg {Boolean} root
+     * True if this is the root node.
+     */
+
+    /**
+     * @cfg {Boolean} isLast
+     * True if this is the last node.
+     */
+
+    /**
+     * @cfg {Boolean} isFirst
+     * True if this is the first node.
+     */
+
+    /**
+     * @cfg {Boolean} [allowDrop=true]
+     * Set to false to deny dropping on this node.
+     */
+
+    /**
+     * @cfg {Boolean} [allowDrag=true]
+     * Set to false to deny dragging of this node.
+     */
+
+    /**
+     * @cfg {Boolean} [loaded=false]
+     * True if the node has finished loading.
+     */
+
+    /**
+     * @cfg {Boolean} [loading=false]
+     * True if the node is currently loading.
+     */
+
+    /**
+     * @cfg {String} href
+     * An URL for a link that's created when this config is specified.
+     */
+
+    /**
+     * @cfg {String} hrefTarget
+     * Target for link. Only applicable when {@link #href} also specified.
+     */
+
+    /**
+     * @cfg {String} qtip
+     * Tooltip text to show on this node.
+     */
+
+    /**
+     * @cfg {String} qtitle
+     * Tooltip title.
+     */
+
+    /**
+     * @cfg {String} text
+     * The text for to show on node label.
+     */
+
+    /**
+     * @cfg {Ext.data.NodeInterface[]} children
+     * Array of child nodes.
+     */
+
+
+    /**
+     * @property nextSibling
+     * A reference to this node's next sibling node. `null` if this node does not have a next sibling.
+     */
+
+    /**
+     * @property previousSibling
+     * A reference to this node's previous sibling node. `null` if this node does not have a previous sibling.
+     */
+
+    /**
+     * @property parentNode
+     * A reference to this node's parent node. `null` if this node is the root node.
+     */
+
+    /**
+     * @property lastChild
+     * A reference to this node's last child node. `null` if this node has no children.
+     */
+
+    /**
+     * @property firstChild
+     * A reference to this node's first child node. `null` if this node has no children.
+     */
+
+    /**
+     * @property childNodes
+     * An array of this nodes children.  Array will be empty if this node has no chidren.
+     */
+
+    statics: {
+        /**
+         * This method allows you to decorate a Model's class to implement the NodeInterface.
+         * This adds a set of methods, new events, new properties and new fields on every Record.
+         * @param {Ext.Class/Ext.data.Model} modelClass The Model class or an instance of the Model class you want to
+         * decorate the prototype of.
+         * @static
+         */
+        decorate: function(modelClass) {
+            var idName, idType;
+
+            // get the reference to the model class, in case the argument was a string or a record
+            if (typeof modelClass == 'string') {
+                modelClass = Ext.ModelManager.getModel(modelClass);
+            } else if (modelClass.isModel) {
+                modelClass = Ext.ModelManager.getModel(modelClass.modelName);
+            }
+
+            // avoid unnecessary work in case the model was already decorated
+            if (modelClass.prototype.isNode) {
+                return;
+            }
+
+            idName = modelClass.prototype.idProperty;
+            idType = modelClass.prototype.fields.get(idName).type.type;
+            modelClass.override(this.getPrototypeBody());
+            this.applyFields(modelClass, [
+                {name: 'parentId',   type: idType,    defaultValue: null},
+                {name: 'index',      type: 'int',     defaultValue: null},
+                {name: 'depth',      type: 'int',     defaultValue: 0},
+                {name: 'expanded',   type: 'bool',    defaultValue: false, persist: false},
+                {name: 'expandable', type: 'bool',    defaultValue: true, persist: false},
+                {name: 'checked',    type: 'auto',    defaultValue: null, persist: false},
+                {name: 'leaf',       type: 'bool',    defaultValue: false},
+                {name: 'cls',        type: 'string',  defaultValue: null, persist: false},
+                {name: 'iconCls',    type: 'string',  defaultValue: null, persist: false},
+                {name: 'icon',       type: 'string',  defaultValue: null, persist: false},
+                {name: 'root',       type: 'boolean', defaultValue: false, persist: false},
+                {name: 'isLast',     type: 'boolean', defaultValue: false, persist: false},
+                {name: 'isFirst',    type: 'boolean', defaultValue: false, persist: false},
+                {name: 'allowDrop',  type: 'boolean', defaultValue: true, persist: false},
+                {name: 'allowDrag',  type: 'boolean', defaultValue: true, persist: false},
+                {name: 'loaded',     type: 'boolean', defaultValue: false, persist: false},
+                {name: 'loading',    type: 'boolean', defaultValue: false, persist: false},
+                {name: 'href',       type: 'string',  defaultValue: null, persist: false},
+                {name: 'hrefTarget', type: 'string',  defaultValue: null, persist: false},
+                {name: 'qtip',       type: 'string',  defaultValue: null, persist: false},
+                {name: 'qtitle',     type: 'string',  defaultValue: null, persist: false},
+                {name: 'children',   type: 'auto',   defaultValue: null, persist: false}
+            ]);
+        },
+
+        applyFields: function(modelClass, addFields) {
+            var modelPrototype = modelClass.prototype,
+                fields = modelPrototype.fields,
+                keys = fields.keys,
+                ln = addFields.length,
+                addField, i;
+
+            for (i = 0; i < ln; i++) {
+                addField = addFields[i];
+                if (!Ext.Array.contains(keys, addField.name)) {
+                    fields.add(new Ext.data.Field(addField));
+                }
+            }
+        },
+
+//        applyField: function(modelClass, addField) {
+//            var modelPrototype = modelClass.prototype,
+//                fields = modelPrototype.fields,
+//                keys = fields.keys;
+//
+//            if (!Ext.Array.contains(keys, addField.name)) {
+//                fields.add(new Ext.data.Field(addField));
+//            }
+//
+//            for(var model in Ext.ModelManager.types) {
+//                if (Ext.ModelManager.types.hasOwnProperty(model)) {
+//                    var tmpModelClass = Ext.ModelManager.types[model];
+//                    if (tmpModelClass.superclass.$className == modelClass.$className) {
+//                        this.applyField(tmpModelClass, addField);
+//                    }
+//                }
+//            }
+//        },
+
+        removeField: function(modelClass, fieldName) {
+            var modelPrototype = modelClass.prototype,
+                fields = modelPrototype.fields;
+
+            return fields.removeAtKey(fieldName);
+        },
+
+        removeFields: function(modelClass, removeFields) {
+            var modelPrototype = modelClass.prototype,
+                fields = modelPrototype.fields,
+                keys = fields.keys,
+                ln = removeFields.length,
+                removeField, i, name,
+                removedFields = [];
+
+            for (i = 0; i < ln; i++) {
+                removeField = removedFields[i];
+                if (Ext.Array.contains(keys, removeField.name)) {
+                    removedFields.push(removeField);
+                    fields.remove(removeField);
+                }
+            }
+
+            return removedFields;
+        },
+
+        getPrototypeBody: function() {
+            return {
+                /**
+                 * @property {Boolean} isNode
+                 * `true` in this class to identify an object as an instantiated Node, or subclass thereof.
+                 */
+                isNode: true,
+
+                constructor: function() {
+                    var me = this;
+                    this.callParent(arguments);
+                    Ext.applyIf(me, {
+                        firstChild: null,
+                        lastChild: null,
+                        parentNode: null,
+                        previousSibling: null,
+                        nextSibling: null,
+                        childNodes: []
+                    });
+                    me.enableBubble([
+                    /**
+                     * @event append
+                     * Fires when a new child node is appended
+                     * @param {Ext.data.NodeInterface} this This node
+                     * @param {Ext.data.NodeInterface} node The newly appended node
+                     * @param {Number} index The index of the newly appended node
+                     */
+                        "append",
+
+                    /**
+                     * @event remove
+                     * Fires when a child node is removed
+                     * @param {Ext.data.NodeInterface} this This node
+                     * @param {Ext.data.NodeInterface} node The removed node
+                     * @param {Boolean} isMove `true` if the child node is being removed so it can be moved to another position in the tree.
+                     * (a side effect of calling {@link Ext.data.NodeInterface#appendChild appendChild} or
+                     * {@link Ext.data.NodeInterface#insertBefore insertBefore} with a node that already has a parentNode)
+                     */
+                        "remove",
+
+                    /**
+                     * @event move
+                     * Fires when this node is moved to a new location in the tree
+                     * @param {Ext.data.NodeInterface} this This node
+                     * @param {Ext.data.NodeInterface} oldParent The old parent of this node
+                     * @param {Ext.data.NodeInterface} newParent The new parent of this node
+                     * @param {Number} index The index it was moved to
+                     */
+                        "move",
+
+                    /**
+                     * @event insert
+                     * Fires when a new child node is inserted.
+                     * @param {Ext.data.NodeInterface} this This node
+                     * @param {Ext.data.NodeInterface} node The child node inserted
+                     * @param {Ext.data.NodeInterface} refNode The child node the node was inserted before
+                     */
+                        "insert",
+
+                    /**
+                     * @event beforeappend
+                     * Fires before a new child is appended, return false to cancel the append.
+                     * @param {Ext.data.NodeInterface} this This node
+                     * @param {Ext.data.NodeInterface} node The child node to be appended
+                     */
+                        "beforeappend",
+
+                    /**
+                     * @event beforeremove
+                     * Fires before a child is removed, return false to cancel the remove.
+                     * @param {Ext.data.NodeInterface} this This node
+                     * @param {Ext.data.NodeInterface} node The child node to be removed
+                     * @param {Boolean} isMove `true` if the child node is being removed so it can be moved to another position in the tree.
+                     * (a side effect of calling {@link Ext.data.NodeInterface#appendChild appendChild} or
+                     * {@link Ext.data.NodeInterface#insertBefore insertBefore} with a node that already has a parentNode)
+                     */
+                        "beforeremove",
+
+                    /**
+                     * @event beforemove
+                     * Fires before this node is moved to a new location in the tree. Return false to cancel the move.
+                     * @param {Ext.data.NodeInterface} this This node
+                     * @param {Ext.data.NodeInterface} oldParent The parent of this node
+                     * @param {Ext.data.NodeInterface} newParent The new parent this node is moving to
+                     * @param {Number} index The index it is being moved to
+                     */
+                        "beforemove",
+
+                    /**
+                     * @event beforeinsert
+                     * Fires before a new child is inserted, return false to cancel the insert.
+                     * @param {Ext.data.NodeInterface} this This node
+                     * @param {Ext.data.NodeInterface} node The child node to be inserted
+                     * @param {Ext.data.NodeInterface} refNode The child node the node is being inserted before
+                     */
+                        "beforeinsert",
+
+                    /**
+                     * @event expand
+                     * Fires when this node is expanded.
+                     * @param {Ext.data.NodeInterface} this The expanding node
+                     */
+                        "expand",
+
+                    /**
+                     * @event collapse
+                     * Fires when this node is collapsed.
+                     * @param {Ext.data.NodeInterface} this The collapsing node
+                     */
+                        "collapse",
+
+                    /**
+                     * @event beforeexpand
+                     * Fires before this node is expanded.
+                     * @param {Ext.data.NodeInterface} this The expanding node
+                     */
+                        "beforeexpand",
+
+                    /**
+                     * @event beforecollapse
+                     * Fires before this node is collapsed.
+                     * @param {Ext.data.NodeInterface} this The collapsing node
+                     */
+                        "beforecollapse",
+
+                    /**
+                     * @event sort
+                     * Fires when this node's childNodes are sorted.
+                     * @param {Ext.data.NodeInterface} this This node.
+                     * @param {Ext.data.NodeInterface[]} childNodes The childNodes of this node.
+                     */
+                        "sort"
+                    ]);
+                    return me;
+                },
+                /**
+                 * Ensures that the passed object is an instance of a Record with the NodeInterface applied
+                 * @return {Ext.data.NodeInterface}
+                 */
+                createNode: function(node) {
+                    if (Ext.isObject(node) && !node.isModel) {
+                        node = Ext.ModelManager.create(node, this.modelName);
+                    }
+                    // The node may already decorated, but may not have been
+                    // so when the model constructor was called. If not,
+                    // setup defaults here
+                    if (!node.childNodes) {
+                        Ext.applyIf(node, {
+                            firstChild: null,
+                            lastChild: null,
+                            parentNode: null,
+                            previousSibling: null,
+                            nextSibling: null,
+                            childNodes: []
+                        });
+                    }
+                    return node;
+                },
+
+                /**
+                 * Returns true if this node is a leaf
+                 * @return {Boolean}
+                 */
+                isLeaf : function() {
+                    return this.get('leaf') === true;
+                },
+
+                /**
+                 * Sets the first child of this node
+                 * @private
+                 * @param {Ext.data.NodeInterface} node
+                 */
+                setFirstChild : function(node) {
+                    this.firstChild = node;
+                },
+
+                /**
+                 * Sets the last child of this node
+                 * @private
+                 * @param {Ext.data.NodeInterface} node
+                 */
+                setLastChild : function(node) {
+                    this.lastChild = node;
+                },
+
+                /**
+                 * Updates general data of this node like isFirst, isLast, depth. This
+                 * method is internally called after a node is moved. This shouldn't
+                 * have to be called by the developer unless they are creating custom
+                 * Tree plugins.
+                 * @return {Boolean}
+                 */
+                updateInfo: function(commit) {
+                    var me = this,
+                        isRoot = me.isRoot(),
+                        parentNode = me.parentNode,
+                        isFirst = (!parentNode || isRoot ? true : parentNode.firstChild === me),
+                        isLast = (!parentNode || isRoot ? true : parentNode.lastChild === me),
+                        depth = 0,
+                        parent = me,
+                        children = me.childNodes,
+                        len = children.length,
+                        i = 0,
+                        phantom = me.phantom;
+
+                    while (parent.parentNode) {
+                        ++depth;
+                        parent = parent.parentNode;
+                    }
+
+                    me.beginEdit();
+                    me.set({
+                        isFirst: isFirst,
+                        isLast: isLast,
+                        depth: depth,
+                        index: parentNode ? parentNode.indexOf(me) : 0,
+                        parentId: parentNode ? parentNode.getId() : null
+                    });
+                    me.endEdit(true);
+                    if (commit) {
+                        me.commit();
+                        me.phantom = phantom;
+                    }
+
+                    for (i = 0; i < len; i++) {
+                        children[i].updateInfo(commit);
+                    }
+                },
+
+                /**
+                 * Returns true if this node is the last child of its parent
+                 * @return {Boolean}
+                 */
+                isLast : function() {
+                    return this.get('isLast');
+                },
+
+                /**
+                 * Returns true if this node is the first child of its parent
+                 * @return {Boolean}
+                 */
+                isFirst : function() {
+                    return this.get('isFirst');
+                },
+
+                /**
+                 * Returns true if this node has one or more child nodes, else false.
+                 * @return {Boolean}
+                 */
+                hasChildNodes : function() {
+                    return !this.isLeaf() && this.childNodes.length > 0;
+                },
+
+                /**
+                 * Returns true if this node has one or more child nodes, or if the <tt>expandable</tt>
+                 * node attribute is explicitly specified as true, otherwise returns false.
+                 * @return {Boolean}
+                 */
+                isExpandable : function() {
+                    var me = this;
+
+                    if (me.get('expandable')) {
+                        return !(me.isLeaf() || (me.isLoaded() && !me.hasChildNodes()));
+                    }
+                    return false;
+                },
+
+                /**
+                 * Inserts node(s) as the last child node of this node.
+                 *
+                 * If the node was previously a child node of another parent node, it will be removed from that node first.
+                 *
+                 * @param {Ext.data.NodeInterface/Ext.data.NodeInterface[]} node The node or Array of nodes to append
+                 * @return {Ext.data.NodeInterface} The appended node if single append, or null if an array was passed
+                 */
+                appendChild : function(node, suppressEvents, commit) {
+                    var me = this,
+                        i, ln,
+                        index,
+                        oldParent,
+                        ps;
+
+                    // if passed an array do them one by one
+                    if (Ext.isArray(node)) {
+                        // suspend auto syncing while we append all the nodes
+                        me.callStore('suspendAutoSync');
+                        for (i = 0, ln = node.length - 1; i < ln; i++) {
+                            me.appendChild(node[i]);
+                        }
+                        // resume auto syncing before we append the last node
+                        me.callStore('resumeAutoSync');
+                        me.appendChild(node[ln]);
+                    } else {
+                        // Make sure it is a record
+                        node = me.createNode(node);
+
+                        if (suppressEvents !== true && (!me.hasListeners.beforeappend || me.fireEvent("beforeappend", me, node) === false)) {
+                            return false;
+                        }
+
+                        index = me.childNodes.length;
+                        oldParent = node.parentNode;
+
+                        // it's a move, make sure we move it cleanly
+                        if (oldParent) {
+                            if (suppressEvents !== true && (!me.hasListeners.beforeremove || node.fireEvent("beforemove", node, oldParent, me, index) === false)) {
+                                return false;
+                            }
+                            oldParent.removeChild(node, false, false, true);
+                        }
+
+                        index = me.childNodes.length;
+                        if (index === 0) {
+                            me.setFirstChild(node);
+                        }
+
+                        me.childNodes.push(node);
+                        node.parentNode = me;
+                        node.nextSibling = null;
+
+                        me.setLastChild(node);
+
+                        ps = me.childNodes[index - 1];
+                        if (ps) {
+                            node.previousSibling = ps;
+                            ps.nextSibling = node;
+                            ps.updateInfo(commit);
+                        } else {
+                            node.previousSibling = null;
+                        }
+
+                        node.updateInfo(commit);
+
+                        // As soon as we append a child to this node, we are loaded
+                        if (!me.isLoaded()) {
+                            me.set('loaded', true);
+                        } else if (me.childNodes.length === 1) {
+                            // This isn't ideal, however none of the underlying fields have changed
+                            // but we still need to update the UI
+
+                            //IZS begin: check if not editing
+                            if (!me.editing){
+                                me.afterEdit([]);
+                            }
+                            //IZS end
+                        }
+
+                        if(!node.isLeaf() && node.phantom) {
+                            node.set('loaded', true);
+                        }
+
+                        if (suppressEvents !== true) {
+                            me.fireEvent("append", me, node, index);
+
+                            if (oldParent) {
+                                node.fireEvent("move", node, oldParent, me, index);
+                            }
+                        }
+
+                        //IZS begin join child to this node's TreeStores
+                        for (var s=0; me.stores.length > s; s++){
+                            if (me.stores[s].getRootNode){
+                                node.join(me.stores[s]);
+                            }
+                        }
+                        //IZS end
+
+                        return node;
+                    }
+                },
+
+                /**
+                 * Returns the bubble target for this node
+                 * @private
+                 * @return {Object} The bubble target
+                 */
+                getBubbleTarget: function() {
+                    return this.parentNode;
+                },
+
+                /**
+                 * Removes a child node from this node.
+                 * @param {Ext.data.NodeInterface} node The node to remove
+                 * @param {Boolean} [destroy=false] True to destroy the node upon removal.
+                 * @return {Ext.data.NodeInterface} The removed node
+                 */
+                removeChild : function(node, destroy, suppressEvents, isMove) {
+                    var me = this,
+                        index = me.indexOf(node),
+                        i, childCount;
+
+                    if (index == -1 || (suppressEvents !== true && (!me.hasListeners.beforeremove || me.fireEvent("beforeremove", me, node, !!isMove) === false))) {
+                        return false;
+                    }
+
+                    // remove it from childNodes collection
+                    Ext.Array.erase(me.childNodes, index, 1);
+
+                    // update child refs
+                    if (me.firstChild == node) {
+                        me.setFirstChild(node.nextSibling);
+                    }
+                    if (me.lastChild == node) {
+                        me.setLastChild(node.previousSibling);
+                    }
+
+                    // update siblings
+                    if (node.previousSibling) {
+                        node.previousSibling.nextSibling = node.nextSibling;
+                    }
+                    if (node.nextSibling) {
+                        node.nextSibling.previousSibling = node.previousSibling;
+                    }
+
+                    // update the info for all siblings starting at the index before the node's old index (or 0 if the removed node was the firstChild)
+                    for(i = index > 0 ? index - 1 : 0, childCount = me.childNodes.length; i < childCount; i++) {
+                        me.childNodes[i].updateInfo();
+                    }
+
+                    // If this node suddenly doesnt have childnodes anymore, update myself
+                    if (!me.childNodes.length) {
+                        me.set('loaded', me.isLoaded());
+                    }
+
+                    if (suppressEvents !== true) {
+                        if (me.hasListeners.remove) {
+                            me.fireEvent("remove", me, node, !!isMove);
+                        }
+                    }
+
+                    //IZS begin unjoin child from this node's TreeStores
+                    for (var s=0; me.stores.length > s; s++){
+                        if (me.stores[s].getRootNode){
+                            node.unjoin(me.stores[s]);
+                        }
+                    }
+                    //IZS end
+
+                    if (destroy) {
+                        node.destroy(true);
+                    } else {
+                        node.clear();
+                    }
+
+                    return node;
+                },
+
+                /**
+                 * Creates a copy (clone) of this Node.
+                 * @param {String} [id] A new id, defaults to this Node's id.
+                 * @param {Boolean} [deep=false] True to recursively copy all child Nodes into the new Node.
+                 * False to copy without child Nodes.
+                 * @return {Ext.data.NodeInterface} A copy of this Node.
+                 */
+                copy: function(newId, deep) {
+                    var me = this,
+                        result = me.callOverridden(arguments),
+                        len = me.childNodes ? me.childNodes.length : 0,
+                        i;
+
+                    // Move child nodes across to the copy if required
+                    if (deep) {
+                        for (i = 0; i < len; i++) {
+                            result.appendChild(me.childNodes[i].copy(true));
+                        }
+                    }
+                    return result;
+                },
+
+                /**
+                 * Clears the node.
+                 * @private
+                 * @param {Boolean} [destroy=false] True to destroy the node.
+                 */
+                clear : function(destroy) {
+                    var me = this;
+
+                    // clear any references from the node
+                    me.parentNode = me.previousSibling = me.nextSibling = null;
+                    if (destroy) {
+                        me.firstChild = me.lastChild = null;
+                    }
+                },
+
+                /**
+                 * Destroys the node.
+                 */
+                destroy : function(silent) {
+                    /*
+                     * Silent is to be used in a number of cases
+                     * 1) When setRoot is called.
+                     * 2) When destroy on the tree is called
+                     * 3) For destroying child nodes on a node
+                     */
+                    var me      = this,
+                        options = me.destroyOptions,
+                        nodes   = me.childNodes,
+                        nLen    = nodes.length,
+                        n;
+
+                    if (silent === true) {
+                        me.clear(true);
+
+                        for (n = 0; n < nLen; n++) {
+                            nodes[n].destroy(true);
+                        }
+
+                        me.childNodes = null;
+                        delete me.destroyOptions;
+                        me.callOverridden([options]);
+                    } else {
+                        me.destroyOptions = silent;
+                        // overridden method will be called, since remove will end up calling destroy(true);
+                        me.remove(true);
+                    }
+                },
+
+                /**
+                 * Inserts the first node before the second node in this nodes childNodes collection.
+                 * @param {Ext.data.NodeInterface} node The node to insert
+                 * @param {Ext.data.NodeInterface} refNode The node to insert before (if null the node is appended)
+                 * @return {Ext.data.NodeInterface} The inserted node
+                 */
+                insertBefore : function(node, refNode, suppressEvents) {
+                    var me = this,
+                        index     = me.indexOf(refNode),
+                        oldParent = node.parentNode,
+                        refIndex  = index,
+                        childCount, ps, i;
+
+                    if (!refNode) { // like standard Dom, refNode can be null for append
+                        return me.appendChild(node);
+                    }
+
+                    // nothing to do
+                    if (node == refNode) {
+                        return false;
+                    }
+
+                    // Make sure it is a record with the NodeInterface
+                    node = me.createNode(node);
+
+                    if (suppressEvents !== true && (!me.hasListeners.beforeinsert || me.fireEvent("beforeinsert", me, node, refNode) === false)) {
+                        return false;
+                    }
+
+                    // when moving internally, indexes will change after remove
+                    if (oldParent == me && me.indexOf(node) < index) {
+                        refIndex--;
+                    }
+
+                    // it's a move, make sure we move it cleanly
+                    if (oldParent) {
+                        if (suppressEvents !== true && (!me.hasListeners.beforeremove || node.fireEvent("beforemove", node, oldParent, me, index, refNode) === false)) {
+                            return false;
+                        }
+                        oldParent.removeChild(node, false, false, true);
+                    }
+
+                    if (refIndex === 0) {
+                        me.setFirstChild(node);
+                    }
+
+                    Ext.Array.splice(me.childNodes, refIndex, 0, node);
+                    node.parentNode = me;
+
+                    node.nextSibling = refNode;
+                    refNode.previousSibling = node;
+
+                    ps = me.childNodes[refIndex - 1];
+                    if (ps) {
+                        node.previousSibling = ps;
+                        ps.nextSibling = node;
+                    } else {
+                        node.previousSibling = null;
+                    }
+
+                    // update the info for all siblings starting at the index before the node's insertion point (or 0 if the inserted node is the firstChild)
+                    for(i = refIndex > 0 ? refIndex - 1 : 0, childCount = me.childNodes.length; i < childCount; i++) {
+                        me.childNodes[i].updateInfo();
+                    }
+
+                    if (!me.isLoaded()) {
+                        me.set('loaded', true);
+                    }
+                    // If this node didnt have any childnodes before, update myself
+                    else if (me.childNodes.length === 1) {
+                        me.set('loaded', me.isLoaded());
+                    }
+
+                    if(!node.isLeaf() && node.phantom) {
+                        node.set('loaded', true);
+                    }
+
+                    if (suppressEvents !== true) {
+                        if (me.hasListeners.insert) {
+                            me.fireEvent("insert", me, node, refNode);
+                        }
+
+                        if (oldParent && me.hasListeners.move) {
+                            node.fireEvent("move", node, oldParent, me, refIndex, refNode);
+                        }
+                    }
+
+                    //IZS begin join child to this node's TreeStores
+                    for (var s=0; me.stores.length > s; s++){
+                        if (me.stores[s].getRootNode){
+                            node.join(me.stores[s]);
+                        }
+                    }
+                    //IZS end
+
+                    return node;
+                },
+
+                /**
+                 * Inserts a node into this node.
+                 * @param {Number} index The zero-based index to insert the node at
+                 * @param {Ext.data.NodeInterface} node The node to insert
+                 * @return {Ext.data.NodeInterface} The node you just inserted
+                 */
+                insertChild: function(index, node) {
+                    var sibling = this.childNodes[index];
+                    if (sibling) {
+                        return this.insertBefore(node, sibling);
+                    }
+                    else {
+                        return this.appendChild(node);
+                    }
+                },
+
+                /**
+                 * Removes this node from its parent
+                 * @param {Boolean} [destroy=false] True to destroy the node upon removal.
+                 * @return {Ext.data.NodeInterface} this
+                 */
+                remove : function(destroy, suppressEvents) {
+                    var parentNode = this.parentNode;
+
+                    if (parentNode) {
+                        parentNode.removeChild(this, destroy, suppressEvents);
+                    }
+                    return this;
+                },
+
+                /**
+                 * Removes all child nodes from this node.
+                 * @param {Boolean} [destroy=false] <True to destroy the node upon removal.
+                 * @return {Ext.data.NodeInterface} this
+                 */
+                removeAll : function(destroy, suppressEvents) {
+                    var cn = this.childNodes,
+                        n;
+
+                    while ((n = cn[0])) {
+                        this.removeChild(n, destroy, suppressEvents);
+                    }
+                    return this;
+                },
+
+                /**
+                 * Returns the child node at the specified index.
+                 * @param {Number} index
+                 * @return {Ext.data.NodeInterface}
+                 */
+                getChildAt : function(index) {
+                    return this.childNodes[index];
+                },
+
+                /**
+                 * Replaces one child node in this node with another.
+                 * @param {Ext.data.NodeInterface} newChild The replacement node
+                 * @param {Ext.data.NodeInterface} oldChild The node to replace
+                 * @return {Ext.data.NodeInterface} The replaced node
+                 */
+                replaceChild : function(newChild, oldChild, suppressEvents) {
+                    var s = oldChild ? oldChild.nextSibling : null;
+
+                    this.removeChild(oldChild, false, suppressEvents);
+                    this.insertBefore(newChild, s, suppressEvents);
+                    return oldChild;
+                },
+
+                /**
+                 * Returns the index of a child node
+                 * @param {Ext.data.NodeInterface} node
+                 * @return {Number} The index of the node or -1 if it was not found
+                 */
+                indexOf : function(child) {
+                    return Ext.Array.indexOf(this.childNodes, child);
+                },
+
+                /**
+                 * Returns the index of a child node that matches the id
+                 * @param {String} id The id of the node to find
+                 * @return {Number} The index of the node or -1 if it was not found
+                 */
+                indexOfId: function(id) {
+                    var childNodes = this.childNodes,
+                        len = childNodes.length,
+                        i = 0;
+
+                    for (; i < len; ++i) {
+                        if (childNodes[i].getId() === id) {
+                            return i;
+                        }
+                    }
+                    return -1;
+                },
+
+                /**
+                 * Gets the hierarchical path from the root of the current node.
+                 * @param {String} [field] The field to construct the path from. Defaults to the model idProperty.
+                 * @param {String} [separator="/"] A separator to use.
+                 * @return {String} The node path
+                 */
+                getPath: function(field, separator) {
+                    field = field || this.idProperty;
+                    separator = separator || '/';
+
+                    var path = [this.get(field)],
+                        parent = this.parentNode;
+
+                    while (parent) {
+                        path.unshift(parent.get(field));
+                        parent = parent.parentNode;
+                    }
+                    return separator + path.join(separator);
+                },
+
+                /**
+                 * Returns depth of this node (the root node has a depth of 0)
+                 * @return {Number}
+                 */
+                getDepth : function() {
+                    return this.get('depth');
+                },
+
+                /**
+                 * Bubbles up the tree from this node, calling the specified function with each node. The arguments to the function
+                 * will be the args provided or the current node. If the function returns false at any point,
+                 * the bubble is stopped.
+                 * @param {Function} fn The function to call
+                 * @param {Object} [scope] The scope (this reference) in which the function is executed. Defaults to the current Node.
+                 * @param {Array} [args] The args to call the function with. Defaults to passing the current Node.
+                 */
+                bubble : function(fn, scope, args) {
+                    var p = this;
+                    while (p) {
+                        if (fn.apply(scope || p, args || [p]) === false) {
+                            break;
+                        }
+                        p = p.parentNode;
+                    }
+                },
+
+                cascade: function() {
+                    if (Ext.isDefined(Ext.global.console)) {
+                        Ext.global.console.warn('Ext.data.Node: cascade has been deprecated. Please use cascadeBy instead.');
+                    }
+                    return this.cascadeBy.apply(this, arguments);
+                },
+
+                /**
+                 * Cascades down the tree from this node, calling the specified function with each node. The arguments to the function
+                 * will be the args provided or the current node. If the function returns false at any point,
+                 * the cascade is stopped on that branch.
+                 * @param {Function} fn The function to call
+                 * @param {Object} [scope] The scope (this reference) in which the function is executed. Defaults to the current Node.
+                 * @param {Array} [args] The args to call the function with. Defaults to passing the current Node.
+                 */
+                cascadeBy : function(fn, scope, args) {
+                    if (fn.apply(scope || this, args || [this]) !== false) {
+                        var childNodes = this.childNodes,
+                            length     = childNodes.length,
+                            i;
+
+                        for (i = 0; i < length; i++) {
+                            childNodes[i].cascadeBy(fn, scope, args);
+                        }
+                    }
+                },
+
+                /**
+                 * Interates the child nodes of this node, calling the specified function with each node. The arguments to the function
+                 * will be the args provided or the current node. If the function returns false at any point,
+                 * the iteration stops.
+                 * @param {Function} fn The function to call
+                 * @param {Object} [scope] The scope (this reference) in which the function is executed. Defaults to the current Node in iteration.
+                 * @param {Array} [args] The args to call the function with. Defaults to passing the current Node.
+                 */
+                eachChild : function(fn, scope, args) {
+                    var childNodes = this.childNodes,
+                        length     = childNodes.length,
+                        i;
+
+                    for (i = 0; i < length; i++) {
+                        if (fn.apply(scope || this, args || [childNodes[i]]) === false) {
+                            break;
+                        }
+                    }
+                },
+
+                /**
+                 * Finds the first child that has the attribute with the specified value.
+                 * @param {String} attribute The attribute name
+                 * @param {Object} value The value to search for
+                 * @param {Boolean} [deep=false] True to search through nodes deeper than the immediate children
+                 * @return {Ext.data.NodeInterface} The found child or null if none was found
+                 */
+                findChild : function(attribute, value, deep) {
+                    return this.findChildBy(function() {
+                        return this.get(attribute) == value;
+                    }, null, deep);
+                },
+
+                /**
+                 * Finds the first child by a custom function. The child matches if the function passed returns true.
+                 * @param {Function} fn A function which must return true if the passed Node is the required Node.
+                 * @param {Object} [scope] The scope (this reference) in which the function is executed. Defaults to the Node being tested.
+                 * @param {Boolean} [deep=false] True to search through nodes deeper than the immediate children
+                 * @return {Ext.data.NodeInterface} The found child or null if none was found
+                 */
+                findChildBy : function(fn, scope, deep) {
+                    var cs = this.childNodes,
+                        len = cs.length,
+                        i = 0, n, res;
+
+                    for (; i < len; i++) {
+                        n = cs[i];
+                        if (fn.call(scope || n, n) === true) {
+                            return n;
+                        }
+                        else if (deep) {
+                            res = n.findChildBy(fn, scope, deep);
+                            if (res !== null) {
+                                return res;
+                            }
+                        }
+                    }
+
+                    return null;
+                },
+
+                /**
+                 * Returns true if this node is an ancestor (at any point) of the passed node.
+                 * @param {Ext.data.NodeInterface} node
+                 * @return {Boolean}
+                 */
+                contains : function(node) {
+                    return node.isAncestor(this);
+                },
+
+                /**
+                 * Returns true if the passed node is an ancestor (at any point) of this node.
+                 * @param {Ext.data.NodeInterface} node
+                 * @return {Boolean}
+                 */
+                isAncestor : function(node) {
+                    var p = this.parentNode;
+                    while (p) {
+                        if (p == node) {
+                            return true;
+                        }
+                        p = p.parentNode;
+                    }
+                    return false;
+                },
+
+                /**
+                 * Sorts this nodes children using the supplied sort function.
+                 * @param {Function} fn A function which, when passed two Nodes, returns -1, 0 or 1 depending upon required sort order.
+                 * @param {Boolean} [recursive=false] True to apply this sort recursively
+                 * @param {Boolean} [suppressEvent=false] True to not fire a sort event.
+                 */
+                sort : function(sortFn, recursive, suppressEvent) {
+                    var cs  = this.childNodes,
+                        ln = cs.length,
+                        i, n;
+
+                    if (ln > 0) {
+                        Ext.Array.sort(cs, sortFn);
+                        for (i = 0; i < ln; i++) {
+                            n = cs[i];
+                            n.previousSibling = cs[i-1];
+                            n.nextSibling = cs[i+1];
+
+                            if (i === 0) {
+                                this.setFirstChild(n);
+                            }
+                            if (i == ln - 1) {
+                                this.setLastChild(n);
+                            }
+                            n.updateInfo();
+                            if (recursive && !n.isLeaf()) {
+                                n.sort(sortFn, true, true);
+                            }
+                        }
+
+                        if (suppressEvent !== true) {
+                            this.fireEvent('sort', this, cs);
+                        }
+                    }
+                },
+
+                /**
+                 * Returns true if this node is expaned
+                 * @return {Boolean}
+                 */
+                isExpanded: function() {
+                    return this.get('expanded');
+                },
+
+                /**
+                 * Returns true if this node is loaded
+                 * @return {Boolean}
+                 */
+                isLoaded: function() {
+                    return this.get('loaded');
+                },
+
+                /**
+                 * Returns true if this node is loading
+                 * @return {Boolean}
+                 */
+                isLoading: function() {
+                    return this.get('loading');
+                },
+
+                /**
+                 * Returns true if this node is the root node
+                 * @return {Boolean}
+                 */
+                isRoot: function() {
+                    return !this.parentNode;
+                },
+
+                /**
+                 * Returns true if this node is visible
+                 * @return {Boolean}
+                 */
+                isVisible: function() {
+                    var parent = this.parentNode;
+                    while (parent) {
+                        if (!parent.isExpanded()) {
+                            return false;
+                        }
+                        parent = parent.parentNode;
+                    }
+                    return true;
+                },
+
+                /**
+                 * Expand this node.
+                 * @param {Boolean} [recursive=false] True to recursively expand all the children
+                 * @param {Function} [callback] The function to execute once the expand completes
+                 * @param {Object} [scope] The scope to run the callback in
+                 */
+                expand: function(recursive, callback, scope) {
+                    var me = this;
+
+                    // all paths must call the callback (eventually) or things like
+                    // selectPath fail
+
+                    // First we start by checking if this node is a parent
+                    if (!me.isLeaf()) {
+                        // If it's loaded, wait until it loads before proceeding
+                        if (me.isLoading()) {
+                            me.on('expand', function(){
+                                me.expand(recursive, callback, scope);
+                            }, me, {single: true});
+                        } else {
+                            // Now we check if this record is already expanding or expanded
+                            if (!me.isExpanded()) {
+                                // The TreeStore actually listens for the beforeexpand method and checks
+                                // whether we have to asynchronously load the children from the server
+                                // first. Thats why we pass a callback function to the event that the
+                                // store can call once it has loaded and parsed all the children.
+                                me.fireEvent('beforeexpand', me, function() {
+                                    me.set('expanded', true);
+                                    if (me.hasListeners.expand) {
+                                        me.fireEvent('expand', me, me.childNodes, false);
+                                    }
+
+                                    // Call the expandChildren method if recursive was set to true
+                                    if (recursive) {
+                                        me.expandChildren(true, callback, scope);
+                                    } else {
+                                        Ext.callback(callback, scope || me, [me.childNodes]);
+                                    }
+                                }, me);
+                            } else if (recursive) {
+                                // If it is is already expanded but we want to recursively expand then call expandChildren
+                                me.expandChildren(true, callback, scope);
+                            } else {
+                                Ext.callback(callback, scope || me, [me.childNodes]);
+                            }
+                        }
+                    } else {
+                        // If it's not then we fire the callback right away
+                        Ext.callback(callback, scope || me); // leaf = no childNodes
+                    }
+                },
+
+                /**
+                 * Expand all the children of this node.
+                 * @param {Boolean} [recursive=false] True to recursively expand all the children
+                 * @param {Function} [callback] The function to execute once all the children are expanded
+                 * @param {Object} [scope] The scope to run the callback in
+                 */
+                expandChildren: function(recursive, callback, scope) {
+                    var me = this,
+                        i = 0,
+                        nodes = me.childNodes,
+                        ln = nodes.length,
+                        node,
+                        expanding = 0;
+
+                    for (; i < ln; ++i) {
+                        node = nodes[i];
+                        if (!node.isLeaf()) {
+                            expanding++;
+                            nodes[i].expand(recursive, function () {
+                                expanding--;
+                                if (callback && !expanding) {
+                                    Ext.callback(callback, scope || me, [me.childNodes]);
+                                }
+                            });
+                        }
+                    }
+
+                    if (!expanding && callback) {
+                        Ext.callback(callback, scope || me, [me.childNodes]);                    }
+                },
+
+                /**
+                 * Collapse this node.
+                 * @param {Boolean} [recursive=false] True to recursively collapse all the children
+                 * @param {Function} [callback] The function to execute once the collapse completes
+                 * @param {Object} [scope] The scope to run the callback in
+                 */
+                collapse: function(recursive, callback, scope) {
+                    var me = this;
+
+                    // First we start by checking if this node is a parent
+                    if (!me.isLeaf()) {
+                        // Now we check if this record is already collapsing or collapsed
+                        if (!me.collapsing && me.isExpanded()) {
+                            me.fireEvent('beforecollapse', me, function() {
+                                me.set('expanded', false);
+                                if (me.hasListeners.collapse) {
+                                    me.fireEvent('collapse', me, me.childNodes, false);
+                                }
+
+                                // Call the collapseChildren method if recursive was set to true
+                                if (recursive) {
+                                    me.collapseChildren(true, callback, scope);
+                                }
+                                else {
+                                    Ext.callback(callback, scope || me, [me.childNodes]);
+                                }
+                            }, me);
+                        }
+                        // If it is is already collapsed but we want to recursively collapse then call collapseChildren
+                        else if (recursive) {
+                            me.collapseChildren(true, callback, scope);
+                        }
+                    }
+                    // If it's not then we fire the callback right away
+                    else {
+                        Ext.callback(callback, scope || me, [me.childNodes]);
+                    }
+                },
+
+                /**
+                 * Collapse all the children of this node.
+                 * @param {Function} [recursive=false] True to recursively collapse all the children
+                 * @param {Function} [callback] The function to execute once all the children are collapsed
+                 * @param {Object} [scope] The scope to run the callback in
+                 */
+                collapseChildren: function(recursive, callback, scope) {
+                    var me = this,
+                        i = 0,
+                        nodes = me.childNodes,
+                        ln = nodes.length,
+                        node,
+                        collapsing = 0;
+
+                    for (; i < ln; ++i) {
+                        node = nodes[i];
+                        if (!node.isLeaf()) {
+                            collapsing++;
+                            nodes[i].collapse(recursive, function () {
+                                collapsing--;
+                                if (callback && !collapsing) {
+                                    Ext.callback(callback, scope || me, [me.childNodes]);
+                                }
+                            });
+                        }
+                    }
+
+                    if (!collapsing && callback) {
+                        Ext.callback(callback, scope || me, [me.childNodes]);
+                    }
+                }
+            };
+        }
+    }
+});
+
+Ext.define('natjs.overrides.Object', {
+}, function() {
+
+    Ext.Object.toQueryString = function(object, recursive) {
+        var paramObjects = [],
+            params = [],
+            i, j, ln, paramObject, value;
+
+        for (i in object) {
+            if (object.hasOwnProperty(i)) {
+                paramObjects = paramObjects.concat(Ext.Object.toQueryObjects(i, object[i], recursive));
+            }
+        }
+
+        for (j = 0, ln = paramObjects.length; j < ln; j++) {
+            paramObject = paramObjects[j];
+            value = paramObject.value;
+
+            if (Ext.isEmpty(value)) {
+                value = '';
+            }
+            else if (Ext.isDate(value)) {
+                value = value.toJSON();    //IZS
+            }
+
+            params.push(encodeURIComponent(paramObject.name) + '=' + encodeURIComponent(String(value)));
+        }
+
+        return params.join('&');
+    };
+
+    Ext.Object.ReplaceKeyNames = function(object, searchValue, replaceValue) {
+        var result = {};
+        Ext.Object.each(object, function(key, value, myself){
+            result[key.replace(searchValue, replaceValue)] = value;
+        });
+        return result;
+    };
+
+    Ext.Object.Flatten = function(object){
+        function req(name, value, result){
+            if (!Ext.isObject(value)) {
+                result[name] = value;
+            } else {
+                for (var propName in value) {
+                    if (value.hasOwnProperty(propName)) {
+                        var propValue = value[propName];
+                        if (name) propName = name + '.' + propName;
+                        req(propName, propValue, result);
+                    }
+                }
+            }
+        }
+        var result = {};
+        req('', object, result);
+        return result;
+    };
+
+    Ext.Object.FlattenOneLevel = function(object){
+        var result = {};
+        for (var propName in object) {
+            if (!object.hasOwnProperty(propName)) continue;
+            var propValue = object[propName];
+
+            if (!Ext.isObject(propValue)) {
+                result[propName] = propValue;
+            } else {
+                for (var subPropName in propValue) {
+                    if (!propValue.hasOwnProperty(subPropName)) continue;
+                    result[propName + '.' + subPropName] = propValue[subPropName];
+                }
+            }
+        }
+        return result;
+    };
+
+    Ext.Object.isEmpty = function(object) {
+        for(var prop in object) {
+            if(object.hasOwnProperty(prop))
+                return false;
+        }
+        return true;
+    }
+});
+
+Ext.define('natjs.overrides.String', {
+}, function() {
+
+    Ext.String.startsWith = function (str, value){
+        return str.slice(0, value.length) == value;
+    };
+
+    Ext.String.endsWith = function (str, value){
+        return str.slice(-value.length) == value;
+    };
+
+    Ext.String.removeFromStart = function (str, value){
+        if (!Ext.String.startsWith(str, value)) return str;
+        return str.slice(value.length);
+    };
+
+    Ext.String.removeFromEnd = function (str, value){
+        if (!Ext.String.endsWith(str, value)) return str;
+        return str.slice(0, str.length - value.length);
+    };
+});
+
+Ext.define('NAT.panel.Abstract', {
+    extend: 'Ext.panel.Panel',
+
+    op: null,
+    callback: null,
+    scope: null,
+    result: null,
+
+    stores: [],
+
+    initComponent: function(){
+       // if (!this.designMode){
+            for (var i=0; this.stores.length>i; i++){
+                var store = this.stores[i];
+                store.collection = store.model;
+                store = Ext.create('widget.' + store.xtype, store);
+            }
+       // }
+
+        this.callParent(arguments);
+        this.on('close', this.this_close, this);
+    },
+
+    this_close: function() {
+        Ext.callback(this.callback, this.scope, [null, this.result], 0);
+    },
+
+    showPanel: function(op, callback, scope) {
+        this.op = op || {};
+        this.callback = callback;
+        this.scope = scope;
+    },
+
+    refresh: function(op, callback, scope) {
+        Ext.callback(callback, scope, [null, null], 1);
+    },
+
+    refreshUI: function(op) {
+    }
+});
+
+Ext.define('NAT.panel.persistent.Abstract', {
+    extend: 'NAT.panel.Abstract',
+
+    model: ''
+});
+
+Ext.define('NAT.panel.persistent.Form', {
+    extend: 'NAT.panel.persistent.Abstract',
+    alias: 'widget.natppform',
+
+    store: null,
+
+    constructor : function(config) {
+        if (!this.designMode){
+            this.store = Ext.create('NAT.data.ModelStore', {
+                collection: this.model
+            });
+        }
+        this.callParent([config]);  //it calls initComponent
+    },
+
+    initComponent: function(){
+        this.callParent(arguments);
+
+        if (this.designMode) return;
+
+        this.down('#frmMain').BindStore(this.store);
+
+        this.down('#btnDelete').on('click', this.btnDelete_click, this);
+        this.down('#btnSave').on('click', this.btnSave_click, this);
+        this.down('#btnCancel').on('click', this.btnCancel_click, this);
+        this.down('#btnClose').on('click', this.btnClose_click, this);
+    },
+
+    showPanel: function(op, callback, scope) {
+        this.callParent(arguments);
+
+        Ext.applyIf(this.op, { command: 'new' });
+
+        this[this.op.command + 'Mode'].apply(this, arguments);
+    },
+
+    newMode: function(op, callback, scope){
+        this.down('#btnDelete').setVisible(false);
+        this.down('#btnSave').setVisible(true);
+        this.down('#btnCancel').setVisible(true);
+        this.down('#btnClose').setVisible(false);
+
+        var model = app.natCreateModel(this.model);
+        model.endEdit(true);
+        this.store.setModel(model);
+    },
+
+    showMode: function(op, callback, scope){
+        this.down('#btnDelete').setVisible(false);
+        this.down('#btnSave').setVisible(false);
+        this.down('#btnCancel').setVisible(false);
+        this.down('#btnClose').setVisible(true);
+
+        this.store.load({ params: { id: op.modelId }}, null, this);
+    },
+
+    modifyMode: function(op, callback, scope){
+        this.down('#btnDelete').setVisible(false);
+        this.down('#btnSave').setVisible(true);
+        this.down('#btnCancel').setVisible(true);
+        this.down('#btnClose').setVisible(false);
+
+        this.store.load({ params: { id: op.modelId }}, null, this);
+    },
+
+    deleteMode: function(op, callback, scope){
+        this.down('#btnDelete').setVisible(true);
+        this.down('#btnSave').setVisible(false);
+        this.down('#btnCancel').setVisible(true);
+        this.down('#btnClose').setVisible(false);
+
+        this.store.load({ params: { id: op.modelId }}, null, this);
+    },
+
+    btnDelete_click: function(){
+    },
+
+    btnSave_click: function(){
+        var me = this;
+        async.waterfall([
+            function(cb){
+                me.save(null, cb, me);
+            },
+            function(result, cb){
+                me.close();
+                viewport.refresh(null, cb, me);
+            }
+        ]);
+    },
+
+    btnCancel_click: function(){
+        this.reject();
+        this.refreshUI(null);
+    },
+
+    btnClose_click: function(){
+        this.close();
+    },
+
+    save: function (op, callback, scope) {
+        this.store.save(op, callback, scope);
+    },
+
+    reject: function(){
+        this.store.reject();
+    },
+
+    refresh: function(op, callback, scope) {
+        this.store.reload(null, callback, scope);
+    },
+
+    refreshUI: function(op) {
+        this.refreshToolbar();
+    },
+
+    refreshToolbar: function () {
+    }
+});
+
+Ext.define('NAT.panel.persistent.Grid', {
+    extend: 'NAT.panel.persistent.Abstract',
+    alias: 'widget.natppgrid',
+
+    store: null,
+
+    constructor : function(config) {
+//        if (!this.designMode){
+//            this.store = Ext.create('NAT.data.Store', {
+//                collection: this.model
+//            });
+//        }
+        debugger;
+        this.callParent([config]);  //it calls initComponent
+    },
+
+    initComponent: function(){
+        this.callParent(arguments);
+
+        if (this.designMode) return;
+
+        this.down('#gridMain').BindStore(this.store);
+
+        this.down('#gridMain').on('select', this.gridMain_select, this);
+        this.down('#btnNew').on('click', this.btnNew_click, this);
+        this.down('#btnDelete').on('click', this.btnDelete_click, this);
+        this.down('#btnSave').on('click', this.btnSave_click, this);
+        this.down('#btnCancel').on('click', this.btnCancel_click, this);
+    },
+
+    showPanel: function(op, callback, scope) {
+        this.callParent(arguments);
+        this.store.load(null, null, this);
+    },
+
+    gridMain_select: function(){
+        this.refreshToolbar();
+    },
+
+    btnNew_click: function(){
+        if (!this.model) return;
+        var newModel = app.natCreateModel(this.model);
+        newModel.endEdit();
+        this.store.add(newModel);
+    },
+
+    btnDelete_click: function(){
+        var model = this.down('#gridMain').getSelected();
+        this.store.remove(model);
+    },
+
+    btnSave_click: function(){
+        var me = this;
+        async.waterfall([
+            function(cb){
+                me.save(null, cb, me);
+            },
+            function(result, cb){
+                me.refreshUI(null);
+                viewport.refresh(null, cb, me);
+            }
+        ]);
+    },
+
+    btnCancel_click: function(){
+        this.reject();
+        this.refreshUI(null);
+    },
+
+    save: function (op, callback, scope) {
+        this.store.save(op, callback, scope);
+    },
+
+    reject: function(){
+        this.store.reject();
+    },
+
+    refresh: function(op, callback, scope) {
+        this.store.reload(op, callback, scope);
+    },
+
+    refreshUI: function(op) {
+        this.refreshToolbar();
+    },
+
+    refreshToolbar: function () {
+        var grid = this.down('#gridMain');
+        var model = grid.getSelected();
+
+        this.down('#btnDelete').setDisabled(!model);
+    }
+});
+
+Ext.define('NAT.panel.persistent.Tree', {
+    extend: 'NAT.panel.persistent.Abstract',
+    alias: 'widget.natpptree',
+
+    store: null,
+
+    constructor : function(config) {
+        if (!this.designMode){
+            this.store = Ext.create('NAT.data.TreeStore', {
+                collection: this.model
+            });
+        }
+        this.callParent([config]);  //it calls initComponent
+    },
+
+    initComponent: function(){
+        this.callParent(arguments);
+
+        if (this.designMode) return;
+
+        this.down('#treeMain').BindStore(this.store);
+
+        this.down('#treeMain').on('select', this.treeMain_select, this);
+        this.down('#btnNew').on('click', this.btnNew_click, this);
+        this.down('#btnDelete').on('click', this.btnDelete_click, this);
+        this.down('#btnSave').on('click', this.btnSave_click, this);
+        this.down('#btnCancel').on('click', this.btnCancel_click, this);
+        this.down('#btnExpandAll').on('click', this.btnExpandAll, this);
+    },
+
+    showPanel: function(op, callback, scope) {
+        this.callParent(arguments);
+        this.store.load(null, null, this);
+    },
+
+    treeMain_select: function(){
+        this.refreshToolbar();
+    },
+
+    btnNew_click: function(){
+        if (!this.model) return;
+
+        var tree = this.down('#treeMain');
+        var me = this;
+        async.waterfall([
+            function(cb) {
+                me.ensureRoot(null, cb, me);
+            },
+            function(result, cb){
+                var parent = tree.getSelected() || me.store.getRootNode();
+                var newModel = app.natCreateModel(me.model);
+                newModel.set('loaded', true);
+                newModel.endEdit();
+                parent.appendChild(newModel);
+                me.saveRefresh(null, cb, me);
+            }
+        ]);
+    },
+
+    btnDelete_click: function(){
+        this.down('#treeMain').getSelected().remove();
+        this.saveRefresh(null, null, this);
+    },
+
+    btnSave_click: function(){
+        this.saveRefresh(null, null, this);
+    },
+
+    btnCancel_click: function(){
+        this.reject();
+        this.refreshUI(null);
+    },
+
+    btnExpandAll: function(){
+        this.down('#treeMain').expandAll(null, this);
+    },
+
+    ensureRoot: function(op, callback, scope) {
+        if (this.store.getRootNode()){
+            Ext.callback(callback, scope, [null, null], 0);
+            return;
+        }
+        var root = app.natCreateModel(this.model);
+        root.set('name', 'root');
+        root.set('loaded', true);
+        root.endEdit();
+        this.store.setRootNode(root);
+        this.saveRefresh(null, callback, scope);
+    },
+
+    reject: function(){
+        this.store.reject();
+    },
+
+    saveRefresh: function (op, callback, scope) {
+        var me = this;
+        async.waterfall([
+            function(cb){
+                me.save(null, cb, me);
+            },
+            function(result, cb){
+                viewport.refresh(null, cb, me);
+            }
+        ],
+        function(err, data) {
+            Ext.callback(callback, scope, [err, null], 0);
+        });
+    },
+
+    save: function (op, callback, scope) {
+        this.store.save(op, callback, scope);
+    },
+
+    refresh: function(op, callback, scope) {
+        this.store.reload(op, callback, scope);
+    },
+
+    refreshUI: function (op) {
+        this.refreshToolbar();
+    },
+
+    refreshToolbar: function () {
+        var tree = this.down('#treeMain');
+        var model = tree.getSelected();
+
+        this.down('#btnDelete').setDisabled(!model);
+    }
+});
+
+Ext.define('NAT.panel.query.Abstract', {
+    extend: 'NAT.panel.Abstract'
+});
+
+Ext.define('NAT.panel.query.Grid', {
+    extend: 'NAT.panel.query.Abstract',
+    alias: 'widget.natpqgrid',
+
+    model: '',
+    formpanel: null,
+
+    store: null,
+
+    constructor : function(config) {
+        if (!this.designMode){
+            this.store = Ext.create('NAT.data.Store', {
+                collection: this.model
+            });
+        }
+        this.callParent([config]);  //it calls initComponent
+    },
+
+    initComponent: function(){
+        this.callParent(arguments);
+
+        if (this.designMode) return;
+
+        this.down('#gridMain').BindStore(this.store);
+
+        this.down('#gridMain').on('select', this.gridMain_select, this);
+        this.down('#btnShow').on('click', this.btnShow_click, this);
+    },
+
+    showPanel: function(op, callback, scope) {
+        this.callParent(arguments);
+        this.store.load(null, null, this);
+    },
+
+    gridMain_select: function(){
+        this.refreshToolbar();
+    },
+
+    btnShow_click: function(){
+        var grid = this.down('#gridMain');
+        var model = grid.getSelected();
+        viewport.showPanel({ panel: this.formpanel, command: 'show', modelId: model.getId() }, null, this);
+    },
+
+    refresh: function(op, callback, scope) {
+        this.store.reload(op, callback, scope);
+    },
+
+    refreshUI: function(op) {
+        this.refreshToolbar();
+    },
+
+    refreshToolbar: function () {
+        var grid = this.down('#gridMain');
+        var model = grid.getSelected();
+
+        this.down('#btnShow').setDisabled(!model);
+    }
+});
+
+Ext.define('NAT.tree.Panel', {
+    extend: 'Ext.tree.Panel',
+    alias: 'widget.nattree',
+    requires: ['NAT.tree.plugin.CellEditing'],
+
+    deferredBind: false,
+    deferredBindStore: null,
+
+    animate: false,
+
+    constructor: function (config) {
+        //config.plugins = [Ext.create('NAT.tree.plugin.CellEditing', { clicksToEdit: 1 })];
+        this.callParent([config]);
+        return this;
+    },
+
+    initComponent: function () {
+//            this.viewConfig = Ext.applyIf(this.viewConfig || {}, {
+//                loadMask: false //if true after refreshing the store grid rows cant be selected
+//            });
+
+        this.callParent(arguments);
+
+        this.on('beforedeselect', this.tree_beforedeselect, this);
+        this.on('select', this.tree_select, this);
+        this.on('deselect', this.tree_deselect, this);
+        this.on('afterrender', this.tree_afterrender, this);
+    },
+
+    tree_beforedeselect: function (rowModel, model) {
+//        var plugin = this.getPlugin();
+//        plugin.completeEdit();
+    },
+
+    tree_select: function (rowModel, model) {
+        if (!this.store) return;
+        this.store.Select(model);
+    },
+
+    tree_deselect: function (rowModel, model) {
+        if (!this.store) return;
+        this.store.Deselect();
+    },
+
+    tree_afterrender: function() {
+        if (this.deferredBind) {
+            this.bindStore(this.deferredBindStore);
+            this.deferredBind = false;
+            this.deferredBindStore = null;
+        }
+    },
+
+    BindStore: function(store) {
+        if (this.IsVisible()) {
+            this.bindStore(store);
+        } else {
+            this.deferredBind = true;
+            this.deferredBindStore = store;
+        }
+    },
+
+    bindStore: function(store) {
+        if (!store) return;
+        this.store = store;
+
+        var me = this;
+        me.mon(me.store, {
+            scope: me,
+            rootchange: me.onRootChange,
+            clear: me.onClear
+        });
+
+        me.relayEvents(me.store, [
+            'beforeload',
+            'load'
+        ]);
+
+        me.mon(me.store, {
+            append: me.createRelayer('itemappend'),
+            remove: me.createRelayer('itemremove'),
+            move: me.createRelayer('itemmove', [0, 4]),
+            insert: me.createRelayer('iteminsert'),
+            beforeappend: me.createRelayer('beforeitemappend'),
+            beforeremove: me.createRelayer('beforeitemremove'),
+            beforemove: me.createRelayer('beforeitemmove'),
+            beforeinsert: me.createRelayer('beforeiteminsert'),
+            expand: me.createRelayer('itemexpand', [0, 1]),
+            collapse: me.createRelayer('itemcollapse', [0, 1]),
+            beforeexpand: me.createRelayer('beforeitemexpand', [0, 1]),
+            beforecollapse: me.createRelayer('beforeitemcollapse', [0, 1])
+        });
+
+        var root = store.getRootNode();
+        if (!root) return;
+        this.view.setRootNode(root);
+    },
+
+    getSelected: function () {
+        var selRecords = this.getSelectionModel().getSelection();
+        if (selRecords.length == 0) return null;
+        return selRecords[0];
+    },
+
+    SelectRoot: function (suppressEvent) {
+        this.getSelectionModel().select(this.getRootNode(), false, suppressEvent);
+    },
+
+    Select: function (models, keepExisting, suppressEvent) {
+        this.getSelectionModel().select(models, keepExisting, suppressEvent);
+    },
+
+    getById: function(nodeId) {
+        return this.store.getById(nodeId);
+    },
+
+    SelectById: function(nodeId) {
+        if (!this.store) return;
+        var node = this.store.getNodeById(nodeId);
+        if (!node) return;
+        this.selectPath(node.getPath());
+    },
+
+    Deselect: function (models, suppressEvent) {
+        this.getSelectionModel().deselect(models, suppressEvent);
+    }
+
+//    startEdit: function(model, columnItemId) {
+//        var plugin = this.getPlugin();
+//        var column = this.headerCt.child(columnItemId);
+//        if (!column) return;
+//
+//        if (Ext.isString(model)) {
+//            model = this.store.getNodeById(model);
+//        }
+//        if (!model) return;
+//
+//        this.Select(model);
+//        plugin.startEdit(model, column);
+//    }
+});
+
+Ext.define('NAT.view.MessageDialog', {
+    extend: 'Ext.window.Window',
+    alias: 'widget.natmessagedialog',
+
+    width: 500,
+    height: 250,
+    resizable: false,
+    closable: false,
+    layout: {
+        align: 'top',
+        type: 'hbox'
+    },
+    modal: true,
+    bodyPadding: 10,
+
+    callback: null,
+    scope: null,
+
+    initComponent: function () {
+        this.items = [
+            {
+                xtype: 'image',
+                itemId: 'img',
+                height: 70,
+                width: 70,
+                flex: 0
+            },
+            {
+                xtype: 'component',
+                itemId: 'lMessage',
+                margin: '10 10 10 10',
+                flex: 1
+            }
+        ];
+        this.dockedItems = [
+            {
+                xtype: 'container',
+                height: 50,
+                cls: 'commandpanel',
+                layout: {
+                    align: 'stretch',
+                    padding: 10,
+                    type: 'hbox'
+                },
+                dock: 'bottom',
+                defaults: {
+                    flex: 1,
+                    margin: '0 5',
+                    hidden: true
+                },
+                items: [
+                    {
+                        xtype: 'button',
+                        itemId: 'btnSave',
+                        ui: 'green',
+                        text: 'Save',
+                        result: 'save'
+                    },
+                    {
+                        xtype: 'button',
+                        itemId: 'btnDontSave',
+                        ui: 'blue',
+                        text: "Don't Save",
+                        result: 'dontsave'
+                    },
+                    {
+                        xtype: 'button',
+                        itemId: 'btnOk',
+                        ui: 'green',
+                        text: 'Ok',
+                        result: 'ok'
+                    },
+                    {
+                        xtype: 'button',
+                        itemId: 'btnYes',
+                        ui: 'green',
+                        text: 'Yes',
+                        result: 'yes'
+                    },
+                    {
+                        xtype: 'button',
+                        itemId: 'btnNo',
+                        ui: 'blue',
+                        text: 'No',
+                        result: 'no'
+                    },
+                    {
+                        xtype: 'button',
+                        itemId: 'btnCancel',
+                        ui: 'gray',
+                        text: 'Cancel',
+                        result: 'cancel'
+                    }
+                ]
+            }
+        ];
+
+        this.callParent(arguments);
+
+        this.down('#btnSave').on('click', this.btn_click, this);
+        this.down('#btnDontSave').on('click', this.btn_click, this);
+        this.down('#btnOk').on('click', this.btn_click, this);
+        this.down('#btnYes').on('click', this.btn_click, this);
+        this.down('#btnNo').on('click', this.btn_click, this);
+        this.down('#btnCancel').on('click', this.btn_click, this);
+    },
+
+    ShowModal: function (config, callback, scope) {
+        this.callback = callback;
+        this.scope = scope;
+
+        config = config || {};
+        config.type = config.type || 'success';
+        config.msg = config.msg || '';
+
+        var img = this.down('#img');
+        var lMessage = this.down('#lMessage');
+
+        var btnSave = this.down('#btnSave');
+        var btnDontSave = this.down('#btnDontSave');
+        var btnOk = this.down('#btnOk');
+        var btnYes = this.down('#btnYes');
+        var btnNo = this.down('#btnNo');
+        var btnCancel = this.down('#btnCancel');
+
+        if (config.type == 'message') {
+            this.setTitle(config.type);
+            img.setSrc('/natjs/resources/images/message.png');
+            btnOk.setVisible(true);
+        }
+        if (config.type == 'success') {
+            this.setTitle(config.type);
+            img.setSrc('/natjs/resources/images/message.png');
+            btnOk.setVisible(true);
+        }
+        else if (config.type == 'failure') {
+            this.setTitle(config.type);
+            img.setSrc('/natjs/resources/images/error.png');
+            btnOk.setVisible(true);
+        }
+        else if (config.type == 'confirm') {
+            this.setTitle(config.type);
+            img.setSrc('/natjs/resources/images/warning.png');
+            btnYes.setVisible(true);
+            btnNo.setVisible(true);
+        }
+        else if (config.type == 'confirmexit') {
+            this.setTitle('confirm');
+            img.setSrc('/natjs/resources/images/warning.png');
+            btnSave.setVisible(true);
+            btnDontSave.setVisible(true);
+            btnCancel.setVisible(true);
+        }
+        else if (config.type == 'error') {
+            this.setTitle(config.type);
+            img.setSrc('/natjs/resources/images/error.png');
+            btnOk.setVisible(true);
+        }
+        else if (config.type == 'custom') {
+            this.setTitle(config.title);
+            img.setSrc('/natjs/resources/images/' + config.image + '.png');
+            btnOk.setVisible(true);
+            btnCancel.setVisible(true);
+            btnOk.setText(config.okButtonText);
+        }
+
+        lMessage.html = config.msg;
+
+        this.show();
+    },
+
+    btn_click: function (button) {
+        Ext.callback(this.callback, this.scope, [null, { result: button.result }], 0); //by delay 0ms close happen first before callback!
+        this.close();
+    }
+});
+
+Ext.define('NAT.viewport.Abstract', {
+    extend: 'Ext.container.Viewport'
+});
+
+Ext.define('NAT.viewport.MenuItem', {
+    extend: 'Ext.menu.Item',
+    alias: 'widget.natviewportmenuitem',
+
+    panel: '',
+
+    initComponent: function () {
+        this.callParent(arguments);
+        this.on('click', this.this_click, this);
+    },
+
+    this_click: function(){
+        viewport.showPanel({ panel: this.panel }, null, this);
+    }
+});
+
+Ext.define('NAT.viewport.Tabbed', {
+    extend: 'NAT.viewport.Abstract',
+    alias: 'widget.nattabbedviewport',
+
+    initComponent: function () {
+        this.callParent(arguments);
+        this.down('#btnRefresh').on('click', this.btnRefresh_click, this);
+    },
+
+    showPanel: function(op, callback, scope) {
+        var panel = Ext.create('widget.' + op.panel);
+        var tpMain = this.down('#tpMain');
+        tpMain.add(panel);
+        tpMain.setActiveTab(panel);
+        panel.showPanel(op, callback, scope);
+    },
+
+    btnRefresh_click: function(){
+        this.refresh(null, null, this);
+    },
+
+    refresh: function(op, callback, scope) {
+        var me = this;
+        async.parallel([
+            function(cb) {
+                var tpMain = me.down('#tpMain');
+                async.forEach(tpMain.items.getRange(), function(autopanel, done){
+                    autopanel.refresh(null, done, me);
+                },cb);
+            }
+        ],
+        function(err, data) {
+            me.refreshUI(op);
+            Ext.callback(callback, scope, [err, null], 1);
+        });
+    },
+
+    refreshUI: function (op) {
+    }
+});
+
+Ext.define('NAT.window.Window', {
+    extend: 'Ext.window.Window',
+    alias: 'widget.natwindow',
+
+    isActivated: false,
+
+    initComponent: function () {
+        this.callParent(arguments);
+
+        this.on('activate', this.this_activate, this);
+
+        this.InitEditorsBinding();
+        //        this.InitFieldsBinding();
+    },
+
+    this_activate: function(){
+        if (this.isActivated) return;
+        this.fireEvent('shown');
+        this.isActivated = true;
+    },
+
+    InitEditorsBinding: function() {
+        var editors = this.query('form');
+        for (var i = 0; i < editors.length; i++) {
+            var editor = editors[i];
+            editor.InitBinding();
+        }
+    },
+    //
+    //    InitFieldsBinding: function() {
+    //        var fields = this.query('[isFormField]');
+    //        for (var i = 0; i < fields.length; i++) {
+    //            var field = fields[i];
+    //            field.InitBinding();
+    //        }
+    //    },
+
+    FocusFirstField: function() {
+        var fields = this.query('[isFormField]');
+        if (fields.length > 0) {
+            var field = fields[0];
+            field.focus(true, 200);
+        }
+    },
+
+    FocusFirstInvalidField: function() {
+        var fields = this.query('[isFormField]');
+        for (var i = 0; i < fields.length; i++) {
+            var field = fields[i];
+            if (field.hasErrors()) {
+                field.focus(true, 200);
+                return;
+            }
+        }
+    },
+
+    Refresh: function(op, callback, scope) {
+        Ext.callback(callback, scope, [null, null], 0);
+    },
+
+    RebindUI: function () {
+        this.InitEditorsBinding();
+        //        this.InitFieldsBinding();
+    },
+
+    RefreshUI: function () {
+    }
+});
+
+Ext.define('NAT.data.Model', {
+    extend: 'Ext.data.Model',
+    alias: 'widget.natdatamodel',
+
+    fields: [
+        { name: '_id', type: 'string' },
+        { name: '_type', type: 'string' }
+    ],
+
+    fieldsInfo: [
+    ],
+
+    idProperty: '_id',
+    state: null,
+    isNATDirty: false,
+    isNATValid: false,
+    errors: null,
+
+    skipFieldSetters: [], //this setter method wont be executed handle endless cycle
+
+    constructor: function(data, id, raw) {
+        this.callParent(arguments);
+        this.errors = Ext.create('Ext.data.Errors');
+//        this.set('type', this.$className); //it would run on loading!
+    },
+
+    Created: function() {
+    },
+
+    associationChanged: function(){
+        this.afterEdit();
+    },
+
+    get: function(fieldName) {
+        if (Ext.isObject(fieldName)) {
+            return this.callParent(arguments);
+        }
+
+        var value;
+        var fnGet = 'get_' + fieldName;
+        if (typeof this[fnGet] == "function") {
+            value = this[fnGet]();
+        } else {
+            value = this.callParent(arguments);
+        }
+
+        return value;
+    },
+
+    afterEdit : function(modifiedFieldNames) {
+        modifiedFieldNames = modifiedFieldNames || [];
+        //console.log('afterEdit ' + this.$className + '   ' + modifiedFieldNames);
+
+        this.isNATValid = false; //call async ValidateModel to set true
+
+        this.natUpdateDirty();
+
+        if (modifiedFieldNames.length > 0){
+            var fieldName = modifiedFieldNames[0];
+            var fnSet = 'set_' + fieldName;
+            if (typeof this[fnSet] == "function") {
+                if (Ext.Array.contains(this.skipFieldSetters, fieldName)) {
+                    Ext.Array.remove(this.skipFieldSetters, fieldName);
+                } else {
+                    Ext.callback(this[fnSet], this, [this.get(fieldName)], 1);
+                }
+            }
+        }
+
+        this.callStore('afterEdit', modifiedFieldNames);
+    },
+
+    natUpdateDirty: function () {
+        var result = false;
+        if (this.dirty) result = true;
+        if (!result) {
+            for (var i = 0; i < this.associations.length; i++) {
+                var association = this.associations.items[i];
+                if (association.IsChanged(this)) {
+                    result = true;
+                    break;
+                }
+            }
+        }
+        if (this.isNATDirty != result){
+            this.isNATDirty = result;
+            this.callStore('OnModelDirtyChanged', this);
+        }
+    },
+
+    Merge: function(source) {
+        this.set(source.data);
+        for (var i = 0; i < this.associations.length; i++) {
+            var association = this.associations.items[i];
+            association.Merge(this, source);
+        }
+    },
+
+    isNew: function () {
+        return this.getId() == '';
+    },
+
+    //support change event, reject associations
+    reject: function (silent) {
+        var me = this,
+            modified = me.modified,
+            field;
+
+        for (field in modified) {
+            if (modified.hasOwnProperty(field)) {
+                if (typeof modified[field] != "function") {
+                    me[me.persistenceProperty][field] = modified[field];
+                }
+            }
+        }
+
+        me.dirty = false;
+        me.editing = false;
+        me.modified = {};
+
+        //IZS BEGIN
+        for (var i = 0; i < this.associations.length; i++) {
+            var association = this.associations.items[i];
+            association.reject(this, silent);
+        }
+        this.natUpdateDirty();
+        //IZS END
+
+        if (silent !== true) {
+            me.afterReject(); //it calls store afterReject...and store fires update event
+        }
+    },
+
+    //commit associations
+    commit : function(silent) {
+        var me = this;
+
+        me.phantom = me.dirty = me.editing = false;
+        me.modified = {};
+
+        //IZS BEGIN
+        for (var i = 0; i < this.associations.length; i++) {
+            var association = this.associations.items[i];
+            association.commit(this, silent);
+        }
+        this.natUpdateDirty();
+        //IZS END
+
+        if (silent !== true) {
+            me.afterCommit(); //it calls store afterCommit...and store fires update event
+        }
+    },
+
+    ValidateField: function(field, callback, scope) {
+        var fieldName = Ext.isString(field) ? field : field.name;
+
+        var fieldErrors = this.errors.getByField(fieldName);
+        for (var f = 0; fieldErrors.length > f; f++){
+            this.errors.remove(fieldErrors[f]);
+        }
+
+        var validations = Ext.Array.filter(this.validations, function (validation) {
+            return (validation.field === fieldName)
+        }, this),
+        validators  = Ext.data.validations,
+        value = this.get(fieldName);
+
+        for (var i = 0; validations.length > i; i++) {
+            var validation = validations[i];
+
+            var valid = validators[validation.type](validation, value);
+            if (!valid) {
+                this.errors.add({
+                    field: fieldName,
+                    message: validation.message || validators.getMessage(validation) || validators[validation.type + 'Message']
+                });
+            }
+        }
+
+        fieldErrors = this.errors.getByField(fieldName);
+
+        if (fieldErrors.length > 0) {
+            Ext.callback(callback, scope, [ fieldErrors, null ], 0);
+            return;
+        }
+
+        var fnValidator = fieldName + '_validator';
+        if (typeof this[fnValidator] == "function") {
+            this[fnValidator](null, function(err, data) {
+                if (err) {
+                    this.errors.add({
+                        field: fieldName,
+                        message: err
+                    });
+                    Ext.callback(callback, scope, [ err, null ], 0);
+                }
+                else {
+                    Ext.callback(callback, scope, [ null, null ], 0);
+                }
+            }, this);
+        }
+        else {
+            Ext.callback(callback, scope, [ null, null ], 0);
+        }
+    },
+
+    ValidateModel: function(op, callback, scope) {
+        this.errors.removeAll();
+
+        var me = this;
+        async.forEachSeries(me.fields.items, function(field, cb) {
+            me.ValidateField(field, function(err, data) {
+                cb(null, null);
+            }, me);
+        },
+        function(err){
+            if (me.errors.isValid()) {
+                me.isNATValid = true;
+                Ext.callback(callback, scope, [null, null], 0);
+            }
+            else {
+                me.isNATValid = false;
+                Ext.callback(callback, scope, [me.errors, null], 0);
+            }
+        });
+    },
+
+    GetFieldInfo: function(fieldName) {
+        for (var i = 0; i < this.fieldInfos.length; i++) {
+            if (this.fieldInfos[i].name == fieldName) {
+                return this.fieldInfos[i];
+            }
+        }
+        return null;
+    }
+});
+
+Ext.define('NAT.data.PersistentModel', {
+    extend: 'NAT.data.Model',
+
+    fields: [
+        { name: '_created', type: 'date' },
+        { name: '_modified', type: 'date' },
+        { name: '_version', type: 'int' },
+        { name: '_deleted', type: 'boolean' }
+    ],
+
+    fieldsInfo: [
+    ],
+
+    constructor: function(data, id, raw) {
+        this.callParent(arguments);
+    }
+});
+
+Ext.define('NAT.data.QueryModel', {
+    extend: 'NAT.data.Model',
+
+    fields: [
+        { name: '_created', type: 'date' },
+        { name: '_modified', type: 'date' },
+        { name: '_version', type: 'int' },
+        { name: '_deleted', type: 'boolean' }
+    ],
+
+    fieldsInfo: [
+    ],
+
+    constructor: function(data, id, raw) {
+        this.callParent(arguments);
+    }
+});
+
+Ext.define('NAT.data.RequestModel', {
+    extend: 'NAT.data.Model',
+
+    fields: [
+    ],
+
+    fieldsInfo: [
+    ],
+
+    constructor: function(data, id, raw) {
+        this.callParent(arguments);
+    }
+});
+
+Ext.define('NAT.data.ClientModel', {
+    extend: 'NAT.data.Model',
+
+    fields: [
+    ],
+
+    fieldsInfo: [
+    ],
+
+    constructor: function(data, id, raw) {
+        this.callParent(arguments);
+    }
+});
+
+Ext.define('NAT.data.LookupModel', {
+    extend: 'NAT.data.Model',
+
+    fields: [
+        { name: '_created', type: 'date' },
+        { name: '_modified', type: 'date' },
+        { name: '_version', type: 'int' },
+        { name: '_deleted', type: 'boolean' }
+    ],
+
+    fieldsInfo: [
+    ],
+
+    constructor: function(data, id, raw) {
+        this.callParent(arguments);
+    }
+});
+
+Ext.define('NAT.data.proxy.Ajax', {
+    extend: 'Ext.data.proxy.Ajax',
+    alias: 'widget.natajaxproxy',
+
+    requires: ['NAT.view.MessageDialog'],
+
+    mergeClientRecords: true,
+
+    constructor: function (config) {
+        var defaultConfig = {
+            type: 'ajax',
+            model: 'NAT.data.Model',   //required!!! otherwise reader and writer cant be set!!!
+            batchActions: false,
+            reader: {
+                type: 'json',
+                root: 'data',
+                messageProperty: 'message',
+                extractData: function (root) {
+                    var me = this,
+                        records = [],
+                        Model   = me.model,
+                        length  = root.length,
+                        convertedValues, node, record, i;
+
+                    if (!root.length && Ext.isObject(root)) {
+                        root = [root];
+                        length = 1;
+                    }
+
+                    for (i = 0; i < length; i++) {
+                        node = root[i];
+
+                        //IZS: Support polimorphism (in case of constant array store on client (or QueryResult) we have no type field!)
+                        if (node._type) {
+                            var className = app.getModuleClassName(node._type, 'model');
+                            if (me.model.$className != className) {
+                                this.setModel(className); //Change proxy model!
+                            }
+                        }
+
+                        //IZS: I need to create the type of model that I set above
+                        // Create a record with an empty data object.
+                        // Populate that data object by extracting and converting field values from raw data
+                        //record = new Model(undefined, me.getId(node), node, convertedValues = {});
+                        record = new me.model(undefined, me.getId(node), node, convertedValues = {});
+                        //END IZS
+
+                        // If the server did not include an id in the response data, the Model constructor will mark the record as phantom.
+                        // We  need to set phantom to false here because records created from a server response using a reader by definition are not phantom records.
+                        record.phantom = false;
+
+                        // Use generated function to extract all fields at once
+                        me.convertRecordData(convertedValues, node, record);
+
+                        records.push(record);
+
+                        if (me.implicitIncludes) {
+                            me.readAssociated(record, node);
+                        }
+                    }
+
+                    return records;
+                },
+                readAssociated: function(record, data) {
+                    var associations = record.associations.items,
+                        i = 0,
+                        length = associations.length,
+                        association, associationData;
+                    for (; i < length; i++) {
+                        association = associations[i];
+                        associationData = data[association.name];
+                        if (associationData) {
+                            association.read(record, associationData);
+                        }
+                    }
+                }
+            },
+            writer: {
+                type: 'json',
+                encode: false,
+                listful: true,
+                writeAllFields: true,
+                getRecordData: function(record) {
+                    var isPhantom = record.phantom === true,
+                        writeAll = this.writeAllFields || isPhantom,
+                        nameProperty = this.nameProperty,
+                        fields = record.fields,
+                        fieldItems = fields.items,
+                        data = {},
+                        clientIdProperty = record.clientIdProperty,
+                        changes,
+                        name,
+                        field,
+                        key,
+                        f, fLen;
+
+                    if (writeAll) {
+                        fLen = fieldItems.length;
+
+                        for (f = 0; f < fLen; f++) {
+                            field = fieldItems[f];
+
+                            if (field.persist) {
+                                name       = field[nameProperty] || field.name;
+                                data[name] = record.get(field.name);
+
+                                //IZS: handle dateFormat
+                                if (field.dateFormat && Ext.isDate(data[name]))
+                                {
+                                    data[name] = Ext.Date.format(data[name], field.dateFormat);
+                                }
+                                else if ((field.type) && (field.type.type == 'date'))
+                                {
+                                    if (data[name] != null) {
+                                        data[name] = data[name].toJSON();
+                                    } else {
+                                        data[name] = null;
+                                    }
+                                }
+                                //END IZS
+                            }
+                        }
+                    } else {
+                        // Only write the changes
+                        changes = record.getChanges();
+                        for (key in changes) {
+                            if (changes.hasOwnProperty(key)) {
+                                field      = fields.get(key);
+                                name       = field[nameProperty] || field.name;
+                                data[name] = changes[key];
+                            }
+                        }
+                    }
+                    if(isPhantom) {
+                        if(clientIdProperty && operation && operation.records.length > 1) {
+                            // include clientId for phantom records, if multiple records are being written to the server in one operation.
+                            // The server can then return the clientId with each record so the operation can match the server records with the client records
+                            data[clientIdProperty] = record.internalId;
+                        }
+                    } else {
+                        // always include the id for non phantoms
+                        data[record.idProperty] = record.getId();
+                    }
+
+                    this.writeAssociated(record, data);
+
+                    return data;
+                },
+                writeAssociated: function(record, data) {
+                    var associations = record.associations.items,
+                        i = 0,
+                        length = associations.length,
+                        association, associationData;
+                    for (; i < length; i++) {
+                        association = associations[i];
+                        association.write(record, data);
+                    }
+                }
+            }
+        };
+
+        config = Ext.merge(defaultConfig, config);
+
+        this.callParent([config]); //create proxy with model defined in config
+
+        this.on('exception', this.this_exception, this);
+
+        return this;
+    },
+
+    NATRequest: function(options, callback, scope) {
+        var request = Ext.create('Ext.data.Request', {
+            url      : options.url || app.baseUrl + 'request',
+            method   : options.method || 'POST',
+            timeout  : this.timeout,
+            params   : options.params,
+            jsonData : this.Serialize(options.jsonData),
+            scope    : this,
+            callback : this.NATCreateRequestCallback(options, callback, scope),
+            preventLoadingMask: options.preventLoadingMask
+        });
+
+        if (!options.preventLoadingMask) {
+            app.ShowLoadingMask();
+        }
+
+        Ext.Ajax.request(request);
+
+        return request;
+    },
+
+    Serialize: function(value) {
+        if (typeof value === 'undefined') return '';
+        if (value.isModel) return this.SerializeModel(value);
+        if (Ext.isArray(value)) return this.SerializeArray(value);
+        if (Ext.isObject(value)) return this.SerializeObject(value);
+        if (Ext.isBoolean(value)) return value;
+        return this.SerializePrimitive(value);
+    },
+
+    SerializeObject: function(object) {
+        for(var property in object) {
+            if (!object.hasOwnProperty(property)) continue;
+            var value = object[property];
+            object[property] = this.Serialize(value);
+        }
+        return JSON.stringify(object);
+    },
+    SerializeModel: function(model) {
+        return this.getWriter().getRecordData(model);
+    },
+
+    SerializePrimitive: function(value) {
+        if(typeof value.toJSON == 'function') {
+            return value.toJSON();
+        } else {
+            return value.toString();
+        }
+    },
+
+    SerializeArray: function(array) {
+        var result = [];
+        Ext.Array.every(array, function(value) {
+            result.push(this.Serialize(value));
+            return true;
+        }, this);
+        return result;
+    },
+
+    NATCreateRequestCallback: function(options, callback, scope) {
+        var me = this;
+
+        return function(options, success, response) {
+            me.NATProcessResponse(success, options, response, callback, scope);
+        };
+    },
+
+    NATProcessResponse: function(success, options, response, callback, scope){
+        if (!options.preventLoadingMask) {
+            app.HideLoadingMask();
+        }
+
+        if (!success) {
+            this.fireEvent('exception', this, response, null);
+            return;
+        }
+
+        var result = Ext.decode(response.responseText);
+
+        if (!result.success) {
+            response.result = result;
+            this.fireEvent('exception', this, response, null);
+            Ext.callback(callback, scope, [{ message: 'error' }, result], 0);
+        }
+        else {
+            Ext.callback(callback, scope, [null, result], 0);
+        }
+    },
+
+    processResponse: function(success, operation, request, response, callback, scope){
+        var me = this,
+            reader,
+            result;
+
+        if (success === true) {
+            reader = me.getReader();
+            result = reader.read(me.extractResponseData(response));
+
+            if (result.success !== false) {
+                //see comment in buildRequest for why we include the response object here
+                Ext.apply(operation, {
+                    response: response,
+                    resultSet: result
+                });
+
+                if (this.mergeClientRecords) {
+                    operation.commitRecords(result.records);
+                }
+                operation.setCompleted();
+                operation.setSuccessful();
+            } else {
+                operation.setException(result.message);
+                me.fireEvent('exception', this, response, operation);
+            }
+        } else {
+            me.setException(operation, response);
+            me.fireEvent('exception', this, response, operation);
+        }
+
+        //this callback is the one that was passed to the 'read' or 'write' function above
+        if (typeof callback == 'function') {
+            callback.call(scope || me, operation);
+        }
+
+        me.afterRequest(request, success);
+    },
+
+    this_exception: function(proxy, response, operation, op){
+        var msg, type;
+
+        if (!operation) { //request error
+            if (response.result) {
+                msg = response.result.message;
+                type = 'failure';
+            } else {
+                msg = response.responseText;
+                type = 'error';
+            }
+        } else if (typeof operation.error == 'object') { //system error
+            msg = operation.error.statusText;
+            type = 'error';
+        } else {
+            msg = operation.error;
+            type = 'failure';
+        }
+
+        var dlg = Ext.create('NAT.view.MessageDialog');
+        dlg.ShowModal({
+            type: type,
+            msg: msg
+        });
+    }
+});
+
+Ext.define('NAT.data.ModelStore', {
+    extend: 'Ext.util.Observable',
+    alias: 'widget.natmodelstore',
+
+    requires: [
+        'NAT.data.proxy.Ajax',
+        'Ext.data.reader.Reader',
+        'Ext.data.writer.Writer'
+    ],
+
+    collection: null,
+    lastOptions: null,
+    currModel: null,
+    proxy: null,
+    autoLoad: false,
+    loading: false,
+    saving: false,
+
+    constructor: function (config) {
+        config = config || {};
+        Ext.applyIf(config, {
+            api: {
+                read: app.baseUrl + 'data/readOne',
+                create: app.baseUrl + 'data/create',
+                update: app.baseUrl + 'data/update',
+                destroy: app.baseUrl + 'data/destroy'
+            },
+            mergeClientRecords: true
+        });
+        this.proxy = Ext.create('NAT.data.proxy.Ajax', config);
+
+        this.callParent([config]);
+
+        if (this.autoLoad) {
+            Ext.defer(this.load, 10, this);
+        }
+        return this;
+    },
+
+    CreateModel: function() {
+        var currModel = app.natCreateModel(this.currModel);
+        this.setModel(currModel);
+    },
+
+    setModel: function (model) {
+        if (this.currModel === model) return;
+
+        if (this.currModel) {
+            this.currModel.unjoin(this);
+        }
+
+        this.currModel = model;
+
+        if (this.currModel) {
+            this.currModel.join(this);
+            this.proxy.setModel(this.currModel.self);
+        }
+
+        this.OnCurrentModelChanged();
+    },
+
+    load: function(options, callback, scope) {
+        var me = this;
+
+        if (me.loading){
+            Ext.callback(callback, scope, [null, null], 0);
+            return;
+        }
+
+        options = Ext.applyIf({
+            action: 'read',
+            callback: callback,
+            scope: scope
+        }, options);
+
+        options.params = options.params || {};
+        options.params.lastModified = options.params.lastModified || new Date(0);
+        options.params.collection = options.params.collection || this.collection;
+
+        if (!options || !options.params || !options.params.collection || !options.params.id){
+            Ext.callback(callback, scope, [{ message: 'options not valid' }, null], 0);
+            return;
+        }
+
+        me.lastOptions = options;
+
+        var operation = new Ext.data.Operation(options);
+
+        if (me.fireEvent('beforeload', me, operation) !== false) {
+            me.loading = true;
+            me.proxy.read(operation, me.onProxyLoad, me);
+        }
+
+        return me;
+    },
+
+    reload: function(options, callback, scope) {
+        return this.load(Ext.apply(this.lastOptions, options), callback, scope);
+    },
+
+    onProxyLoad: function(operation) {
+        var me = this,
+            resultSet = operation.getResultSet(),
+            records = operation.getRecords(),
+            successful = operation.wasSuccessful();
+
+        if (successful) {
+            var model = operation.resultSet.records[0];
+            if (model) {
+                if (this.hasModel() && (this.currModel.getId() == model.getId())) {
+                    this.currModel.Merge(model);
+                    this.currModel.set('loaded', true);
+                    this.currModel.commit();
+                } else {
+                    this.setModel(model);
+                    this.currModel.set('loaded', true);
+                    this.currModel.commit();
+                }
+                me.lastOptions.params.lastModified = model.get('_modified');
+                me.fireEvent('datachanged', me);
+                me.fireEvent('refresh', me);
+            }
+        }
+
+        me.loading = false;
+
+        if (me.hasListeners.load) {
+            me.fireEvent('load', me, records, successful);
+        }
+
+        if (me.hasListeners.read) {
+            me.fireEvent('read', me, records, successful);
+        }
+
+        //this is a callback that would have been passed to the 'read' function and is optional
+        Ext.callback(operation.callback, operation.scope || me, [records, operation, successful]);
+    },
+
+    save: function (op, callback, scope) {
+        op = op || {};
+
+        if (this.saving) {
+            Ext.callback(callback, scope, [null, null], 0);
+            return;
+        }
+
+        this.saving = true;
+
+        var me = this;
+        async.waterfall([
+            function(cb){
+                me.currModel.ValidateModel(null, cb, me);
+            },
+            function(result, cb){
+                if (!me.currModel.isNATDirty){
+                    cb(null, {});
+                    return;
+                }
+
+                var options = {
+                    records: [me.currModel],
+                    action: me.currModel.isNew() ? 'create' : 'update'
+                };
+
+                if (!op.preventLoadingMask) {
+                    app.ShowLoadingMask();
+                }
+
+                var operation = Ext.create('Ext.data.Operation', options);
+                options.operation = operation;
+
+                me.proxy[operation.action](operation, function(operation){
+                    var me = this,
+                        success = operation.wasSuccessful(),
+                        records = operation.getRecords();
+
+                    switch (operation.action) {
+                        case 'create':
+                            me.onCreateRecords(records, operation, success);
+                            break;
+                        case 'update':
+                            me.onUpdateRecords(records, operation, success);
+                            break;
+                        case 'destroy':
+                            me.onDestroyRecords(records, operation, success);
+                            break;
+                    }
+
+                    if (success) {
+                        me.fireEvent('write', me, operation);
+                        me.fireEvent('datachanged', me);
+                        cb(null, options);
+                    }
+                    else {
+                        cb('failure', options);
+                    }
+                }, me);
+            }
+        ],
+        function(err, options) {
+            me.saving = false;
+
+            if (err) {
+                alert("validation error, field: " + err.getAt(0).field);
+            }
+
+            options = options || {};
+            if ((options.operation) && (!options.preventLoadingMask)) {
+                app.HideLoadingMask();
+            }
+
+            Ext.callback(callback, scope, [null, options], 0);
+        });
+    },
+
+    onCreateRecords: function(records, operation, success) {
+        if (!success) return;
+
+        var record = records[0];
+        var original = operation.records[0];
+        if (original) {
+            original.setId(record.getId());
+        }
+    },
+
+    onUpdateRecords: function (records, operation, success) {
+    },
+
+    onDestroyRecords: function(records, operation, success){
+        if (!success) return;
+        this.removed = [];
+    },
+
+    Merge: function(source) {
+        this.currModel.Merge(source.currModel);
+    },
+
+    reject: function (silent) {
+        if (!this.hasModel()) return;
+        this.currModel.reject(silent);
+    },
+
+    commit: function (silent) {
+        if (!this.hasModel()) return;
+        this.currModel.commit(silent);
+    },
+
+    IsChanged: function () {
+        return (this.currModel) && (this.currModel.isNATDirty);
+    },
+
+    getModel: function() {
+        if (this.hasModel()) {
+            return this.currModel;
+        } else {
+            return null;
+        }
+    },
+
+    hasModel: function() {
+        return ((this.currModel) && (typeof this.currModel == 'object') && (!this.currModel.removed));
+    },
+
+    //model calls it from callStore compatible with abstractStore
+    afterEdit : function(record, modifiedFieldNames) {
+        this.fireEvent('update', this, record, Ext.data.Model.EDIT, modifiedFieldNames);
+    },
+
+    //model calls it from callStore
+    OnModelDirtyChanged: function (model){
+        this.fireEvent('modeldirtychanged', model);
+    },
+
+    OnCurrentModelChanged: function (){
+        this.fireEvent('currentmodelchanged', this.currModel);
+    }
+});
+
+Ext.define('NAT.data.Store', {
+    extend: 'Ext.data.Store',
+    alias: 'widget.natstore',
+
+    requires: ['NAT.data.proxy.Ajax'],
+
+    collection: null,
+    currModel: null,
+    saving: false,
+
+    constructor: function (config) {
+        config = config || {};
+        Ext.applyIf(config, {
+            model: 'NAT.data.Model',
+            api: {
+                read: app.baseUrl + 'data/read',
+                create: app.baseUrl + 'data/create',
+                update: app.baseUrl + 'data/update',
+                destroy: app.baseUrl + 'data/destroy'
+            },
+            mergeClientRecords: false
+        });
+        this.proxy = Ext.create('NAT.data.proxy.Ajax', config);
+
+        this.callParent([config]);
+
+        this.on('datachanged', this.onDataChanged, this);
+    },
+
+    getNewRecords: function() {
+        return this.data.filterBy(this.filterNew).items;
+    },
+    getUpdatedRecords: function() {
+        return this.data.filterBy(this.filterUpdated).items;
+    },
+    getNewRecordsAll: function() {
+        return this.data.filterBy(this.filterNewAll).items;
+    },
+    getUpdatedRecordsAll: function() {
+        return this.data.filterBy(this.filterUpdatedAll).items;
+    },
+
+    onDataChanged: function() {
+        this.updateCurrModel();
+    },
+
+    load: function (options, callback, scope) {
+        var me = this;
+
+        if (me.loading) {
+            Ext.callback(callback, scope, [null, null], 0);
+            return;
+        }
+
+        options = Ext.applyIf({
+            callback: callback,
+            scope: scope,
+            addRecords: 'merge'
+        }, options);
+
+        options.params = options.params || {};
+        options.params.lastModified = options.params.lastModified || new Date(0);
+        options.params.collection = options.params.collection || this.collection;
+
+        if (!options || !options.params || !options.params.collection){
+            Ext.callback(callback, scope, [{ message: 'options not valid' }, null], 0);
+            return;
+        }
+
+        return me.callParent([options]);
+    },
+
+    reload: function(options, callback, scope) {
+        return this.load(Ext.apply(this.lastOptions, options), callback, scope);
+    },
+
+    onProxyLoad: function(operation) {
+        var me = this,
+            resultSet = operation.getResultSet(),
+            records = operation.getRecords(),
+            successful = operation.wasSuccessful();
+
+        if (resultSet) {
+            me.totalCount = resultSet.total;
+        }
+
+        if (successful) {
+            me.loadRecords(records, operation);
+        }
+
+        me.loading = false;
+        if (me.hasListeners.load) {
+            me.fireEvent('load', me, records, successful);
+        }
+
+        //TODO: deprecate this event, it should always have been 'load' instead. 'load' is now documented, 'read' is not.
+        //People are definitely using this so can't deprecate safely until 2.x
+        if (me.hasListeners.read) {
+            me.fireEvent('read', me, records, successful);
+        }
+
+//IZS make callback result data compatible with async library
+//        Ext.callback(operation.callback, operation.scope || me, [records, operation, successful]);
+        Ext.callback(operation.callback, operation.scope || me, [null, {records: records, operation: operation, successful: successful}]);
+    },
+
+    loadRecords: function(records, options) {
+        var me     = this,
+            i      = 0,
+            length = records.length,
+            start,
+            addRecords,
+            snapshot = me.snapshot;
+
+        if (options) {
+            start = options.start;
+            addRecords = options.addRecords;
+        }
+
+        //IZS merge support lastModified
+        if (addRecords === false) {
+            delete me.snapshot;
+            me.clearData(true);
+            me.data.addAll(records);
+        }
+        else if (addRecords === true) {
+            if (snapshot) {
+                snapshot.addAll(records);
+            }
+            me.data.addAll(records);
+        }
+        else if (addRecords === 'merge'){
+            me.MergeModels(records);
+            for (i=0; i < records.length; i++) {
+                var model = records[i];
+                var _modified = model.get('_modified');
+                if (_modified > this.lastOptions.params.lastModified) {
+                    this.lastOptions.params.lastModified = _modified;
+                }
+            }
+        }
+
+        if (start !== undefined) {
+            for (i=0; i < length; i++) {
+                records[i].index = start + i;
+                records[i].join(me);
+            }
+        } else {
+            for (i=0; i < length; i++) {
+                records[i].join(me);
+            }
+        }
+
+        /*
+         * this rather inelegant suspension and resumption of events is required because both the filter and sort functions
+         * fire an additional datachanged event, which is not wanted. Ideally we would do this a different way. The first
+         * datachanged event is fired by the call to this.add, above.
+         */
+        me.suspendEvents();
+
+        if (me.filterOnLoad && !me.remoteFilter) {
+            me.filter();
+        }
+
+        if (me.sortOnLoad && !me.remoteSort) {
+            me.sort(undefined, undefined, undefined, true);
+        }
+
+        me.resumeEvents();
+        me.fireEvent('datachanged', me);
+        me.fireEvent('refresh', me);
+    },
+
+    save: function (op, callback, scope) {
+        if (this.saving) {
+            Ext.callback(callback, scope, [null, null], 0);
+            return;
+        }
+
+        this.saving = true;
+
+        var me = this;
+        async.waterfall([
+            function(cb){
+                me.ValidateChangedModels(null, cb, me);
+            },
+            function(result, cb){
+                var options = {
+                    scope: me,
+                    success: function(batch, options) {
+                        cb(null, options);
+                    },
+                    failure: function(batch, options) {
+                        cb('failure', options);
+                    }
+                };
+
+                me.sync(options);
+
+                if (!options.operations){
+                    cb(null, options);
+                    return;
+                }
+
+                if ((options.operations) && (!options.preventLoadingMask)) {
+                    app.ShowLoadingMask();
+                }
+            }
+        ],
+        function(err, options) {
+            me.saving = false;
+
+            if (err) {
+                alert("validation error, field: " + err.getAt(0).field);
+            }
+
+            options = options || {};
+            if ((options.operations) && (!options.preventLoadingMask)) {
+                app.HideLoadingMask();
+            }
+
+            Ext.callback(callback, scope, [null, options], 0);
+        });
+    },
+
+    //overridden!!! (Server sends the modified models back here)
+    onCreateRecords: function(records, operation, success) {
+        if (!success) return;
+
+        var sentRecords = operation.resultSet.records;
+
+        for (var i= 0; i < sentRecords.length; ++i) {
+            var record = sentRecords[i];
+            var original = operation.records[i];
+            if (original) {
+                original.setId(record.getId());
+            }
+        }
+    },
+
+    //overridden!!! (Server sends the modified models back here)
+    onUpdateRecords: function (records, operation, success) {
+    },
+
+    onDestroyRecords: function(records, operation, success){
+        if (success) {
+            this.removed = [];
+        }
+    },
+
+    Merge: function(source) {
+        /*remove models that are not exist in source*/
+        var removed = [],
+            count = this.getCount();
+        for (var i = 0; i < count; i++) {
+            var model = this.getAt(i);
+            if (!source.getById(model.getId())) removed.push(model);
+        }
+        for (var j = 0; j < removed.length; j++) {
+            this.remove(removed[j]);
+        }
+
+        this.MergeModels(source.getRange(0));
+    },
+
+    reject: function (silent) {
+        var removedModels = this.getRemovedRecords();
+        for (i = 0; i < removedModels.length; i++) {
+            model = removedModels[i];
+            this.add(model);
+        }
+
+        var updatedModels = this.getUpdatedRecordsAll();
+        for (var i = 0; i < updatedModels.length; i++) {
+            var model = updatedModels[i];
+            model.reject(silent);
+        }
+
+        var newModels = this.getNewRecordsAll();
+        for (i = 0; i < newModels.length; i++) {
+            model = newModels[i];
+            this.remove(model);
+        }
+
+        this.commit();
+    },
+
+    commit: function (silent) {
+        this.removed = [];
+
+        var changedModels = this.GetChangedModelsAll();
+        var count = changedModels.length;
+
+        for (var i = 0; i < count; i++) {
+            var model = changedModels[i];
+            model.commit(silent);
+        }
+    },
+
+    MergeModels: function (models) {
+        for (var i = 0; i < models.length; i++) {
+            this.MergeModel(models[i]);
+        }
+    },
+
+    MergeModel: function (model) {
+        var _deleted = model.get('_deleted');
+        var original = this.getById(model.getId());
+        if (_deleted) { //removed node
+            if (original) {
+                this.deleteRecord(original);
+            }
+            return true;
+        }
+
+        if (!original) {  //new node
+            this.add(model);
+            return true;
+        }
+
+        //updated node
+        original.beginEdit();
+        original.Merge(model);
+        original.endEdit(true);
+        original.commit();
+        return true;
+    },
+
+    //nat method: original remove method put the record in the removed array and sync
+    //this method is used in timestamp refreshing
+    deleteRecord: function(record) {
+        var index = this.data.indexOf(record);
+        if (this.snapshot) {
+            this.snapshot.remove(record);
+        }
+        record.unjoin(this);
+        this.data.remove(record);
+        this.remove(record);
+        this.fireEvent('remove', this, record, index);
+        this.fireEvent('datachanged', this);
+    },
+
+    updateCurrModel: function() {
+        if (this.currModel) return;
+        this.Select(this.getAt(0));
+    },
+
+    filterNew: function(item) {
+        return (item.isNew()) && (item.isNATValid);
+    },
+    filterNewAll: function(item) {
+        return item.isNew();
+    },
+    filterUpdated: function(item) {
+        return (!item.isNew()) && (item.isNATDirty ) && (item.isNATValid);
+    },
+    filterUpdatedAll: function(item) {
+        return (!item.isNew()) && (item.isNATDirty );
+    },
+
+    GetChangedModels: function () {
+        return Ext.Array.union(this.getNewRecords(), this.getUpdatedRecords(), this.getRemovedRecords());
+    },
+    GetChangedModelsAll: function () {
+        return Ext.Array.union(this.getNewRecordsAll(), this.getUpdatedRecordsAll(), this.getRemovedRecords());
+    },
+
+    IsChanged: function () {
+        return (this.GetChangedModelsAll().length != 0);
+    },
+
+    ValidateChangedModels: function(op, callback, scope) {
+        async.forEach(this.GetChangedModelsAll(), function(model, done) {
+            model.ValidateModel(null, done, model);
+        },
+        function(err){
+            Ext.callback(callback, scope, [err, null], 0);
+        });
+    },
+
+    Select: function (model, suppressEvent) {
+        if (this.currModel == model) return;
+
+        if (!suppressEvent) {
+            this.OnSelect(this.currModel, model);
+        }
+
+        this.currModel = model;
+
+        if (!suppressEvent) {
+            this.OnCurrentModelChanged();
+        }
+    },
+
+    Deselect: function (suppressEvent) {
+        if (this.loading) return;
+        if (this.currModel == null) return;
+
+        if (!suppressEvent) {
+            this.OnDeselect(this.currModel);
+        }
+
+        this.currModel = null;
+
+        if (!suppressEvent) {
+            this.OnCurrentModelChanged();
+        }
+    },
+
+    hasModel: function() {
+        return ((this.currModel) && (typeof this.currModel == 'object'));
+    },
+
+    OnSelect: function(oldModel, newModel) {
+        this.fireEvent('select', oldModel, newModel);
+    },
+
+    OnDeselect: function(oldModel) {
+        this.fireEvent('deselect', oldModel);
+    },
+
+    //model calls it from callStore
+    OnModelDirtyChanged: function (model){
+        this.fireEvent('modeldirtychanged', model);
+    },
+
+    OnCurrentModelChanged: function () {
+        this.fireEvent('currentmodelchanged', this.currModel);
+    }
+});
+
+Ext.define('NAT.data.TreeStore', {
+    extend: 'Ext.data.TreeStore',
+    alias: 'widget.nattreestore',
+
+    requires: ['NAT.data.proxy.Ajax'],
+
+    collection: null,
+    currModel: null,
+    saving: false,
+
+    constructor: function (config) {
+        config = config || {};
+        Ext.applyIf(config, {
+            model: 'NAT.data.Model',
+            api: {
+                read: app.baseUrl + 'data/read',
+                create: app.baseUrl + 'data/create',
+                update: app.baseUrl + 'data/update',
+                destroy: app.baseUrl + 'data/destroy'
+            },
+            mergeClientRecords: false
+        });
+        this.proxy = Ext.create('NAT.data.proxy.Ajax', config);
+
+        this.callParent([config]);
+
+        this.on('move', this.OnMove, this);
+
+        this.on('datachanged', this.onDataChanged, this);
+    },
+
+    getNewRecords: function() {
+        return Ext.Array.filter(this.tree.flatten(), this.filterNew);
+    },
+    getUpdatedRecords: function() {
+        return Ext.Array.filter(this.tree.flatten(), this.filterUpdated);
+    },
+    getNewRecordsAll: function() {
+        return Ext.Array.filter(this.tree.flatten(), this.filterNewAll);
+    },
+    getUpdatedRecordsAll: function() {
+        return Ext.Array.filter(this.tree.flatten(), this.filterUpdatedAll);
+    },
+
+    onDataChanged: function() {
+        this.updateCurrModel();
+    },
+
+    load: function (options, callback, scope) {
+        var me = this;
+
+        if (me.loading) {
+            Ext.callback(callback, scope, [null, null], 0);
+            return;
+        }
+
+        options = Ext.applyIf({
+            callback: callback,
+            scope: scope,
+            addRecords: 'merge'
+        }, options);
+
+        options.params = options.params || {};
+        options.params.lastModified = options.params.lastModified || new Date(0);
+        options.params.collection = options.params.collection || this.collection;
+
+        if (!options || !options.params || !options.params.collection){
+            Ext.callback(callback, scope, [{ message: 'options not valid' }, null], 0);
+            return;
+        }
+
+        //Ignore Ext.data.TreeStore load method
+        return this.superclass.superclass.load.call(this, options);
+    },
+
+    reload: function(options, callback, scope) {
+        return this.load(Ext.apply(this.lastOptions, options), callback, scope);
+    },
+
+    onProxyLoad: function (operation) {
+        var me = this,
+            successful = operation.wasSuccessful(),
+            records = operation.getRecords();
+
+        me.loading = false;
+        if (successful) {
+            var firstLoad = this.lastOptions.params.lastModified.getTime() == new Date(0).getTime();
+            if (firstLoad) {
+                this.BuildStore(records);
+            }
+            else {
+                this.MergeModels(records);
+            }
+
+            for (i=0; i < records.length; i++) {
+                var model = records[i];
+                var _modified = model.get('_modified');
+                if (_modified > this.lastOptions.params.lastModified) {
+                    this.lastOptions.params.lastModified = _modified;
+                }
+            }
+        }
+
+        me.fireEvent('read', me, operation.node, records, successful);
+        me.fireEvent('load', me, operation.node, records, successful);
+
+//IZS make callback result data compatible with async library
+//        Ext.callback(operation.callback, operation.scope || me, [records, operation, successful]);
+        Ext.callback(operation.callback, operation.scope || me, [null, {records: records, operation: operation, successful: successful}]);
+    },
+
+    save: function (op, callback, scope) {
+        if (this.saving) {
+            Ext.callback(callback, scope, [null, null], 0);
+            return;
+        }
+
+        this.saving = true;
+
+        var me = this;
+        async.waterfall([
+            function(cb){
+                me.ValidateChangedModels(null, cb, me);
+            },
+            function(result, cb){
+                var options = {
+                    scope: me,
+                    success: function(batch, options) {
+                        cb(null, options);
+                    },
+                    failure: function(batch, options) {
+                        cb('failure', options);
+                    }
+                };
+
+                me.sync(options);
+
+                if (!options.operations){
+                    cb(null, options);
+                    return;
+                }
+
+                if ((options.operations) && (!options.preventLoadingMask)) {
+                    app.ShowLoadingMask();
+                }
+            }
+        ],
+        function(err, options) {
+            me.saving = false;
+
+            if (err) {
+                alert("validation error, field: " + err.getAt(0).field);
+            }
+
+            options = options || {};
+            if ((options.operations) && (!options.preventLoadingMask)) {
+                app.HideLoadingMask();
+            }
+
+            Ext.callback(callback, scope, [null, options], 0);
+        });
+    },
+
+    //overridden!!! (Server sends the modified models back here)
+    onCreateRecords: function(records, operation, success) {
+        if (!success) return;
+
+        var sentRecords = operation.resultSet.records;
+
+        for (var i= 0; i < sentRecords.length; ++i) {
+            var record = sentRecords[i];
+            var original = operation.records[i];
+            if (original) {
+                this.tree.unregisterNode(original, false);
+                original.setId(record.getId());
+                this.tree.registerNode(original, false);
+            }
+        }
+    },
+
+    //overridden!!! (Server sends the modified models back here)
+    onUpdateRecords: function (records, operation, success) {
+    },
+
+    onDestroyRecords: function(records, operation, success){
+        if (success) {
+            this.removed = [];
+        }
+    },
+
+    remove: function (model) {
+        if (!model.parentNode) return;
+        model.parentNode.removeChild(model);
+    },
+
+    reject: function (silent) {
+        var changedModels = this.GetChangedModelsAll();
+        var count = changedModels.length;
+
+        for (var i = 0; i < count; i++) {
+            var model = changedModels[i];
+            if (model.get('loaded')) {
+                model.reject(silent);
+            }
+            else {
+                model.isReplace = true;
+                model.parentNode.removeChild(model);
+                model.isReplace = false;
+            }
+        }
+        this.commit();
+    },
+
+    commit: function (silent) {
+        var changedModels = this.GetChangedModelsAll();
+        var count = changedModels.length;
+
+        for (var i = 0; i < count; i++) {
+            var model = changedModels[i];
+            model.commit(silent);
+        }
+    },
+
+    BuildStore: function (models) {
+//        this.removeAll();
+
+        var result = this.GetChildByParentId(models, '');
+        if (result.length != 1) {
+            //alert('No Root!');
+            return;
+        }
+        var rootModel = result[0];
+        rootModel.beginEdit();
+        rootModel.set('loaded', true);  //for Extjs compatibility
+        this.setRootNode(rootModel);
+        rootModel.endEdit(true);
+        rootModel.commit();
+
+        this.BuildStoreReq(models, rootModel);
+
+        this.builded = true;
+    },
+
+    BuildStoreReq: function (models, parentNode) {
+        var children = this.GetChildByParentId(models, parentNode.getId());
+        if (children.length == 0) return;
+
+        children.sort(function (a, b) { return a.get('index') - b.get('index'); });
+
+        for (var i = 0; i < children.length; i++) {
+            var child = children[i];
+            child.beginEdit();
+            child.set('loaded', true);  //for Extjs compatibility
+            if (!child.get('_deleted')) {
+                parentNode.beginEdit();
+                parentNode.appendChild(child);
+                parentNode.endEdit(true);
+                parentNode.commit();
+                this.BuildStoreReq(models, child);
+            }
+            child.endEdit(true);
+            child.commit();
+        }
+    },
+
+    GetChildByParentId: function (models, parentId) {
+        var result = [];
+
+        for (var i = 0; i < models.length; i++) {
+            var model = models[i];
+            if (model.get('parentId') == parentId) {
+                result[result.length] = model;
+            }
+        }
+
+        return result;
+    },
+
+    MergeModels: function (models) {
+        models.sort(function (a, b) { return a.get('index') - b.get('index'); });
+        for (var i = 0; i < models.length; i++) {
+            models[i].merged = false;
+        }
+        var mergedModelsCount = this.GetMergedModelsCount(models);
+        while (mergedModelsCount < models.length) {
+            for (i = 0; i < models.length; i++) {
+                var model = models[i];
+                if (model.merged) continue;
+                if (this.MergeModel(model)) {
+                    model.merged = true;
+                }
+            }
+
+            var newMergedModelsCount = this.GetMergedModelsCount(models);
+            if (newMergedModelsCount == mergedModelsCount) break; //prevent infinite loop!
+            mergedModelsCount = newMergedModelsCount;
+        }
+    },
+
+    GetMergedModelsCount: function (models) {
+        var result = 0;
+        for (var i = 0; i < models.length; i++) {
+            if (models[i].merged) {
+                result += 1;
+            }
+        }
+        return result;
+    },
+
+    MergeModel: function (model) {
+        var parentId = model.get('parentId'),
+            index = model.get('index'),
+            _deleted = model.get('_deleted');
+
+        if (!parentId) { //root node
+            var root = this.getRootNode();
+            root.beginEdit();
+            Ext.apply(model.data, {
+                root: true,
+                isFirst: true,
+                isLast: true,
+                depth: 0,
+                expanded: root.get('expanded'),
+                loaded: true //for Extjs compatibility
+            });
+            root.Merge(model);
+            root.endEdit(true);
+            root.commit();
+            return true;
+        }
+
+        var parent = this.tree.getNodeById(parentId);
+        if (!parent) return false; //merge the parent first
+
+        var nodeBefore = parent.getChildAt(index);
+
+        var original = this.tree.getNodeById(model.getId());
+        if (_deleted) { //removed node
+            if (original) {
+                original.isReplace = true; //prevent being added to the removed cache
+                original.parentNode.removeChild(original);
+                original.isReplace = false;
+            }
+            return true;
+        }
+
+        if (!original) {  //new node
+            var node = Ext.data.NodeInterface.decorate(model);
+            node.beginEdit();
+            parent.insertBefore(node, nodeBefore);
+            parent.updateInfo(false); //it updates children's indexes recursively
+            node.set('loaded', true); //for Extjs compatibility
+            node.endEdit(true);
+            node.commit();
+            return true;
+        }
+
+        //updated node
+        if ((original.get('parentId') == parentId) &&
+            (original.get('index') == index)) {
+            original.beginEdit();
+            Ext.apply(model.data, {
+                root: false,
+                isFirst: original.get('isFirst'),
+                isLast: original.get('isLast'),
+                depth: original.get('depth'),
+                expanded: original.get('expanded'),
+                loaded: true //for Extjs compatibility
+            });
+            original.Merge(model);
+            original.endEdit(true);
+            original.commit();
+            return true;
+        }
+
+        //updated node changed parent or index
+        original.beginEdit();
+        original.isReplace = true; //prevent being added to the removed cache
+        original.parentNode.removeChild(original);
+        original.isReplace = false;
+
+        Ext.apply(model.data, {
+            loaded: true //for Extjs compatibility
+        });
+        original.Merge(model);
+
+        parent.insertBefore(original, nodeBefore);
+        parent.updateInfo(false); //it updates children's indexes recursively
+
+        original.endEdit(true);
+        original.commit();
+
+        return true;
+    },
+
+    OnMove: function (model, oldParent, newParent) {
+        if (oldParent != newParent) {
+            oldParent.updateInfo(false);
+        }
+        newParent.updateInfo(false);
+    },
+
+    updateCurrModel: function() {
+        if (this.currModel) return;
+        this.Select(this.getRootNode());
+    },
+
+    setRootNode: function(root, /* private */ preventLoad) {
+        var me = this,
+            model = me.model,
+            idProperty = model.prototype.idProperty
+
+        root = root || {};
+        if (!root.isModel) {
+            // create a default rootNode and create internal data struct.
+            Ext.applyIf(root, {
+                id: me.defaultRootId,
+                text: 'Root',
+                allowDrag: false
+            });
+            if (root[idProperty] === undefined) {
+                root[idProperty] = me.defaultRootId;
+            }
+            Ext.data.NodeInterface.decorate(model);
+            root = Ext.ModelManager.create(root, model);
+        } else if (root.isModel && !root.isNode) {
+            Ext.data.NodeInterface.decorate(model);
+        }
+
+        //IZS: to force decoration in setRootNode, appendChild ect:
+        Ext.data.NodeInterface.decorate(root);
+        //IZS end
+
+
+        // Because we have decorated the model with new fields,
+        // we need to build new extactor functions on the reader.
+        me.getProxy().getReader().buildExtractors(true);
+
+        // When we add the root to the tree, it will automaticaly get the NodeInterface
+        me.tree.setRootNode(root);
+
+//IZS begin
+//        if (preventLoad !== true && !root.isLoaded() && (me.autoLoad === true || root.isExpanded())) {
+//            me.load({
+//                node: root
+//            });
+//        }
+
+        root.join(this);
+//IZS end
+
+        return root;
+    },
+
+    filterNew: function(item) {
+        return (item.isNew()) && (item.isNATValid);
+    },
+    filterNewAll: function(item) {
+        return item.isNew();
+    },
+    filterUpdated: function(item) {
+        return (!item.isNew()) && (item.isNATDirty ) && (item.isNATValid);
+    },
+    filterUpdatedAll: function(item) {
+        return (!item.isNew()) && (item.isNATDirty );
+    },
+
+    GetChangedModels: function () {
+        return Ext.Array.union(this.getNewRecords(), this.getUpdatedRecords(), this.getRemovedRecords());
+    },
+    GetChangedModelsAll: function () {
+        return Ext.Array.union(this.getNewRecordsAll(), this.getUpdatedRecordsAll(), this.getRemovedRecords());
+    },
+
+    IsChanged: function () {
+        return (this.GetChangedModelsAll().length != 0);
+    },
+
+    ValidateChangedModels: function(op, callback, scope) {
+        async.forEach(this.GetChangedModelsAll(), function(model, done) {
+            model.ValidateModel(null, done, model);
+        },
+        function(err){
+            Ext.callback(callback, scope, [err, null], 0);
+        });
+    },
+
+    Select: function (model, suppressEvent) {
+        if (this.currModel == model) return;
+
+        if (!suppressEvent) {
+            this.OnSelect(this.currModel, model);
+        }
+
+        this.currModel = model;
+
+        if (!suppressEvent) {
+            this.OnCurrentModelChanged();
+        }
+    },
+
+    Deselect: function (suppressEvent) {
+        if (this.loading) return;
+        if (this.currModel == null) return;
+
+        if (!suppressEvent) {
+            this.OnDeselect(this.currModel);
+        }
+
+        this.currModel = null;
+
+        if (!suppressEvent) {
+            this.OnCurrentModelChanged();
+        }
+    },
+
+    hasModel: function() {
+        return ((this.currModel) && (typeof this.currModel == 'object'));
+    },
+
+    OnSelect: function(oldModel, newModel) {
+        this.fireEvent('select', oldModel, newModel);
+    },
+
+    OnDeselect: function(oldModel) {
+        this.fireEvent('deselect', oldModel);
+    },
+
+    //model calls it from callStore
+    OnModelDirtyChanged: function (model){
+        this.fireEvent('modeldirtychanged', model);
+    },
+
+    OnCurrentModelChanged: function () {
+        this.fireEvent('currentmodelchanged', this.currModel);
+    }
+});
+
+Ext.define('NAT.data.StoreManager', {
+    extend: 'Ext.util.MixedCollection',
+    alias: 'widget.natstoremanager',
+
+    constructor: function (config) {
+        this.callParent([config]);
+    },
+
+    Init: function () {
+    },
+
+    Activate: function(storeName) {
+        var store = this.getByKey(storeName);
+        store.active = true;
+    },
+
+    Deactivate: function(storeName) {
+        var store = this.getByKey(storeName);
+        store.active = false;
+    },
+
+    load: function (op, callback, scope) {
+        async.forEach(this.items, function(store, done){
+            if (store.active) {
+                store.load(null, done);
+            } else {
+                done(null, null);
+            }
+        },
+        function(err, data) {
+            Ext.callback(callback, scope, [err, null], 0);
+        });
+    },
+
+    reload: function (op, callback, scope) {
+        async.forEach(this.items, function(store, done){
+            if (store.active) {
+                store.reload(null, done);
+            } else {
+                done(null, null);
+            }
+        },
+        function(err, data) {
+            Ext.callback(callback, scope, [err, null], 0);
+        });
+    }
+});
+
+
+

@@ -4028,7 +4028,17 @@ Ext.define('NAT.panel.Abstract', {
     scope: null,
     result: null,
 
+    stores: [],
+
     initComponent: function(){
+       // if (!this.designMode){
+            for (var i=0; this.stores.length>i; i++){
+                var store = this.stores[i];
+                store.collection = store.model;
+                store = Ext.create('widget.' + store.xtype, store);
+            }
+       // }
+
         this.callParent(arguments);
         this.on('close', this.this_close, this);
     },
@@ -4183,11 +4193,12 @@ Ext.define('NAT.panel.persistent.Grid', {
     store: null,
 
     constructor : function(config) {
-        if (!this.designMode){
-            this.store = Ext.create('NAT.data.Store', {
-                collection: this.model
-            });
-        }
+//        if (!this.designMode){
+//            this.store = Ext.create('NAT.data.Store', {
+//                collection: this.model
+//            });
+//        }
+        debugger;
         this.callParent([config]);  //it calls initComponent
     },
 

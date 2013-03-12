@@ -4032,7 +4032,7 @@ Ext.define('NAT.panel.Abstract', {
         this.callParent(arguments);
 
         if (this.designMode) return;
-    
+
         this.initStores();
         this.on('close', this.this_close, this);
     },
@@ -4237,7 +4237,7 @@ Ext.define('NAT.panel.persistent.Grid', {
         this.callParent(arguments);
 
         if (this.designMode) return;
-debugger;
+
         this.store = this.stores.getAt(0);
         this.down('#gridMain').BindStore(this.store);
 

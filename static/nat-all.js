@@ -4042,6 +4042,8 @@ debugger;
 
         for (var i=0; stores.length>i; i++){
             var store = stores[i];
+            store.collection = store.model;
+            delete store.model;
             store = Ext.create('widget.' + store.xtype, store);
             store.collection = store.model;
             me.stores.add(store);

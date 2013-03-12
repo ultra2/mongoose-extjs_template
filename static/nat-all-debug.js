@@ -4030,15 +4030,18 @@ Ext.define('NAT.panel.Abstract', {
 
     stores: [],
 
-    initComponent: function(){
-       // if (!this.designMode){
-            for (var i=0; this.stores.length>i; i++){
-                var store = this.stores[i];
-                store.collection = store.model;
-                store = Ext.create('widget.' + store.xtype, store);
-            }
-       // }
+    constructor : function(config) {
+//    // if (!this.designMode){
+        for (var i=0; this.stores.length>i; i++){
+            var store = this.stores[i];
+            store.collection = store.model;
+            store = Ext.create('widget.' + store.xtype, store);
+        }
+        // }
+        this.callParent([config]);  //it calls initComponent
+    },
 
+    initComponent: function(){
         this.callParent(arguments);
         this.on('close', this.this_close, this);
     },

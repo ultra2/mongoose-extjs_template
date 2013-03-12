@@ -4042,9 +4042,9 @@ debugger;
 
         for (var i=0; stores.length>i; i++){
             var store = stores[i];
-//            store.collection = store.model;
-//            delete store.model;
-            var config = {};
+            var config = {
+                collection: store.model
+            };
             store = Ext.create('widget.' + store.xtype, config);
             store.collection = store.model;
             me.stores.add(store);

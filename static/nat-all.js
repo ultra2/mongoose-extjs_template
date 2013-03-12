@@ -4044,12 +4044,8 @@ Ext.define('NAT.panel.Abstract', {
             debugger;
 
             var store = stores[i];
-//            delete store.xtype;
-//            var config = {
-//                collection: store.model
-//            };
-//            store = Ext.create('widget.' + store.xtype, store);
-            store = Ext.create(store);
+            delete store.xtype;
+            store = Ext.create('widget.' + store.xtype, store);
             me.stores.add(store);
         }
     },

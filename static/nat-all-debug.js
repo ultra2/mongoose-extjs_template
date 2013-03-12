@@ -4037,16 +4037,18 @@ Ext.define('NAT.panel.Abstract', {
     initStores : function() {
         var me = this,
             stores = me.stores;
-debugger;
+
         me.stores = new Ext.util.AbstractMixedCollection();
 
         for (var i=0; stores.length>i; i++){
+            debugger;
+
             var store = stores[i];
-            var config = {
-                collection: store.model
-            };
-            store = Ext.create('widget.' + store.xtype, config);
-            store.collection = store.model;
+//            delete store.xtype;
+//            var config = {
+//                collection: store.model
+//            };
+            store = Ext.create('widget.' + store.xtype, store);
             me.stores.add(store);
         }
     },

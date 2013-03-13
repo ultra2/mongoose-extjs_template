@@ -4030,12 +4030,15 @@ Ext.define('NAT.panel.Abstract', {
     result: null,
 
     initComponent: function(){
-        debugger;
+        //before callParent bc it creates items (like grid) that needs stores created
+        if (!this.designMode){
+            this.initStores();
+        }
+        
         this.callParent(arguments);
 
         if (this.designMode) return;
 
-        this.initStores();
         this.on('close', this.this_close, this);
     },
 

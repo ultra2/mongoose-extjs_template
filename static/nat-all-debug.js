@@ -4030,6 +4030,7 @@ Ext.define('NAT.panel.Abstract', {
     result: null,
 
     initComponent: function(){
+        debugger;
         this.callParent(arguments);
 
         if (this.designMode) return;

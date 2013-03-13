@@ -1812,13 +1812,17 @@ Ext.define('NAT.grid.Panel', {
             loadMask: false //if true after refreshing the store grid rows cant be selected
         });
 
-        if (Ext.isString(this.store) && this.isContained && this.isContained.stores){
-            var store = this.isContained.stores.getByKey(this.store);
-            if (store) this.store = store;
+        if (!this.designMode){
+            if (Ext.isString(this.store) && this.isContained && this.isContained.stores){
+                var store = this.isContained.stores.getByKey(this.store);
+                if (store) this.store = store;
+            }
         }
 
         this.callParent(arguments);
 
+        if (this.designMode) return;
+        
         for (var i = 0; this.columns.length > i; i++) {
             var column = this.columns[i];
             if (column.natIsLookup) {

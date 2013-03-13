@@ -1808,10 +1808,15 @@ Ext.define('NAT.grid.Panel', {
     },
 
     initComponent: function () {
-        debugger;
         this.viewConfig = Ext.applyIf(this.viewConfig || {}, {
             loadMask: false //if true after refreshing the store grid rows cant be selected
         });
+debugger;
+
+        if (Ext.isString(this.store) && this.isContained && this.isContained.stores){
+            var store = this.isContained.stores.getByKey(this.store);
+            if (store) this.store = store;
+        }
 
         this.callParent(arguments);
 

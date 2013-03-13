@@ -4034,7 +4034,7 @@ Ext.define('NAT.panel.Abstract', {
         if (!this.designMode){
             this.initStores();
         }
-        
+
         this.callParent(arguments);
 
         if (this.designMode) return;
@@ -4053,7 +4053,7 @@ Ext.define('NAT.panel.Abstract', {
             var xtype = store.xtype;
             delete store.xtype;
             store = Ext.create('widget.' + xtype, store);
-            me.stores.add(store);
+            me.stores.add(store.itemId, store);
         }
     },
 
@@ -5877,7 +5877,6 @@ Ext.define('NAT.data.Store', {
     saving: false,
 
     constructor: function (config) {
-        debugger;
         config = config || {};
         Ext.applyIf(config, {
             model: 'NAT.data.Model',

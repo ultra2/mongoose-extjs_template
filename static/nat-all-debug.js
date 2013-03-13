@@ -1808,6 +1808,7 @@ Ext.define('NAT.grid.Panel', {
     },
 
     initComponent: function () {
+        debugger;
         this.viewConfig = Ext.applyIf(this.viewConfig || {}, {
             loadMask: false //if true after refreshing the store grid rows cant be selected
         });
@@ -5872,6 +5873,7 @@ Ext.define('NAT.data.Store', {
     saving: false,
 
     constructor: function (config) {
+        debugger;
         config = config || {};
         Ext.applyIf(config, {
             model: 'NAT.data.Model',

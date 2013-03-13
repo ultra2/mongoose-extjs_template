@@ -1812,6 +1812,10 @@ Ext.define('NAT.grid.Panel', {
             loadMask: false //if true after refreshing the store grid rows cant be selected
         });
 
+        if (this.designMode){
+            this.store = '';
+        }
+
         if (!this.designMode){
             if (Ext.isString(this.store) && this.isContained && this.isContained.stores){
                 var store = this.isContained.stores.getByKey(this.store);
@@ -1822,7 +1826,7 @@ Ext.define('NAT.grid.Panel', {
         this.callParent(arguments);
 
         if (this.designMode) return;
-        
+
         for (var i = 0; this.columns.length > i; i++) {
             var column = this.columns[i];
             if (column.natIsLookup) {

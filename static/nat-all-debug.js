@@ -1811,7 +1811,6 @@ Ext.define('NAT.grid.Panel', {
         this.viewConfig = Ext.applyIf(this.viewConfig || {}, {
             loadMask: false //if true after refreshing the store grid rows cant be selected
         });
-debugger;
 
         if (Ext.isString(this.store) && this.isContained && this.isContained.stores){
             var store = this.isContained.stores.getByKey(this.store);
@@ -4249,7 +4248,6 @@ Ext.define('NAT.panel.persistent.Grid', {
         if (this.designMode) return;
 
         this.store = this.stores.getAt(0);
-        this.down('#gridMain').BindStore(this.store);
 
         this.down('#gridMain').on('select', this.gridMain_select, this);
         this.down('#btnNew').on('click', this.btnNew_click, this);

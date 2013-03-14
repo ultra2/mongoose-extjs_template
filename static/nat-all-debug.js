@@ -4056,7 +4056,7 @@ Ext.define('NAT.panel.Abstract', {
 
     initStores : function() {
         var me = this,
-            stores = me.stores;
+            stores = me.stores || [];
 
         me.stores = new Ext.util.AbstractMixedCollection();
 

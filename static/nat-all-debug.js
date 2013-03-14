@@ -4131,21 +4131,12 @@ Ext.define('NAT.panel.persistent.Form', {
 
     store: null,
 
-    constructor : function(config) {
-        if (!this.designMode){
-            this.store = Ext.create('NAT.data.ModelStore', {
-                collection: this.model
-            });
-        }
-        this.callParent([config]);  //it calls initComponent
-    },
-
     initComponent: function(){
         this.callParent(arguments);
 
         if (this.designMode) return;
 
-        this.down('#frmMain').BindStore(this.store);
+        this.store = this.stores.getAt(0);
 
         this.down('#btnDelete').on('click', this.btnDelete_click, this);
         this.down('#btnSave').on('click', this.btnSave_click, this);
@@ -4321,21 +4312,12 @@ Ext.define('NAT.panel.persistent.Tree', {
 
     store: null,
 
-    constructor : function(config) {
-        if (!this.designMode){
-            this.store = Ext.create('NAT.data.TreeStore', {
-                collection: this.model
-            });
-        }
-        this.callParent([config]);  //it calls initComponent
-    },
-
     initComponent: function(){
         this.callParent(arguments);
 
         if (this.designMode) return;
 
-        this.down('#treeMain').BindStore(this.store);
+        this.store = this.stores.getAt(0);
 
         this.down('#treeMain').on('select', this.treeMain_select, this);
         this.down('#btnNew').on('click', this.btnNew_click, this);
@@ -4457,21 +4439,12 @@ Ext.define('NAT.panel.query.Grid', {
 
     store: null,
 
-    constructor : function(config) {
-        if (!this.designMode){
-            this.store = Ext.create('NAT.data.Store', {
-                collection: this.model
-            });
-        }
-        this.callParent([config]);  //it calls initComponent
-    },
-
     initComponent: function(){
         this.callParent(arguments);
 
         if (this.designMode) return;
 
-        this.down('#gridMain').BindStore(this.store);
+        this.store = this.stores.getAt(0);
 
         this.down('#gridMain').on('select', this.gridMain_select, this);
         this.down('#btnShow').on('click', this.btnShow_click, this);

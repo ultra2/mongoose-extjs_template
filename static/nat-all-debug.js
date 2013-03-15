@@ -1502,10 +1502,10 @@ Ext.define('NAT.form.Panel', {
         }, this);
 
         this.mon(this.store, 'update', function(store, model, operation, modifiedFieldNames) {
-            if (model == this.store.currModel) { //not embedded model
-                if (modifiedFieldNames.length>0){ //no modifiedFieldNames if operation is commit...
-                    this.ReadValue(modifiedFieldNames[0], model.get(modifiedFieldNames[0]));
-                }
+            //not embedded model?
+            //no modifiedFieldNames on commit operation...
+            if (model == this.store.currModel && modifiedFieldNames && modifiedFieldNames.length>0) {
+                this.ReadValue(modifiedFieldNames[0], model.get(modifiedFieldNames[0]));
             }
         }, this);
 

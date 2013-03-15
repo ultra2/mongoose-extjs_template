@@ -811,7 +811,7 @@ Ext.define('NAT.form.field.Function', {
             }
         }
         value += ')\n';
-        value += Ext.Array.convertToString(body, true);
+        value += Ext.Array.convertToString(body, '\n');
 
         sourceedit.setValue(value);
         sourceedit.focus(false, 1);
@@ -886,7 +886,7 @@ Ext.define('NAT.form.field.Function', {
 
         Ext.Array.erase(lines, 0, 1);
 
-        var value = Ext.Array.convertToString(lines, false);
+        var value = Ext.Array.convertToString(lines);
         value = Ext.String.removeFromStart(value, '{');
         value = Ext.String.removeFromEnd(value, '}');
         value = value.replace(/\s/g, ''); //remove whitespaces
@@ -1081,7 +1081,7 @@ Ext.define('NAT.form.field.Object', {
         var lines = this.getValue();
         var sourceedit = this.editorWindow.down('#sourceedit');
 
-        var value = Ext.Array.convertToString(lines, true);
+        var value = Ext.Array.convertToString(lines, '\n');
         if (!value){
             value = '{\n\n}';
         }
@@ -2391,7 +2391,7 @@ Ext.define('natjs.overrides.Object', {
 
     Ext.Array.find = function(array, attribute, value) {
         if (!array) return;
-        var matches = Ext.Array.filter(array, function(item){ return (item[attribute] == value); });
+        var matches = Ext.Array.filter(array, function(item){ return (item && (item[attribute] == value)); });
         if (matches.length > 0){
             return matches[0];
         }
@@ -2404,19 +2404,19 @@ Ext.define('natjs.overrides.Object', {
     };
 
     //Concat a string array into one string
-    Ext.Array.convertToString = function(array, includeNewLine) {
+    Ext.Array.convertToString = function(array, separator) {
         if (!array) return '';
         var result = '';
         for (var j=0; array.length > j; j++){
             result += array[j];
-            if ((includeNewLine) && (j < array.length-1)) result += '\n';
+            if ((separator) && (j < array.length-1)) result += separator;
         }
         return result;
     };
 
     //It takes a string array what defines a javascript object
     Ext.Array.convertToObject = function(array) {
-        var strValue = Ext.Array.convertToString(array, false);
+        var strValue = Ext.Array.convertToString(array);
         strValue = Ext.String.removeFromStart(strValue, '{');
         strValue = Ext.String.removeFromEnd(strValue, '}');
         //strValue = strValue.replace(/\s/g, ''); //remove whitespaces/ ruin embedded function body!!!

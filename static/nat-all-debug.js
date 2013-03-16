@@ -940,6 +940,11 @@ Ext.define('NAT.form.field.Function', {
         return true;
     },
 
+    //overidden from Ext.form.field.Text
+    isEqual: function(value1, value2) {
+        return Ext.Object.isEqual(value1, value2);
+    },
+
     hasErrors: function() {
         return ((this.activeErrors) && (this.activeErrors.length > 0));
     }
@@ -3900,7 +3905,45 @@ Ext.define('natjs.overrides.Object', {
                 return false;
         }
         return true;
-    }
+    };
+
+    Ext.Object.isEqual = function(object1, object2){
+        object1 = object1 || {};
+        object2 = object2 || {};
+
+        var p;
+        for(p in object1) {
+            if (!object1.hasOwnProperty(p)) continue;
+            if(typeof(object2[p])=='undefined') {return false;}
+        }
+
+        for(p in object1) {
+            if (!object1.hasOwnProperty(p)) continue;
+            if (object1[p]) {
+                switch(typeof(object1[p])) {
+                    case 'object':
+                        if (!Ext.Object.isEqual(object1[p], object2[p])) { return false; } break;
+                    case 'function':
+                        if (typeof(object2[p])=='undefined' ||
+                            (p != 'equals' && object1[p].toString() != object2[p].toString()))
+                            return false;
+                        break;
+                    default:
+                        if (object1[p] != object2[p]) { return false; }
+                }
+            } else {
+                if (object2[p])
+                    return false;
+            }
+        }
+
+        for(p in object2) {
+            if (!object2.hasOwnProperty(p)) continue;
+            if(typeof(object1[p])=='undefined') {return false;}
+        }
+
+        return true;
+    };
 });
 
 Ext.define('natjs.overrides.String', {

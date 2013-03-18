@@ -1164,10 +1164,6 @@ Ext.define('NAT.form.field.Object', {
         var sourceedit = this.editorWindow.down('#sourceedit');
         var lines = sourceedit.getAllLines();
 
-        if (Ext.Object.isEmpty(Ext.Array.convertToObject(lines))){
-            lines = null;
-        }
-
         this.setValue(lines);
         this.editorWindow.close();
         this.focus(false, 60);
@@ -2418,28 +2414,6 @@ Ext.define('natjs.overrides.Object', {
             if ((separator) && (j < array.length-1)) result += separator;
         }
         return result;
-    };
-
-    //It takes a string array what defines a javascript object
-    Ext.Array.convertToObject = function(array) {
-        var strValue = Ext.Array.convertToString(array);
-        strValue = Ext.String.removeFromStart(strValue, '{');
-        strValue = Ext.String.removeFromEnd(strValue, '}');
-        //strValue = strValue.replace(/\s/g, ''); //remove whitespaces/ ruin embedded function body!!!
-        var properties = strValue.split(',');
-        var obj = {};
-        properties.forEach(function(property) {
-            if (!property) return;
-            var tup = property.split(':');
-            tup[0] = Ext.String.trim(tup[0]);
-            tup[1] = Ext.String.trim(tup[1]);
-            if (Ext.String.startsWith(tup[1], 'function')){
-                obj[tup[0]] = tup[1];
-            }else{
-                obj[tup[0]] = eval(tup[1]);
-            }
-        });
-        return obj;
     };
 });
 
@@ -3971,6 +3945,7 @@ Ext.define('natjs.overrides.String', {
 
 Ext.define('NAT.panel.Abstract', {
     extend: 'Ext.panel.Panel',
+    alias: 'widget.natpanel',
 
     op: null,
     callback: null,
@@ -4057,6 +4032,7 @@ Ext.define('NAT.panel.Abstract', {
 
 Ext.define('NAT.panel.persistent.Abstract', {
     extend: 'NAT.panel.Abstract',
+    alias: 'widget.natpersistentpanel',
 
     model: ''
 });
@@ -4363,14 +4339,16 @@ Ext.define('NAT.panel.persistent.Tree', {
 });
 
 Ext.define('NAT.panel.query.Abstract', {
-    extend: 'NAT.panel.Abstract'
+    extend: 'NAT.panel.Abstract',
+    alias: 'widget.natquerypanel',
+
+    model: ''
 });
 
 Ext.define('NAT.panel.query.Grid', {
     extend: 'NAT.panel.query.Abstract',
     alias: 'widget.natpqgrid',
 
-    model: '',
     formpanel: null,
 
     store: null,

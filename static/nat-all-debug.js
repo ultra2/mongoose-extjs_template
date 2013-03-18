@@ -689,6 +689,7 @@ Ext.define('NAT.form.field.ComboBox', {
         }
 
         this.store.add(data);
+        this.store.sort('name');
     },
 
     renderer: function(value, rec){

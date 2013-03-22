@@ -4750,6 +4750,7 @@ Ext.define('NAT.viewport.Tabbed', {
     },
 
     btnRefresh_click: function(){
+        debugger;
         this.refresh(null, null, this);
     },
 

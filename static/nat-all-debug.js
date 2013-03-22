@@ -1759,8 +1759,9 @@ Ext.define('NAT.grid.column.Lookup', {
 
         if (!this.renderer) {
             this.renderer = function(value, metaData, record, rowIndex, colIndex) {
-                var col = this.columns[colIndex],
-                    result = col.field.renderer(value, record);
+                var col = this.columns[colIndex];
+                if (!col.field) return '';
+                var result = col.field.renderer(value, record);
                 return Ext.util.Format.htmlEncode(result);
             };
         }
@@ -1815,14 +1816,12 @@ Ext.define('NAT.grid.Panel', {
         });
 
         if (this.designMode){
-            this.store = '';
+            this.store = null;
         }
 
-        if (!this.designMode){
-            if (Ext.isString(this.store) && this.isContained && this.isContained.stores){
-                var store = this.isContained.stores.getByKey(this.store);
-                if (store) this.store = store;
-            }
+        if (Ext.isString(this.store) && this.isContained && this.isContained.stores){
+            var store = this.isContained.stores.getByKey(this.store);
+            if (store) this.store = store;
         }
 
         this.callParent(arguments);

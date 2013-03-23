@@ -5088,6 +5088,10 @@ Ext.define('NAT.data.PersistentModel', {
     extend: 'NAT.data.Model',
 
     fields: [
+        { name: '_created', type: 'date' },
+        { name: '_modified', type: 'date' },
+        { name: '_version', type: 'int' },
+        { name: '_deleted', type: 'boolean' }
     ],
 
     fieldsInfo: [

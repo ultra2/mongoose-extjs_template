@@ -904,11 +904,13 @@ Ext.define('NAT.form.field.Function', {
         this.setValue(value);
         this.editorWindow.close();
         this.focus(false, 60);
+        this.fireEvent('collapse', this);
     },
 
     btnCancel_click: function() {
         this.editorWindow.close();
         this.focus(false, 60);
+        this.fireEvent('collapse', this);
     },
 
     rawToValue: function(rawValue) {
@@ -1167,11 +1169,13 @@ Ext.define('NAT.form.field.Object', {
         this.setValue(lines);
         this.editorWindow.close();
         this.focus(false, 60);
+        this.fireEvent('collapse', this);
     },
 
     btnCancel_click: function() {
         this.editorWindow.close();
         this.focus(false, 60);
+        this.fireEvent('collapse', this);
     },
 
     rawToValue: function(rawValue) {

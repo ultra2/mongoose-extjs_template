@@ -1805,6 +1805,9 @@ Ext.define('NAT.grid.Panel', {
     alias: 'widget.natgrid',
     requires: ['Ext.grid.plugin.CellEditing'],
 
+    dataStore: null,
+    dataMember: '',
+
     deferredBind: false,
     deferredBindStore: null,
 
@@ -1822,12 +1825,19 @@ Ext.define('NAT.grid.Panel', {
         if (this.designMode){
             this.store = null;
         }
-
-        if (Ext.isString(this.store) && this.isContained && this.isContained.stores){
-            var store = this.isContained.stores.getByKey(this.store);
-            if (store) this.store = store;
-        }
 debugger;
+        if (Ext.isString(this.store) && this.isContained && this.isContained.stores){
+            this.dataStore = this.isContained.stores.getByKey(this.store);
+        }
+
+        if (this.dataStore && this.dataMember) {
+            this.dataStore.on('currentmodelchanged', dataStore_currentmodelchanged, this);
+        }
+
+        if (this.dataStore && !this.dataMember) {
+            this.store = store;
+        }
+
         this.callParent(arguments);
 
         if (this.designMode) return;
@@ -1843,6 +1853,10 @@ debugger;
         this.on('select', this.this_select, this);
         this.on('deselect', this.this_deselect, this);
         this.on('afterrender', this.this_afterrender, this);
+    },
+
+    store_currentmodelchanged: function(currModel){
+        debugger;
     },
 
     this_beforedeselect: function (rowModel, model) {

@@ -1827,7 +1827,7 @@ Ext.define('NAT.grid.Panel', {
             var store = this.isContained.stores.getByKey(this.store);
             if (store) this.store = store;
         }
-
+debugger;
         this.callParent(arguments);
 
         if (this.designMode) return;

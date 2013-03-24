@@ -5148,6 +5148,20 @@ Ext.define('NAT.data.ClientModel', {
     }
 });
 
+Ext.define('NAT.data.ComponentModel', {
+    extend: 'NAT.data.Model',
+
+    fields: [
+    ],
+
+    fieldsInfo: [
+    ],
+
+    constructor: function(data, id, raw) {
+        this.callParent(arguments);
+    }
+});
+
 Ext.define('NAT.data.LookupModel', {
     extend: 'NAT.data.Model',
 

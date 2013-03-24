@@ -2142,9 +2142,9 @@ Ext.define('natjs.overrides.data.HasManyAssociation', {
 
             var records = reader.read(associationData).records;
             store.add(records);
-            for (var i = 0; i < records.length; i++) {
-                records[i].Loaded();
-            }
+//            for (var i = 0; i < records.length; i++) {
+//                records[i].Loaded();
+//            }
 
             //now that we've added the related records to the hasMany association, set the inverse belongsTo
             //association on each of them if it exists

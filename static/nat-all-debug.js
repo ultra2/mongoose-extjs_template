@@ -1821,27 +1821,15 @@ Ext.define('NAT.grid.Panel', {
         this.viewConfig = Ext.applyIf(this.viewConfig || {}, {
             loadMask: false //if true after refreshing the store grid rows cant be selected
         });
+debugger;
+        var savedStore = this.store;
+        this.store = null;
 
-        if (this.designMode){
-            this.store = null;
-        }
-
-        if (Ext.isString(this.store) && this.isContained && this.isContained.stores){
-            this.dataStore = this.isContained.stores.getByKey(this.store);
-            this.store = null;
-        }
-
-        if (this.dataStore && this.dataMember) {
-            this.dataStore.on('currentmodelchanged', this.dataStore_currentmodelchanged, this);
-        }
-
-        if (this.dataStore && !this.dataMember) {
-            this.store = this.dataStore;
-        }
-
-        this.callParent(arguments);
+        this.callParent(arguments); //use empty store from Ext.data.StoreManager
 
         if (this.designMode) return;
+
+        this.bindStore(savedStore, this.dataMember);
 
         for (var i = 0; this.columns.length > i; i++) {
             var column = this.columns[i];
@@ -1854,6 +1842,28 @@ Ext.define('NAT.grid.Panel', {
         this.on('select', this.this_select, this);
         this.on('deselect', this.this_deselect, this);
         this.on('afterrender', this.this_afterrender, this);
+    },
+
+    //overriden from Ext.panel.Table
+    bindStore: function(store, dataMember) {
+        if (this.dataStore && this.dataMember) {
+            this.dataStore.un('currentmodelchanged', this.dataStore_currentmodelchanged, this);
+        }
+
+        this.dataStore = store;
+        this.dataMember = dataMember;
+
+        if (Ext.isString(this.dataStore) && this.isContained && this.isContained.stores){
+            this.dataStore = this.isContained.stores.getByKey(this.dataStore);
+        }
+
+        if (this.dataStore && this.dataMember) {
+            this.dataStore.on('currentmodelchanged', this.dataStore_currentmodelchanged, this);
+        }
+
+        if (this.dataStore && !this.dataMember) {
+            this.callParent(this.dataStore);
+        }
     },
 
     dataStore_currentmodelchanged: function(currModel){

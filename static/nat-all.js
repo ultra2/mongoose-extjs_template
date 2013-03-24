@@ -1828,6 +1828,7 @@ Ext.define('NAT.grid.Panel', {
 debugger;
         if (Ext.isString(this.store) && this.isContained && this.isContained.stores){
             this.dataStore = this.isContained.stores.getByKey(this.store);
+            this.store = null;
         }
 
         if (this.dataStore && this.dataMember) {

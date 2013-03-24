@@ -1825,7 +1825,7 @@ Ext.define('NAT.grid.Panel', {
         if (this.designMode){
             this.store = null;
         }
-debugger;
+
         if (Ext.isString(this.store) && this.isContained && this.isContained.stores){
             this.dataStore = this.isContained.stores.getByKey(this.store);
             this.store = null;
@@ -1857,7 +1857,7 @@ debugger;
     },
 
     dataStore_currentmodelchanged: function(currModel){
-        debugger;
+        this.bindStore(currModel['hasMany_' + this.dataMember]);
     },
 
     this_beforedeselect: function (rowModel, model) {

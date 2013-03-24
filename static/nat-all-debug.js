@@ -1867,7 +1867,8 @@ debugger;
     },
 
     dataStore_currentmodelchanged: function(currModel){
-        this.bindStore(currModel['hasMany_' + this.dataMember]);
+        debugger;
+        Ext.panel.Table.bindStore.call(currModel['hasMany_' + this.dataMember]);
     },
 
     this_beforedeselect: function (rowModel, model) {

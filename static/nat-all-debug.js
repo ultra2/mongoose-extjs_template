@@ -1835,7 +1835,7 @@ debugger;
         }
 
         if (this.dataStore && !this.dataMember) {
-            this.store = store;
+            this.store = this.dataStore;
         }
 
         this.callParent(arguments);

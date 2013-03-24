@@ -1831,7 +1831,7 @@ debugger;
         }
 
         if (this.dataStore && this.dataMember) {
-            this.dataStore.on('currentmodelchanged', dataStore_currentmodelchanged, this);
+            this.dataStore.on('currentmodelchanged', this.dataStore_currentmodelchanged, this);
         }
 
         if (this.dataStore && !this.dataMember) {
@@ -1855,7 +1855,7 @@ debugger;
         this.on('afterrender', this.this_afterrender, this);
     },
 
-    store_currentmodelchanged: function(currModel){
+    dataStore_currentmodelchanged: function(currModel){
         debugger;
     },
 

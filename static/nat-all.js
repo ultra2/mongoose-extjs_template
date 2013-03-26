@@ -1806,10 +1806,11 @@ Ext.define('NAT.grid.Panel', {
     requires: ['Ext.grid.plugin.CellEditing'],
 
     dataStore: null,
-    dataMember: '',
+    dataMember: null,
 
     deferredBind: false,
-    deferredBindStore: null,
+    deferredBindDataStore: null,
+    deferredBindDataMember: null,
 
     constructor: function (config) {
         //config.plugins = [Ext.create('Ext.grid.plugin.CellEditing', { clicksToEdit: 1 })];
@@ -1840,54 +1841,9 @@ Ext.define('NAT.grid.Panel', {
             }
         }
 
-        this.on('beforedeselect', this.this_beforedeselect, this);
         this.on('select', this.this_select, this);
         this.on('deselect', this.this_deselect, this);
         this.on('afterrender', this.this_afterrender, this);
-    },
-
-    BindStore: function(store) {
-        if (this.IsVisible()) {
-            this.bindStore(store);
-        } else {
-            this.deferredBind = true;
-            this.deferredBindStore = store;
-        }
-    },
-
-    //overriden from Ext.panel.Table
-    bindStore: function(store, dataMember) {
-        if (store == this.dataStore && dataMember == dataMember) return;
-
-        if (this.dataStore && this.dataMember) {
-            this.dataStore.un('currentmodelchanged', this.dataStore_currentmodelchanged, this);
-        }
-
-        this.dataStore = store;
-        this.dataMember = dataMember;
-
-        if (Ext.isString(this.dataStore) && this.isContained && this.isContained.stores){
-            this.dataStore = this.isContained.stores.getByKey(this.dataStore);
-        }
-
-        if (this.dataStore && this.dataMember) {
-            this.dataStore.on('currentmodelchanged', this.dataStore_currentmodelchanged, this);
-        }
-
-        if (this.dataStore && !this.dataMember) {
-debugger;
-            this.callParent(this.dataStore);
-        }
-    },
-
-    dataStore_currentmodelchanged: function(currModel){
-        debugger;
-        Ext.panel.Table.bindStore.call(currModel['hasMany_' + this.dataMember]);
-    },
-
-    this_beforedeselect: function (rowModel, model) {
-//        var plugin = this.getPlugin();
-//        plugin.completeEdit();
     },
 
     this_select: function (rowModel, model) {
@@ -1902,10 +1858,47 @@ debugger;
 
     this_afterrender: function() {
         if (this.deferredBind) {
-            this.bindStore(this.deferredBindStore);
+            this.bindStore(this.deferredBindDataStore, this.deferredBindDataMember);
             this.deferredBind = false;
-            this.deferredBindStore = null;
+            this.deferredBindDataStore = null;
+            this.deferredBindDataMember = null;
         }
+    },
+
+    //overriden from Ext.panel.Table
+    bindStore: function(dataStore, dataMember) {
+        if (dataStore == this.dataStore && dataMember == dataMember) return;
+
+        if (this.dataStore && this.dataMember) {
+            this.dataStore.un('currentmodelchanged', this.dataStore_currentmodelchanged, this);
+        }
+
+        if (!this.IsVisible()) {
+            this.deferredBind = true;
+            this.deferredBindDataStore = dataStore;
+            this.deferredBindDataMember = dataMember;
+            return;
+        }
+
+        this.dataStore = dataStore;
+        this.dataMember = dataMember;
+
+        if (Ext.isString(this.dataStore) && this.isContained && this.isContained.stores){
+            this.dataStore = this.isContained.stores.getByKey(this.dataStore);
+        }
+
+        if (this.dataStore && this.dataMember) {
+            this.dataStore.on('currentmodelchanged', this.dataStore_currentmodelchanged, this);
+        }
+
+        if (this.dataStore && !this.dataMember) {
+            this.callParent([this.dataStore]);
+        }
+    },
+
+    dataStore_currentmodelchanged: function(currModel){
+        debugger;
+        Ext.panel.Table.bindStore.call(currModel['hasMany_' + this.dataMember]);
     },
 
     luColumn_bindstore: function(column, store) {

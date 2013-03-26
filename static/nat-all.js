@@ -1821,15 +1821,17 @@ Ext.define('NAT.grid.Panel', {
         this.viewConfig = Ext.applyIf(this.viewConfig || {}, {
             loadMask: false //if true after refreshing the store grid rows cant be selected
         });
-debugger;
-        var savedStore = this.store;
+
+        var dataStore = this.store;
         this.store = null;
+        var dataMember = this.dataMember;
+        this.dataMember = '';
 
         this.callParent(arguments); //use empty store from Ext.data.StoreManager
 
         if (this.designMode) return;
 
-        this.bindStore(savedStore, this.dataMember);
+        this.bindStore(dataStore, dataMember);
 
         for (var i = 0; this.columns.length > i; i++) {
             var column = this.columns[i];
@@ -1844,8 +1846,19 @@ debugger;
         this.on('afterrender', this.this_afterrender, this);
     },
 
+    BindStore: function(store) {
+        if (this.IsVisible()) {
+            this.bindStore(store);
+        } else {
+            this.deferredBind = true;
+            this.deferredBindStore = store;
+        }
+    },
+
     //overriden from Ext.panel.Table
     bindStore: function(store, dataMember) {
+        if (store == this.dataStore && dataMember == dataMember) return;
+
         if (this.dataStore && this.dataMember) {
             this.dataStore.un('currentmodelchanged', this.dataStore_currentmodelchanged, this);
         }
@@ -1862,6 +1875,7 @@ debugger;
         }
 
         if (this.dataStore && !this.dataMember) {
+debugger;
             this.callParent(this.dataStore);
         }
     },
@@ -1900,15 +1914,6 @@ debugger;
                 this.getView().refresh();
             }
         }, this);
-    },
-
-    BindStore: function(store) {
-        if (this.IsVisible()) {
-            this.bindStore(store);
-        } else {
-            this.deferredBind = true;
-            this.deferredBindStore = store;
-        }
     },
 
     getSelected: function () {

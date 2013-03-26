@@ -1772,7 +1772,6 @@ Ext.define('NAT.grid.column.Lookup', {
     },
 
     BindStore: function(store) {
-        //if (!this.natIsLookup) return;
         this.getEditor().bindStore(store);
         this.fireEvent('bindstore', this, store);
     }
@@ -1897,7 +1896,6 @@ Ext.define('NAT.grid.Panel', {
     },
 
     dataStore_currentmodelchanged: function(currModel){
-        debugger;
         this.superclass.bindStore.call(this, currModel['hasMany_' + this.dataMember]);
     },
 

@@ -1808,9 +1808,9 @@ Ext.define('NAT.grid.Panel', {
     dataStore: null,
     dataMember: null,
 
-    deferredBind: false,
-    deferredBindDataStore: null,
-    deferredBindDataMember: null,
+//    deferredBind: false,
+//    deferredBindDataStore: null,
+//    deferredBindDataMember: null,
 
     constructor: function (config) {
         //config.plugins = [Ext.create('Ext.grid.plugin.CellEditing', { clicksToEdit: 1 })];
@@ -1843,7 +1843,7 @@ Ext.define('NAT.grid.Panel', {
 
         this.on('select', this.this_select, this);
         this.on('deselect', this.this_deselect, this);
-        this.on('afterrender', this.this_afterrender, this);
+//        this.on('afterrender', this.this_afterrender, this);
     },
 
     this_select: function (rowModel, model) {
@@ -1856,14 +1856,14 @@ Ext.define('NAT.grid.Panel', {
         this.store.Deselect();
     },
 
-    this_afterrender: function() {
-        if (this.deferredBind) {
-            this.bindStore(this.deferredBindDataStore, this.deferredBindDataMember);
-            this.deferredBind = false;
-            this.deferredBindDataStore = null;
-            this.deferredBindDataMember = null;
-        }
-    },
+//    this_afterrender: function() {
+//        if (this.deferredBind) {
+//            this.bindStore(this.deferredBindDataStore, this.deferredBindDataMember);
+//            this.deferredBind = false;
+//            this.deferredBindDataStore = null;
+//            this.deferredBindDataMember = null;
+//        }
+//    },
 
     //overriden from Ext.panel.Table
     bindStore: function(dataStore, dataMember) {
@@ -1898,7 +1898,7 @@ Ext.define('NAT.grid.Panel', {
 
     dataStore_currentmodelchanged: function(currModel){
         debugger;
-        Ext.panel.Table.bindStore.call(currModel['hasMany_' + this.dataMember]);
+        this.superclass.bindStore.call(this, currModel['hasMany_' + this.dataMember]);
     },
 
     luColumn_bindstore: function(column, store) {

@@ -1873,12 +1873,12 @@ Ext.define('NAT.grid.Panel', {
             this.dataStore.un('currentmodelchanged', this.dataStore_currentmodelchanged, this);
         }
 
-        if (!this.IsVisible()) {
-            this.deferredBind = true;
-            this.deferredBindDataStore = dataStore;
-            this.deferredBindDataMember = dataMember;
-            return;
-        }
+//        if (!this.IsVisible()) {
+//            this.deferredBind = true;
+//            this.deferredBindDataStore = dataStore;
+//            this.deferredBindDataMember = dataMember;
+//            return;
+//        }
 
         this.dataStore = dataStore;
         this.dataMember = dataMember;
